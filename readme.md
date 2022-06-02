@@ -15,6 +15,7 @@ Install the required tools:
 
 ```sh
 sudo apt install curl dnsutils enum4linux-ng feroxbuster nikto nmap onesixtyone seclists smbclient snmp testssl.sh whatweb
+pip3 install defusedxml rich toml
 ```
 
 Install the tool suite:
