@@ -170,6 +170,10 @@ patterns = [ '^smb', '^microsoft\-ds', '^netbios' ]
   [smb.scans.smbclient]
   command = 'smbclient --list={address} --no-pass --command="recurse ON; ls" 2>&1 | tee {result_file}'
   run_once = true
+  
+  [smb.scans.'enum4linux-ng']
+  command = 'NO_COLOR=yes; enum4linux-ng.py -As -oA {result_file} {address}'
+  run_once = true
 
 [smtp]
 patterns = [ '^smtp' ]
