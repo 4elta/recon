@@ -40,7 +40,7 @@ mkdir --parents /path/to/project/recon && cd $_
 /path/to/recon-tool-suite/recon.py -i /path/to/project/nmap/services.xml -o .
 ```
 
-## analyze ans summarize specific scans
+## analyze and summarize specific scans
 
 **HTTP security header**
 
