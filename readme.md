@@ -1,7 +1,7 @@
 # recon tool suite
 
-Based on the services identified on a network host, we need to run specific tools to assess the security/configuration of these services.
-The recon tool suite can help you automate that an analyze/summarize the results.
+Based on the services identified on a network host, we often need to run specific tools to assess the security/configuration of these services.
+The recon tool suite can help you automate that and analyze/summarize the results.
 
 ## motivation
 
