@@ -212,13 +212,13 @@ patterns = [ '^telnet' ]
 patterns = [ 'https', '^ssl\|', '^tls\|' ]
 
   [tls.scans.testssl]
-  command = 'testssl --nodns min --mapping iana --color 0 {hostname}:{port} 2>&1 | tee "{result_file}"'
+  command = '#testssl --nodns min --mapping iana --color 0 {hostname}:{port} 2>&1 | tee "{result_file}"'
 
   [tls.scans.sslscan]
   command = '#sslscan --show-certificate --no-colour {hostname}:{port} 2>&1 | tee "{result_file}"'
 
   [tls.scans.sslyze]
-  command = '#sslyze --regular {hostname}:{port} 2>&1 | tee "{result_file}"'
+  command = 'sslyze {hostname}:{port} 2>&1 | tee "{result_file}"'
 
 [vnc]
 patterns = [ '^vnc' ]
