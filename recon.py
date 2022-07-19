@@ -314,11 +314,15 @@ def parse_result_file(base_directory, result_file):
         if service.get('tunnel'):
           application_protocol = service.get('tunnel') + '|' + application_protocol
 
-        description = service.get('product')
+        descriptions = []
+        if service.get('product'):
+          descriptions.append(service.get('product'))
         if service.get('version'):
-          description += f" {service.get('version')}"
+          descriptions.append(service.get('version'))
         if service.get('extrainfo'):
-          description += f" {service.get('extrainfo')}"
+          descriptions.append(service.get('extrainfo'))
+
+        description = " ".join(descriptions)
 
       target.services.append(Service(port_ID, transport_protocol, application_protocol, description))
       log(f"{transport_protocol}, {port_ID}: {application_protocol}: {description}")
