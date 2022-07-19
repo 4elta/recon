@@ -225,13 +225,21 @@ async def scan_services(target: Target):
             description = f"{address}: {service_name}: {port}: {hostname}: {scan_name}"
             log(description)
             
+            scan_tuple = (transport_protocol, port, application_protocol, service_name, scan_name)
+
+            if scan_tuple in target.scans:
+              log("[orange]this scan appears to have already been queued")
+              continue # with another service of the target
+            else:
+              target.scans.append(scan_tuple)
+
             # run the scan
             tasks.append(asyncio.create_task(run_command(description, format(scan_command), scan_patterns, target)))
 
           continue # with another service of the target
 
         # this is not an HTTP/HTTP service ...
-          
+
         # does this service belong to a group that should only be scanned once (e.g. SMB)?
         if 'run_once' in scan and scan['run_once'] == True:
           result_file = os.path.join(results_directory, f'{service_name}-{scan_name}.log')
@@ -242,9 +250,9 @@ async def scan_services(target: Target):
 
           description = f"{address}: {service_name}: {scan_name}"
           log(description)
-          
+
           scan_tuple = (service_name, scan_name)
-          
+
           if scan_tuple in target.scans:
             log("[orange]this scan should only be run once")
             continue # with another service of the target
@@ -261,7 +269,7 @@ async def scan_services(target: Target):
           description = f"{address}: {service_name}: {transport_protocol}/{port}: {scan_name}"
           log(description)
 
-          scan_tuples = (transport_protocol, port, application_protocol, service_name, scan_name) 
+          scan_tuple = (transport_protocol, port, application_protocol, service_name, scan_name)
 
           if scan_tuple in target.scans:
             log("[orange]this scan appears to have already been queued")
