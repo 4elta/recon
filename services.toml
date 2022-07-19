@@ -108,7 +108,7 @@ patterns = [ '^mysql' ]
   command = 'nmap -Pn -sV -p {port} --script="banner,(mysql* or ssl*) and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}" {address}'
 
 [nfs]
-patterns = [ '^nfs', '^rpcbind' ]
+patterns = [ '^nfs' ]
 
   [nfs.scans.nmap]
   command = 'nmap -Pn -sV -p {port} --script="banner,(rpcinfo or nfs*) and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}" {address}'
@@ -151,6 +151,12 @@ patterns = [ '^msrpc', '^rpcbind', '^erpc' ]
 
   [rpc.scans.nmap]
   command = 'nmap -Pn -sV -p {port} --script="banner,msrpc-enum,rpc-grind,rpcinfo" -oN "{result_file}" {address}'
+  run_once = true
+
+  [rpc.scans.rpcinfo]
+  command = 'rpcinfo {address} 2>&1 | tee "{result_file}"'
+  run_once = true
+  patterns = [ 'nfs' ]
 
 [sip]
 patterns = [ '^asterisk', '^sip', '^ventrilo' ]
