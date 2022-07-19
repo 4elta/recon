@@ -225,7 +225,7 @@ async def scan_services(target: Target):
             description = f"{address}: {service_name}: {port}: {hostname}: {scan_name}"
             log(description)
             
-            scan_tuple = (transport_protocol, port, application_protocol, service_name, scan_name)
+            scan_tuple = (transport_protocol, port, application_protocol, hostname, service_name, scan_name)
 
             if scan_tuple in target.scans:
               log("[orange]this scan appears to have already been queued")
