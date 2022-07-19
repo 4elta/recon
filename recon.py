@@ -232,10 +232,17 @@ async def scan_services(target: Target):
           else:
             target.scans.append(scan_tuple)
         else:
-          result_file = os.path.join(results_directory, f'{service_name}-{transport_protocol}-{port}-{scan_name}.log')
-          description = f"{address}: {service_name}: {transport_protocol}/{port}: {scan_name}"
+          if 'http' in application_protocol:
+            result_file = os.path.join(results_directory, f'{service_name}-{port}-{hostname}-{scan_name}.log')
+            description = f"{address}: {service_name}: {port}: {hostname}: {scan_name}"
+            scan_tuple = (transport_protocol, port, application_protocol, hostname, service_name, scan_name)
+          else:
+            result_file = os.path.join(results_directory, f'{service_name}-{transport_protocol}-{port}-{scan_name}.log')
+            description = f"{address}: {service_name}: {transport_protocol}/{port}: {scan_name}"
+            scan_tuple = (transport_protocol, port, application_protocol, service_name, scan_name)
+
           log(description)
-          scan_tuple = (transport_protocol, port, application_protocol, service_name, scan_name)
+
           if scan_tuple in target.scans:
             log("[orange]this scan appears to have already been queued")
             continue
