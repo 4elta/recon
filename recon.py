@@ -361,8 +361,10 @@ def parse_result_file(base_directory, result_file):
 
         description = " ".join(descriptions)
 
-      target.services.append(Service(port_ID, transport_protocol, application_protocol, description))
-      log(f"{transport_protocol}, {port_ID}: {application_protocol}: {description}")
+      service = Service(port_ID, transport_protocol, application_protocol, description)
+      if service not in target.services:
+        target.services.append(service)
+        log(f"{transport_protocol}, {port_ID}: {application_protocol}: {description}")
 
   return targets
 
