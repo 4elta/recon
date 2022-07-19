@@ -65,7 +65,7 @@ class Service:
 class Target:
   def __init__(self, address, directory):
     self.address = address
-    self.hostname = address
+    self.hostnames = []
     self.directory = directory
     self.services = []
     self.scans = []
@@ -193,24 +193,6 @@ async def scan_services(target: Target):
         port = service.port
         application_protocol = service.application_protocol
 
-        # special case for HTTP/HTTPS service
-        scheme = 'http'
-        hostname = target.hostname
-        tls = False
-
-        if application_protocol.startswith('ssl|') or application_protocol.startswith('tls|'):
-          tls = True
-
-        if 'http' in application_protocol and tls:
-          scheme = 'https'
-
-        result_file = os.path.join(results_directory, f'{service_name}-{scan_name}.log')
-        description = f"{address}: {service_name}: {scan_name}"
-
-        # run scan only if result file does not yet exist or "overwrite_results" flag is set
-        if (os.path.isfile(result_file) and not OVERWRITE):
-          continue
-
         # try to match the service with any of the scan config's service pattern
         match = False
 
@@ -220,32 +202,70 @@ async def scan_services(target: Target):
             break
 
         if not match:
-          continue
+          continue # with another service of the target
 
-        # make sure to not run scans targeting a specific service (group) multiple times
+        # is this an HTTP/HTTPS services?
+        if 'http' in application_protocol:
+          scheme = 'http'
+          if application_protocol.startswith('ssl|') or application_protocol.startswith('tls|'):
+            scheme = 'https'
+
+          hostnames = target.hostnames
+          if len(hostnames) == 0:
+            hostnames.append(address)
+
+          # we have to run the scan for each hostname associated with the target
+          for hostname in hostnames:
+            result_file = os.path.join(results_directory, f'{service_name}-{port}-{hostname}-{scan_name}.log')
+            
+            # run scan only if result file does not yet exist or "overwrite_results" flag is set
+            if (os.path.isfile(result_file) and not OVERWRITE):
+              continue # with another service of the target
+
+            description = f"{address}: {service_name}: {port}: {hostname}: {scan_name}"
+            log(description)
+            
+            # run the scan
+            tasks.append(asyncio.create_task(run_command(description, format(scan_command), scan_patterns, target)))
+
+          continue # with another service of the target
+
+        # this is not an HTTP/HTTP service ...
+          
+        # does this service belong to a group that should only be scanned once (e.g. SMB)?
         if 'run_once' in scan and scan['run_once'] == True:
+          result_file = os.path.join(results_directory, f'{service_name}-{scan_name}.log')
+
+          # run scan only if result file does not yet exist or "overwrite_results" flag is set
+          if (os.path.isfile(result_file) and not OVERWRITE):
+            continue # with another service of the target
+
+          description = f"{address}: {service_name}: {scan_name}"
           log(description)
+          
           scan_tuple = (service_name, scan_name)
+          
           if scan_tuple in target.scans:
             log("[orange]this scan should only be run once")
-            continue
+            continue # with another service of the target
           else:
             target.scans.append(scan_tuple)
-        else:
-          if 'http' in application_protocol:
-            result_file = os.path.join(results_directory, f'{service_name}-{port}-{hostname}-{scan_name}.log')
-            description = f"{address}: {service_name}: {port}: {hostname}: {scan_name}"
-            scan_tuple = (transport_protocol, port, application_protocol, hostname, service_name, scan_name)
-          else:
-            result_file = os.path.join(results_directory, f'{service_name}-{transport_protocol}-{port}-{scan_name}.log')
-            description = f"{address}: {service_name}: {transport_protocol}/{port}: {scan_name}"
-            scan_tuple = (transport_protocol, port, application_protocol, service_name, scan_name)
 
+        else: # service does not belong to a group that should only be scanned once
+          result_file = os.path.join(results_directory, f'{service_name}-{transport_protocol}-{port}-{scan_name}.log')
+
+          # run scan only if result file does not yet exist or "overwrite_results" flag is set
+          if (os.path.isfile(result_file) and not OVERWRITE):
+            continue # with another service of the target
+
+          description = f"{address}: {service_name}: {transport_protocol}/{port}: {scan_name}"
           log(description)
+
+          scan_tuples = (transport_protocol, port, application_protocol, service_name, scan_name) 
 
           if scan_tuple in target.scans:
             log("[orange]this scan appears to have already been queued")
-            continue
+            continue # with another service of the target
           else:
             target.scans.append(scan_tuple)
 
@@ -299,11 +319,13 @@ def parse_result_file(base_directory, result_file):
       target = targets[address]
 
     try:
-      target.hostname = host.findall("hostnames/hostname[@type='user']")[0].get('name')
+      hostname = host.findall("hostnames/hostname[@type='user']")[0].get('name')
+      if hostname not in target.hostnames:
+        target.hostnames.append(hostname)
     except:
       pass
 
-    log(f"{address} ({target.hostname})")
+    log(f"{address} ({','.join(target.hostnames)})")
 
     for port in host.iter('port'):
       if port.find('state').get('state') != 'open':
