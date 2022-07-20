@@ -68,7 +68,7 @@ BEGIN {
   next
 }
 
-(state == server_host_key_algorithms) && ! ( /pgp-sign-(rsa|dss)/ || /ecdsa-sha2-nistp(256|384|521)/ || /x509v3-rsa2048-sha256/ || /x509v3-ecdsa-sha2-nistp(256|384|521)/ || /rsa-sha2-(256|512)/ || /ssh-ed25519/ ) {
+(state == server_host_key_algorithms) && ! ( /pgp-sign-dss/ || /ecdsa-sha2-nistp(256|384|521)/ || /x509v3-ecdsa-sha2-nistp(256|384|521)/ || /rsa-sha2-(256|512)/ || /ssh-ed25519/ ) {
   printf "* weak %s: `%s`\n", state, $2
   next
 }
