@@ -24,6 +24,11 @@ BEGIN {
   port = ports[1]
   printf "\n**%s:%s**\n\n", host, port
 
+  if ($0 ~ /protocol/ && $0 !~ /protocol 2/) {
+    match($0, /protocol (1|2)(\.[0-9])?/)
+    printf "* insecure protocol version: %s\n", substr($0, RSTART, RLENGTH)
+  }
+
   state = "port"
   next
 }
@@ -58,8 +63,8 @@ BEGIN {
   next
 }
 
-(state == auth_methods) && /password/ {
-  printf "* weak %s: `password`%\n", state
+(state == auth_methods) && ! /publickey/ {
+  printf "* weak %s: `%s`\n", state, $2
   next
 }
 
