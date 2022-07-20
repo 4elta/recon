@@ -304,6 +304,9 @@ def scan_target(target: Target):
 def parse_result_file(base_directory, result_file):
   targets = {}
 
+  # a service is uniquely identified by the tuple (host, transport protocol, port number)
+  unique_services = []
+
   # https://nmap.org/book/nmap-dtd.html
   # nmaprun
   #   host
@@ -342,6 +345,12 @@ def parse_result_file(base_directory, result_file):
       transport_protocol = port.get('protocol')
       port_ID = port.get('portid')
 
+      service_tuple = (address, transport_protocol, port_ID)
+      if service_tuple in unique_services:
+        continue
+
+      unique_services.append(service_tuple)
+
       service = port.find('service')
       if service is None:
         application_protocol = 'unknown'
@@ -361,10 +370,8 @@ def parse_result_file(base_directory, result_file):
 
         description = " ".join(descriptions)
 
-      service = Service(port_ID, transport_protocol, application_protocol, description)
-      if service not in target.services:
-        target.services.append(service)
-        log(f"{transport_protocol}, {port_ID}: {application_protocol}: {description}")
+      target.services.append(Service(port_ID, transport_protocol, application_protocol, description))
+      log(f"{transport_protocol}, {port_ID}: {application_protocol}: {description}")
 
   return targets
 
