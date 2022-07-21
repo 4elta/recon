@@ -16,6 +16,9 @@ BEGIN {
 
 /^Nmap scan report for/ {
   host = $NF
+  if ($NF ~ /\(.+\)/) {
+    host = $(NF-1)
+  }
   next
 }
 
