@@ -48,85 +48,106 @@ BEGIN {
   next
 }
 
-/\* tls_vulnerability_compression:/ {
+/tls_curves:/ {
+  printf "* TLS curve(s):\n"
+  match($0, /curves \{([^\}]+)\}/, matches)
+  print_items(matches[1])
+  next
+}
+
+/tls_vulnerability_compression:/ {
   printf "* vulnerable to TLS compression attacks\n"
   next
 }
 
-/\* tls_vulnerability_heartbleed:/ {
+/tls_vulnerability_heartbleed:/ {
   printf "* vulnerable to the OpenSSL Heartbleed attack\n"
   next
 }
 
-/\* tls_vulnerability_robot:/ {
+/tls_vulnerability_robot:/ {
   printf "* vulnerable to the ROBOT attack\n"
   next
 }
 
-/\* tls_vulnerability_renegotiation:/ {
+/tls_vulnerability_renegotiation:/ {
   printf "* vulnerable to the insecure renegotiation attack\n"
   next
 }
 
-/\* certificate_hostname_validation:/ {
+/certificate_hostname_validation:/ {
   match($0, /validation failed for ([^\.]+)\./, matches)
   printf "* certificate hostname validation failed for `%s`\n", matches[1]
   next
 }
 
-/\* certificate_path_validation:/ {
+/certificate_path_validation:/ {
   match($0, /validation failed for ([^\.]+)\./, matches)
   printf "* certificate path validation failed for `%s`\n", matches[1]
   next
 }
 
-/\* rsa_key_size:/ {
+/certificate_curves:/ {
+  printf "* certificate curve(s):\n"
+  match($0, /curve is \{([^\}]+)\}/, matches)
+  print_items(matches[1])
+  next
+}
+
+/rsa_key_size:/ {
   match($0, /key size is ([0-9]+)/, matches)
   printf "* RSA key size: %s\n"
   next
 }
 
-/\* maximum_certificate_lifespan:/ {
+/maximum_certificate_lifespan:/ {
   match($0, /([0-9]+ days)/, matches)
   printf "* certificate lifespan: %s\n", matches[1]
   next
 }
 
-/\* certificate_types:/ {
+/certificate_types:/ {
   printf "* certificate type(s):\n"
-  match($0, /types are \{('[^}]+')\}/, matches)
+  match($0, /types are \{([^}]+)\}/, matches)
   print_items(matches[1])
   next
 }
 
-/\* certificate_signatures:/ {
+/certificate_signatures:/ {
   printf "* certificate signature algorithm(s):\n"
-  match($0, /signatures are \{('[^}]+')\}/, matches)
+  match($0, /signatures are \{([^}]+)\}/, matches)
   print_items(matches[1])
   next
 }
 
-/\* tls_versions:/ {
+/tls_versions:/ {
   printf "* TLS version(s):\n"
-  match($0, /versions \{('[^}]+')\}/, matches)
+  match($0, /versions \{([^}]+)\}/, matches)
   print_items(matches[1])
   next
 }
 
-/\* ciphers:/ {
+/ciphersuites:/ {
+  printf "* TLS 1.3 cipher suite(s):\n"
+  match($0, /suites \{([^}]+)\}/, matches)
+  print_items(matches[1])
+  next
+}
+
+/ciphers:/ {
   printf "* cipher suite(s):\n"
-  match($0, /suites \{('[^}]+')\}/, matches)
+  match($0, /suites \{([^}]+)\}/, matches)
   print_items(matches[1])
   next
 }
 
-/\* ecdh_param_size:/ {
+/ecdh_param_size:/ {
   match($0, /parameter size is ([0-9]+)/, matches)
   printf "* ECDH parameter size: %s\n", matches[1]
   next
 }
 
-/\* dh_param_size:/ {
+/dh_param_size:/ {
   match($0, /parameter size is ([0-9]+)/, matches)
   printf "* DH parameter size: %s\n", matches[1]
   next
