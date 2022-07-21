@@ -14,7 +14,7 @@ This allows for an automated and consistent assessment of specific services (i.e
 Install the required tools:
 
 ```sh
-sudo apt install curl dnsutils enum4linux-ng feroxbuster nikto nmap onesixtyone seclists smbclient snmp testssl.sh whatweb
+sudo apt install curl dnsutils enum4linux-ng feroxbuster nikto nmap onesixtyone seclists smbclient snmp sslyze testssl.sh whatweb
 pip3 install defusedxml rich toml
 ```
 
