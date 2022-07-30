@@ -25,7 +25,7 @@ cd /path/to/tools
 git clone https://github.com/4elta/recon.git
 ```
 
-Be sure to have the scripts of the suite in your `PATH` variable; at least the `icke_ike.sh` should be, as it is only referenced by name (in `services.toml`).
+Be sure to have the scripts of the suite in your `PATH` variable; at least the `icke.sh` should be, as it is only referenced by name (in `services.toml`).
 Also, make sure that the scripts have the *executable* flag set.
 
 ## usage 
