@@ -79,8 +79,8 @@ patterns = [ '^imap' ]
 [isakmp]
 patterns = [ '^isakmp' ]
 
-  [isakmp.scans.icke_ike]
-  command = 'icke_ike {address} | tee "{result_file}"'
+  [isakmp.scans.icke]
+  command = 'icke {address} | tee "{result_file}"'
   run_once = true
 
 [kerberos]

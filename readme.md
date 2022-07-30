@@ -52,7 +52,7 @@ mkdir --parents /path/to/project/recon && cd $_
 **TLS configuration**
 
 ```sh
-/path/to/recon-tool-suite/analyzers/tls-testssl.awk /path/to/project/recon/*/services/*-testssl.log
+/path/to/recon-tool-suite/analyzers/tls-sslyze.awk /path/to/project/recon/*/services/*-sslyze.log
 ```
 
 **SSH configuration**
@@ -64,7 +64,7 @@ mkdir --parents /path/to/project/recon && cd $_
 **IKE configuration**
 
 ```sh
-/path/to/recon-tool-suite/analyzers/ike-icke_ike.awk /path/to/project/recon/*/services/*-icke_ike.log
+/path/to/recon-tool-suite/analyzers/ike-icke.awk /path/to/project/recon/*/services/*-icke.log
 ```
 
 
