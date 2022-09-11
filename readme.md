@@ -5,7 +5,7 @@ The recon tool suite can help you automate that and analyze/summarize the result
 
 ## motivation
 
-Instead of manually running various tools (e.g. [sslyze](https://github.com/nabla-c0d3/sslyze), [Nikto](https://cirt.net/nikto2), [feroxbuster](https://github.com/epi052/feroxbuster), etc.) and having to remember all commands and the necessary options, we can configure the recon tool (see [`services.toml`](services.toml)) and have it run the required/appropriate tools based on what the Nmap service scan (e.g. `services.xml`) has found.
+Instead of manually running various tools (e.g. [sslyze](https://github.com/nabla-c0d3/sslyze), [Nikto](https://cirt.net/nikto2), [feroxbuster](https://github.com/epi052/feroxbuster), etc.) and having to remember all commands and the necessary options, we can configure the recon tool (see [`config.toml`](config.toml)) and have it run the required/appropriate tools based on what the Nmap service scan (e.g. `services.xml`) has found.
 In addition to that, the suite also provides tools to analyze and summarize the results of some scans (e.g. HTTP security headers, TLS/SSH/IKE configuration, etc.).
 This allows for an automated and consistent assessment of specific services (i.e. no longer are testers forced to analyze TLS/SSH configurations by hand).
 
@@ -25,8 +25,16 @@ cd /path/to/tools
 git clone https://github.com/4elta/recon.git
 ```
 
-Be sure to have the scripts of the suite in your `PATH` variable; at least the `icke.sh` should be, as it is only referenced by name (in `services.toml`).
+Be sure to have the scripts of the suite in your `PATH` variable; at least the `icke.sh` should be, as it is only referenced by name (in `config.toml`).
 Also, make sure that the scripts have the *executable* flag set.
+
+```sh
+chmod +x analyzers/*
+chmod +x icke.sh
+chmod +x recon.py
+ln -s $(realpath icke.sh) ~/bin/icke
+ln -s $(realpath recon.py) ~/bin/recon
+```
 
 ## usage 
 
@@ -38,7 +46,7 @@ Also, make sure that the scripts have the *executable* flag set.
 mkdir --parents /path/to/project/recon && cd $_
 
 # run the service-specific scans
-/path/to/recon-tool-suite/recon.py -i /path/to/project/nmap/services.xml -o .
+recon -i /path/to/project/nmap/services.xml
 ```
 
 ## analyze and summarize specific scans

@@ -5,7 +5,6 @@
 import argparse
 import asyncio
 from concurrent.futures import Executor, ThreadPoolExecutor, as_completed
-import os
 import pathlib
 import random
 import re
@@ -22,22 +21,19 @@ try:
     TaskID,
   )
 except:
-  print("this script requires the 'rich' module.\nplease install it via 'pip3 install rich'.")
-  sys.exit(1)
+  sys.exit("this script requires the 'rich' module.\nplease install it via 'pip3 install rich'.")
 
 try:
   # https://github.com/uiri/toml
   import toml
 except:
-  print("this script requires the 'toml' module.\nplease install it via 'pip3 install toml'.")
-  sys.exit(1)
+  sys.exit("this script requires the 'toml' module.\nplease install it via 'pip3 install toml'.")
 
 try:
   # https://github.com/tiran/defusedxml
   import defusedxml.ElementTree
 except:
-  print("this script requires the 'defusedxml' module.\nplease install it via 'pip3 install defusedxml'.")
-  sys.exit(1)
+  sys.exit("this script requires the 'defusedxml' module.\nplease install it via 'pip3 install defusedxml'.")
 
 progress = Progress(
   SpinnerColumn(),
@@ -45,15 +41,10 @@ progress = Progress(
   transient = True,
 )
 
-rootdir = os.path.dirname(os.path.realpath(__file__))
-
-services_config_file = os.path.join(rootdir, "services.toml")
-with open(services_config_file, 'r') as f:
-  services_config = toml.load(f)
-
 VERBOSE = False
 DRY_RUN = False
 OVERWRITE = False
+SERVICES_CONFIG = {}
 
 class Service:
   def __init__(self, port, transport_protocol, application_protocol, description):
@@ -99,7 +90,7 @@ def stop(executor: Executor):
   progress.remove_task(task_ID)
 
 def create_summary(target: Target):
-  services_file = os.path.join(target.directory, 'services.md')
+  services_file = pathlib.Path(target.directory, 'services.md')
   with open(services_file, 'w') as f:
     for service in target.services:
       description = service.application_protocol
@@ -108,7 +99,7 @@ def create_summary(target: Target):
 
       f.write(f"* {service.port} ({service.transport_protocol}): `{description}`\n")
 
-  services_file = os.path.join(target.directory, 'services.tex')
+  services_file = pathlib.Path(target.directory, 'services.tex')
   with open(services_file, 'w') as f:
     f.write(r"\begin{center}" + "\n")
     f.write(r"\rowcolors{1}{white}{light-gray}" + "\n")
@@ -131,7 +122,7 @@ async def run_command(description: str, command: str, patterns: list, target: Ta
   # make sure that the multiple coroutines don't write to the 'commands' file at the same time
   async with target.lock:
     log(command)
-    with open(os.path.join(target.directory, 'commands.log'), 'a') as f:
+    with open(pathlib.Path(target.directory, 'commands.log'), 'a') as f:
       f.write(f"{command}\n")
 
   if DRY_RUN == False:
@@ -173,14 +164,14 @@ async def scan_services(target: Target):
   # it's referenced like this in the scan configs
   address = target.address
 
-  results_directory = os.path.join(target.directory, 'services')
+  results_directory = pathlib.Path(target.directory, 'services')
   log(f"results directory: {results_directory}")
-  os.makedirs(results_directory, exist_ok=True)
+  results_directory.mkdir(exist_ok=True)
 
   tasks = []
 
   # iterate over each service scan configuration
-  for service_name, service_config in services_config.items():
+  for service_name, service_config in SERVICES_CONFIG.items():
     service_patterns = service_config['patterns'] if 'patterns' in service_config else ['.+']
 
     for scan_name, scan in service_config['scans'].items():
@@ -216,10 +207,11 @@ async def scan_services(target: Target):
 
           # we have to run the scan for each hostname associated with the target
           for hostname in hostnames:
-            result_file = os.path.join(results_directory, f'{service_name}-{port}-{hostname}-{scan_name}.log')
+            result_file = pathlib.Path(results_directory, f'{service_name}-{port}-{hostname}-{scan_name}.log')
             
             # run scan only if result file does not yet exist or "overwrite_results" flag is set
-            if (os.path.isfile(result_file) and not OVERWRITE):
+            if result_file.exists() and not OVERWRITE:
+              log(f"result file '{result_file}' already exists and we must not overwrite it.")
               continue # with another service of the target
 
             description = f"{address}: {service_name}: {port}: {hostname}: {scan_name}"
@@ -242,10 +234,11 @@ async def scan_services(target: Target):
 
         # does this service belong to a group that should only be scanned once (e.g. SMB)?
         if 'run_once' in scan and scan['run_once'] == True:
-          result_file = os.path.join(results_directory, f'{service_name}-{scan_name}.log')
+          result_file = pathlib.Path(results_directory, f'{service_name}-{scan_name}.log')
 
           # run scan only if result file does not yet exist or "overwrite_results" flag is set
-          if (os.path.isfile(result_file) and not OVERWRITE):
+          if result_file.exists() and not OVERWRITE:
+            log(f"result file '{result_file}' already exists and we must not overwrite it.")
             continue # with another service of the target
 
           description = f"{address}: {service_name}: {scan_name}"
@@ -260,10 +253,11 @@ async def scan_services(target: Target):
             target.scans.append(scan_tuple)
 
         else: # service does not belong to a group that should only be scanned once
-          result_file = os.path.join(results_directory, f'{service_name}-{transport_protocol}-{port}-{scan_name}.log')
+          result_file = pathlib.Path(results_directory, f'{service_name}-{transport_protocol}-{port}-{scan_name}.log')
 
           # run scan only if result file does not yet exist or "overwrite_results" flag is set
-          if (os.path.isfile(result_file) and not OVERWRITE):
+          if result_file.exists() and not OVERWRITE:
+            log(f"result file '{result_file}' already exists and we must not overwrite it.")
             continue # with another service of the target
 
           description = f"{address}: {service_name}: {transport_protocol}/{port}: {scan_name}"
@@ -287,7 +281,7 @@ def scan_target(target: Target):
   #task_ID = progress.add_task(target.address)
 
   # create directory
-  os.makedirs(target.directory, exist_ok=True)
+  target.directory.mkdir(exist_ok=True)
 
   # sort the target's services based on its port
   target.services.sort(key=lambda service: service.port)
@@ -324,7 +318,7 @@ def parse_result_file(base_directory, result_file):
     address = host.find('address').get('addr')
 
     if address not in targets:
-      target = Target(address, os.path.join(base_directory, address))
+      target = Target(address, pathlib.Path(base_directory, address))
       targets[address] = target
     else:
       target = targets[address]
@@ -385,21 +379,33 @@ def process(args):
   global OVERWRITE
   OVERWRITE = args.overwrite_results
 
-  with progress:
-    base_directory = os.path.abspath(args.output)
-    log(f"base directory: '{base_directory}'")
-    os.makedirs(base_directory, exist_ok=True)
+  if args.config:
+    config_file_path = args.config
+    if not config_file_path.exists():
+      sys.exit(f"the specified configuration file '{config_file_path}' does not exist!")
+  else:
+    config_file_path = pathlib.Path(pathlib.Path(__file__).resolve().parent, "config.toml")
+    if not config_file_path.exists():
+      sys.exit(f"the default configuration file '{config_file_path}' does not exist!")
 
-    input_file = os.path.abspath(args.input)
-    if os.path.isfile(input_file) != True:
-      progress.console.print(f"[bold red]input file '{input_file}' does not exist!")
-      exit(1)
+  global SERVICES_CONFIG
+  with open(config_file_path, 'r') as f:
+    SERVICES_CONFIG = toml.load(f)
+
+  with progress:
+    base_directory = args.output.resolve()
+    log(f"base directory: '{base_directory}'")
+    base_directory.mkdir(exist_ok=True)
+
+    input_file = args.input.resolve()
+    if not input_file.exists():
+      sys.exit(f"input file '{input_file}' does not exist!")
 
     # parse Nmap result file of the service scan (XML)
     targets = parse_result_file(base_directory, args.input)
     log(f"parsed {len(targets)} targets")
 
-    with ThreadPoolExecutor(max_workers=args.concurrent) as executor:
+    with ThreadPoolExecutor(max_workers=args.concurrent_targets) as executor:
       futures = []
       for address, target in targets.items():
         # a lock is needed so the coroutines don't overwrite each other
@@ -419,9 +425,10 @@ def process(args):
 def main():
   parser = argparse.ArgumentParser()
 
-  parser.add_argument('-i', '--input', type=pathlib.Path, default='services.xml', help="the result file of the Nmap service scan")
-  parser.add_argument('-o', '--output', type=pathlib.Path, default='./recon', help="where the results are stored")
-  parser.add_argument('-c', '--concurrent', type=int, default=3, help="how many targets should be scanned concurrently")
+  parser.add_argument('-i', '--input', type=pathlib.Path, default='services.xml', help="the result file of the Nmap service scan (e.g. 'services.xml')")
+  parser.add_argument('-o', '--output', type=pathlib.Path, default='./recon', help="where the results are stored (e.g. './recon')")
+  parser.add_argument('-c', '--config', type=pathlib.Path, help="path to the scan configuration file (e.g. '/path/to/recon-suite/config.toml')")
+  parser.add_argument('-t', '--concurrent_targets', type=int, default=3, help="how many targets should be scanned concurrently")
   parser.add_argument('-v', '--verbose', action='store_true', help="show additional info including all output of all scans")
   parser.add_argument('-n', '--dry_run', action='store_true', help="do not run any command; just create/update the 'commands.log' file")
   parser.add_argument('-y', '--overwrite_results', action='store_true', help="overwrite existing result files")
