@@ -53,7 +53,7 @@ function append_to_array(array, value) {
   delete key_length
 
   target = $3
-  printf "\n**%s**\n\n", target
+  printf "\n#### %s\n\n", target
   next
 }
 

@@ -27,7 +27,7 @@ BEGIN {
 /^Testing SSL server .+ on port [0-9]+ using SNI name .+$/ {
   #Testing SSL server 11.22.33.44 on port 55 using SNI name www.example.com
   #1       2   3      4           5  6    7  8     9   10   11
-  printf "\n**%s:%d**\n\n", $4, $7
+  printf "\n#### %s:%d\n\n", $4, $7
 }
 
 /^SSLv(2|3) +enabled$/ || /^TLSv1.(0|1) +enabled$/ || /^TLSv1.3 +disabled$/ {

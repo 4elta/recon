@@ -25,7 +25,7 @@ BEGIN {
 /tcp open/ && /ssh/ {
   split($0, ports, "/")
   port = ports[1]
-  printf "\n**%s:%s**\n\n", host, port
+  printf "\n#### %s:%s\n\n", host, port
 
   if ($0 ~ /protocol/ && $0 !~ /protocol 2/) {
     match($0, /protocol (1|2)(\.[0-9])?/)

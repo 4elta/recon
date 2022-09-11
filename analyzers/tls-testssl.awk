@@ -82,7 +82,7 @@ BEGIN {
   # 1     2          3               4    5               6
   host = $5
   append_to_array(hosts, host)
-  printf "\n**%s**\n\n", host
+  printf "\n#### %s\n\n", host
 }
 
 # old protocols: SSLv2, SSLv3, TLSv1, TLSv1.1

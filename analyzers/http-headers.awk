@@ -37,7 +37,7 @@
   port = authority[2]
   sub("/", "", port)
 
-  printf "\n**%s://%s:%s/**\n\n", schema, host, port
+  printf "\n#### %s://%s:%s/\n\n", schema, host, port
 
   x_frame_options = "missing"
   csp = "missing"

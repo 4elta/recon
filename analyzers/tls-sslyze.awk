@@ -44,7 +44,7 @@ BEGIN {
 
 /[^:]+:[0-9]+: FAILED - Not compliant.$/ {
   host = substr($1, 1, length($1) - 1)
-  printf "\n\n**%s**\n\nDeviations from Mozilla's \"%s\" configuration:\n\n", host, configuration
+  printf "\n\n#### %s\n\nDeviations from Mozilla's \"%s\" configuration:\n\n", host, configuration
   next
 }
 
