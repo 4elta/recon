@@ -134,13 +134,12 @@ async def run_command(command: Command, target: Target):
   async with target.semaphore:
     task_ID = progress.add_task(f"{command.description}")
 
-    # make sure that the multiple coroutines don't write to the 'commands' file at the same time
-    async with target.lock:
-      log(command.string)
-      with open(pathlib.Path(target.directory, 'commands.log'), 'a') as f:
-        f.write(f"{command}\n")
+    log(command.string)
 
-    if DRY_RUN == False:
+    timestamp_start = time.time()
+    return_code = 0
+
+    if not DRY_RUN:
       # create/start the async process
       process = await asyncio.create_subprocess_shell(
         command.string,
@@ -166,11 +165,20 @@ async def run_command(command: Command, target: Target):
       # wait for the process to finish
       await process.wait()
 
+      return_code = process.returncode
+      
       if process.returncode != 0:
         error_msg = await process.stderr.read()
         error_msg = error_msg.decode().strip()
         progress.console.print(f"[red]{command.description}: {error_msg}")
 
+    timestamp_completion = time.time()
+
+    # make sure that the multiple coroutines don't write to the 'commands' file at the same time
+    async with target.lock:
+      with open(pathlib.Path(target.directory, 'commands.csv'), 'a') as f:
+        f.write(f"{timestamp_start},{timestamp_completion},{command.string},{return_code}\n")
+    
     progress.remove_task(task_ID)
     progress.console.print(f"[green]{command.description}: finished")
 
@@ -309,6 +317,10 @@ async def scan_services(target: Target):
   results_directory = pathlib.Path(target.directory, 'services')
   log(f"results directory: {results_directory}")
   results_directory.mkdir(exist_ok=True)
+
+  # initialize the command log file: add a header
+  with open(pathlib.Path(target.directory, 'commands.csv'), 'w') as f:
+    f.write("start time,completion time,command,return code\n")
 
   # iterate over the services found to be running on the target
   for service in target.services:
