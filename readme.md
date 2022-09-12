@@ -38,15 +38,26 @@ ln -s $(realpath recon.py) ~/bin/recon
 
 ## usage 
 
-```sh
-# this is how you would have run your service scan
-#sudo nmap -sS -sU -Pn -p $ports -sV --version-all -v -oA services -iL targets-online.txt 
+```txt
+$ recon -h
+usage: recon [-h] [-i INPUT] [-o OUTPUT] [-c CONFIG] [-t CONCURRENT_TARGETS] [-s CONCURRENT_SCANS] [-v] [-n] [-y]
 
-# create the necessary directory
-mkdir --parents /path/to/project/recon && cd $_
-
-# run the service-specific scans
-recon -i /path/to/project/nmap/services.xml
+optional arguments:
+  -h, --help            show this help message and exit
+  -i INPUT, --input INPUT
+                        the result file of the Nmap service scan (default: 'services.xml')
+  -o OUTPUT, --output OUTPUT
+                        where the results are stored (default: './recon')
+  -c CONFIG, --config CONFIG
+                        path to the scan configuration file (default: '/path/to/recon-suite/config.toml')
+  -t CONCURRENT_TARGETS, --concurrent_targets CONCURRENT_TARGETS
+                        how many targets should be scanned concurrently (default: 3)
+  -s CONCURRENT_SCANS, --concurrent_scans CONCURRENT_SCANS
+                        how many scans should be running concurrently on a single target (default: 2)
+  -v, --verbose         show additional info including all output of all scans
+  -n, --dry_run         do not run any command; just create/update the 'commands.log' file
+  -y, --overwrite_results
+                        overwrite existing result files
 ```
 
 ## analyze and summarize specific scans

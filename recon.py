@@ -41,11 +41,6 @@ progress = Progress(
   transient = True,
 )
 
-VERBOSE = False
-DRY_RUN = False
-OVERWRITE = False
-SERVICES_CONFIG = {}
-
 class Service:
   def __init__(self, port, transport_protocol, application_protocol, description):
     self.port = int(port)
@@ -59,8 +54,23 @@ class Target:
     self.hostnames = []
     self.directory = directory
     self.services = []
-    self.scans = []
+    self.scans = {}
     self.lock = None
+    self.semaphore = None
+
+class Scan:
+  def __init__(self, service, name, command, patterns, run_once):
+    self.service = service
+    self.name = name
+    self.command = command
+    self.patterns = patterns
+    self.run_once = run_once
+
+class Command:
+  def __init__(self, description, string, patterns):
+    self.description = description
+    self.string = string
+    self.patterns = patterns
 
 def log(msg):
   if VERBOSE:
@@ -84,12 +94,14 @@ def format(*args, frame_index=1, **kvargs):
 
   return string.Formatter().vformat(' '.join(args), args, vals)
 
-def stop(executor: Executor):
+def stop_exucutor(executor: Executor):
+  
   task_ID = progress.add_task("stopping ... press ^C to kill running tasks")
   executor.shutdown(cancel_futures=True)
   progress.remove_task(task_ID)
 
 def create_summary(target: Target):
+  
   services_file = pathlib.Path(target.directory, 'services.md')
   with open(services_file, 'w') as f:
     for service in target.services:
@@ -116,50 +128,180 @@ def create_summary(target: Target):
     f.writelines(r"\end{tabular}" + "\n")
     f.writelines(r"\end{center}" + "\n")
 
-async def run_command(description: str, command: str, patterns: list, target: Target):
-  task_ID = progress.add_task(f"{description}")
+async def run_command(command: Command, target: Target):
 
-  # make sure that the multiple coroutines don't write to the 'commands' file at the same time
-  async with target.lock:
-    log(command)
-    with open(pathlib.Path(target.directory, 'commands.log'), 'a') as f:
-      f.write(f"{command}\n")
+  # make sure that only a specific number of scans are running per target
+  async with target.semaphore:
+    task_ID = progress.add_task(f"{command.description}")
 
-  if DRY_RUN == False:
-    # create/start the async process
-    process = await asyncio.create_subprocess_shell(
-      command,
-      stdout = asyncio.subprocess.PIPE,
-      stderr = asyncio.subprocess.PIPE,
-      executable = '/bin/bash'
-    )
+    # make sure that the multiple coroutines don't write to the 'commands' file at the same time
+    async with target.lock:
+      log(command.string)
+      with open(pathlib.Path(target.directory, 'commands.log'), 'a') as f:
+        f.write(f"{command}\n")
 
-    # parse STDOUT
-    while True:
-      line = await process.stdout.readline()
-      if line:
-        line = str(line.rstrip(), 'utf8', 'ignore')
-        log(line)
+    if DRY_RUN == False:
+      # create/start the async process
+      process = await asyncio.create_subprocess_shell(
+        command.string,
+        stdout = asyncio.subprocess.PIPE,
+        stderr = asyncio.subprocess.PIPE,
+        executable = '/bin/bash'
+      )
 
-        for pattern in patterns:
-          match = re.search(pattern, line)
-          if match:
-            progress.console.print(f"{description}: \"{line.strip()}\"")
-      else:
-        break
+      # parse STDOUT
+      while True:
+        line = await process.stdout.readline()
+        if line:
+          line = str(line.rstrip(), 'utf8', 'ignore')
+          log(line)
 
-    # wait for the process to finish
-    await process.wait()
+          for pattern in command.patterns:
+            match = re.search(pattern, line)
+            if match:
+              progress.console.print(f"{command.description}: \"{line.strip()}\"")
+        else:
+          break
 
-    if process.returncode != 0:
-      error_msg = await process.stderr.read()
-      error_msg = error_msg.decode().strip()
-      progress.console.print(f"[red]{description}: {error_msg}")
+      # wait for the process to finish
+      await process.wait()
 
-  progress.remove_task(task_ID)
-  progress.console.print(f"[green]{description}: finished")
+      if process.returncode != 0:
+        error_msg = await process.stderr.read()
+        error_msg = error_msg.decode().strip()
+        progress.console.print(f"[red]{command.description}: {error_msg}")
 
+    progress.remove_task(task_ID)
+    progress.console.print(f"[green]{command.description}: finished")
+
+def find_suitable_scans(application_protocol):
+
+  scans = []
+  
+  # iterate over each service scan configuration
+  for service_name, service_config in SERVICES_CONFIG.items():
+    service_patterns = service_config['patterns'] if 'patterns' in service_config else ['.+']
+
+    # iterate over each scan of a specific service config
+    for scan_name, scan in service_config['scans'].items():
+      scan_command = scan['command']
+      scan_patterns = scan['patterns'] if 'patterns' in scan else []
+
+      for service_pattern in service_patterns:
+        if re.search(service_pattern, application_protocol):
+          scans.append(
+            Scan(
+              service_name,
+              scan_name,
+              scan_command,
+              scan_patterns,
+              True if 'run_once' in scan else False
+            )
+          )
+
+  return scans
+
+def queue_HTTP_service_scan(target: Target, service: Service, scan: Scan):
+
+  results_directory = pathlib.Path(target.directory, 'services')
+
+  transport_protocol = service.transport_protocol
+  port = service.port
+  application_protocol = service.application_protocol
+  address = target.address
+  
+  scheme = 'http'
+  if application_protocol.startswith('ssl|') or application_protocol.startswith('tls|'):
+    scheme = 'https'
+
+  hostnames = target.hostnames
+  if len(hostnames) == 0:
+    hostnames.append(address)
+
+  # we have to run the scan for each hostname associated with the target
+  for hostname in hostnames:
+    result_file = pathlib.Path(results_directory, f"{scan.service}-{port}-{hostname}-{scan.name}.log")
+    
+    # run scan only if result file does not yet exist or "overwrite_results" flag is set
+    if result_file.exists() and not OVERWRITE:
+      log(f"result file '{result_file}' already exists and we must not overwrite it.")
+      continue # with another service of the target
+
+    description = f"{address}: {scan.service}: {port}: {hostname}: {scan.name}"
+    log(description)
+
+    scan_ID = (transport_protocol, port, application_protocol, hostname, scan.service, scan.name)
+
+    if scan_ID in target.scans:
+      log("[orange]this scan appears to have already been queued")
+      continue # with another hostname 
+    else:
+      target.scans[scan_ID] = Command(
+        description,
+        format(scan.command),
+        scan.patterns
+      )
+
+def queue_generic_service_scan(target: Target, service: Service, scan: Scan):
+
+  results_directory = pathlib.Path(target.directory, 'services')
+
+  transport_protocol = service.transport_protocol
+  port = service.port
+  application_protocol = service.application_protocol
+  address = target.address
+
+  # does this service belong to a group that should only be scanned once (e.g. SMB)?
+  if scan.run_once:
+    result_file = pathlib.Path(results_directory, f'{scan.service}-{scan.name}.log')
+
+    # run scan only if result file does not yet exist or "overwrite_results" flag is set
+    if result_file.exists() and not OVERWRITE:
+      log(f"result file '{result_file}' already exists and we must not overwrite it.")
+      return # continue with another service of the target
+
+    description = f"{address}: {scan.service}: {scan.name}"
+    log(description)
+
+    scan_ID = (scan.service, scan.name)
+
+    if scan_ID in target.scans:
+      log("[orange]this scan should only be run once")
+      return # continue with another service of the target
+
+  else: # service does not belong to a group that should only be scanned once
+    result_file = pathlib.Path(results_directory, f'{scan.service}-{transport_protocol}-{port}-{scan.name}.log')
+
+    # run scan only if result file does not yet exist or "overwrite_results" flag is set
+    if result_file.exists() and not OVERWRITE:
+      log(f"result file '{result_file}' already exists and we must not overwrite it.")
+      return # continue with another service of the target
+
+    description = f"{address}: {scan.service}: {transport_protocol}/{port}: {scan.name}"
+    log(description)
+
+    scan_ID = (transport_protocol, port, application_protocol, scan.service, scan.name)
+
+    if scan_ID in target.scans:
+      log("[orange]this scan appears to have already been queued")
+      return # continue with another service of the target
+
+  target.scans[scan_ID] = Command(
+    description,
+    format(scan.command),
+    scan.patterns
+  )
+  
 async def scan_services(target: Target):
+
+  # initialize Lock and Semaphore
+  # https://stackoverflow.com/a/55918049
+  
+  # a lock is needed so the coroutines don't overwrite each other when writing to the 'commands' file
+  target.lock = asyncio.Lock()
+  # a semaphore is needed to limit the number of concurrent scans per target
+  target.semaphore = asyncio.Semaphore(CONCURRENT_SCANS)
+  
   # extract the target's address from the object
   # it's referenced like this in the scan configs
   address = target.address
@@ -168,117 +310,31 @@ async def scan_services(target: Target):
   log(f"results directory: {results_directory}")
   results_directory.mkdir(exist_ok=True)
 
+  # iterate over the services found to be running on the target
+  for service in target.services:
+    transport_protocol = service.transport_protocol
+    port = service.port
+    application_protocol = service.application_protocol
+
+    # iterate over each suitable scan
+    for scan in find_suitable_scans(application_protocol):
+      if 'http' in application_protocol:
+        queue_HTTP_service_scan(target, service, scan)
+      else:
+        queue_generic_service_scan(target, service, scan)
+
   tasks = []
-
-  # iterate over each service scan configuration
-  for service_name, service_config in SERVICES_CONFIG.items():
-    service_patterns = service_config['patterns'] if 'patterns' in service_config else ['.+']
-
-    for scan_name, scan in service_config['scans'].items():
-      scan_command = scan['command']
-      scan_patterns = scan['patterns'] if 'patterns' in scan else []
-
-      # iterate over the services found to be running on the target
-      for service in target.services:
-        transport_protocol = service.transport_protocol
-        port = service.port
-        application_protocol = service.application_protocol
-
-        # try to match the service with any of the scan config's service pattern
-        match = False
-
-        for service_pattern in service_patterns:
-          if re.search(service_pattern, application_protocol):
-            match = True
-            break
-
-        if not match:
-          continue # with another service of the target
-
-        # is this an HTTP/HTTPS services?
-        if 'http' in application_protocol:
-          scheme = 'http'
-          if application_protocol.startswith('ssl|') or application_protocol.startswith('tls|'):
-            scheme = 'https'
-
-          hostnames = target.hostnames
-          if len(hostnames) == 0:
-            hostnames.append(address)
-
-          # we have to run the scan for each hostname associated with the target
-          for hostname in hostnames:
-            result_file = pathlib.Path(results_directory, f'{service_name}-{port}-{hostname}-{scan_name}.log')
-            
-            # run scan only if result file does not yet exist or "overwrite_results" flag is set
-            if result_file.exists() and not OVERWRITE:
-              log(f"result file '{result_file}' already exists and we must not overwrite it.")
-              continue # with another service of the target
-
-            description = f"{address}: {service_name}: {port}: {hostname}: {scan_name}"
-            log(description)
-            
-            scan_tuple = (transport_protocol, port, application_protocol, hostname, service_name, scan_name)
-
-            if scan_tuple in target.scans:
-              log("[orange]this scan appears to have already been queued")
-              continue # with another service of the target
-            else:
-              target.scans.append(scan_tuple)
-
-            # run the scan
-            tasks.append(asyncio.create_task(run_command(description, format(scan_command), scan_patterns, target)))
-
-          continue # with another service of the target
-
-        # this is not an HTTP/HTTP service ...
-
-        # does this service belong to a group that should only be scanned once (e.g. SMB)?
-        if 'run_once' in scan and scan['run_once'] == True:
-          result_file = pathlib.Path(results_directory, f'{service_name}-{scan_name}.log')
-
-          # run scan only if result file does not yet exist or "overwrite_results" flag is set
-          if result_file.exists() and not OVERWRITE:
-            log(f"result file '{result_file}' already exists and we must not overwrite it.")
-            continue # with another service of the target
-
-          description = f"{address}: {service_name}: {scan_name}"
-          log(description)
-
-          scan_tuple = (service_name, scan_name)
-
-          if scan_tuple in target.scans:
-            log("[orange]this scan should only be run once")
-            continue # with another service of the target
-          else:
-            target.scans.append(scan_tuple)
-
-        else: # service does not belong to a group that should only be scanned once
-          result_file = pathlib.Path(results_directory, f'{service_name}-{transport_protocol}-{port}-{scan_name}.log')
-
-          # run scan only if result file does not yet exist or "overwrite_results" flag is set
-          if result_file.exists() and not OVERWRITE:
-            log(f"result file '{result_file}' already exists and we must not overwrite it.")
-            continue # with another service of the target
-
-          description = f"{address}: {service_name}: {transport_protocol}/{port}: {scan_name}"
-          log(description)
-
-          scan_tuple = (transport_protocol, port, application_protocol, service_name, scan_name)
-
-          if scan_tuple in target.scans:
-            log("[orange]this scan appears to have already been queued")
-            continue # with another service of the target
-          else:
-            target.scans.append(scan_tuple)
-
-        # run the scan
-        tasks.append(asyncio.create_task(run_command(description, format(scan_command), scan_patterns, target)))
+  for scan_ID, command in target.scans.items():
+    tasks.append(
+      asyncio.create_task(
+        run_command(command, target)
+      )
+    )
 
   for task in tasks:
     await task
-
+  
 def scan_target(target: Target):
-  #task_ID = progress.add_task(target.address)
 
   # create directory
   target.directory.mkdir(exist_ok=True)
@@ -292,7 +348,6 @@ def scan_target(target: Target):
   # perform service-specific scans
   asyncio.run(scan_services(target))
 
-  #progress.remove_task(task_ID)
   progress.console.print(f"[bold green]{target.address}: finished")
 
 def parse_result_file(base_directory, result_file):
@@ -379,6 +434,9 @@ def process(args):
   global OVERWRITE
   OVERWRITE = args.overwrite_results
 
+  global CONCURRENT_SCANS
+  CONCURRENT_SCANS = args.concurrent_scans
+
   if args.config:
     config_file_path = args.config
     if not config_file_path.exists():
@@ -408,10 +466,6 @@ def process(args):
     with ThreadPoolExecutor(max_workers=args.concurrent_targets) as executor:
       futures = []
       for address, target in targets.items():
-        # a lock is needed so the coroutines don't overwrite each other
-        # when writing to the 'commands' file
-        target.lock = asyncio.Lock()
-
         futures.append(executor.submit(scan_target, target))
 
       try:
@@ -420,15 +474,16 @@ def process(args):
         progress.console.print("[bold green]done")
       except KeyboardInterrupt:
         progress.console.print("[bold red]aborted by user")
-        stop(executor)
+        stop_exucutor(executor)
 
 def main():
   parser = argparse.ArgumentParser()
 
-  parser.add_argument('-i', '--input', type=pathlib.Path, default='services.xml', help="the result file of the Nmap service scan (e.g. 'services.xml')")
-  parser.add_argument('-o', '--output', type=pathlib.Path, default='./recon', help="where the results are stored (e.g. './recon')")
-  parser.add_argument('-c', '--config', type=pathlib.Path, help="path to the scan configuration file (e.g. '/path/to/recon-suite/config.toml')")
-  parser.add_argument('-t', '--concurrent_targets', type=int, default=3, help="how many targets should be scanned concurrently")
+  parser.add_argument('-i', '--input', type=pathlib.Path, default='services.xml', help="the result file of the Nmap service scan (default: 'services.xml')")
+  parser.add_argument('-o', '--output', type=pathlib.Path, default='./recon', help="where the results are stored (default: './recon')")
+  parser.add_argument('-c', '--config', type=pathlib.Path, help="path to the scan configuration file (default: '/path/to/recon-suite/config.toml')")
+  parser.add_argument('-t', '--concurrent_targets', type=int, default=3, help="how many targets should be scanned concurrently (default: 3)")
+  parser.add_argument('-s', '--concurrent_scans', type=int, default=2, help="how many scans should be running concurrently on a single target (default: 2)")
   parser.add_argument('-v', '--verbose', action='store_true', help="show additional info including all output of all scans")
   parser.add_argument('-n', '--dry_run', action='store_true', help="do not run any command; just create/update the 'commands.log' file")
   parser.add_argument('-y', '--overwrite_results', action='store_true', help="overwrite existing result files")
