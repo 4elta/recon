@@ -5,6 +5,7 @@
 import argparse
 import asyncio
 from concurrent.futures import Executor, ThreadPoolExecutor, as_completed
+import csv
 import pathlib
 import random
 import re
@@ -177,7 +178,7 @@ async def run_command(command: Command, target: Target):
     # make sure that the multiple coroutines don't write to the 'commands' file at the same time
     async with target.lock:
       with open(pathlib.Path(target.directory, 'commands.csv'), 'a') as f:
-        f.write(f"{timestamp_start},{timestamp_completion},{command.string},{return_code}\n")
+        csv.writer(f, delimiter=',', csv.QUOTE_MINIMAL).writerow([timestamp_start, timestamp_completion, command.string, return_code])
     
     progress.remove_task(task_ID)
     progress.console.print(f"[green]{command.description}: finished")
@@ -319,6 +320,7 @@ async def scan_services(target: Target):
   results_directory.mkdir(exist_ok=True)
 
   # initialize the command log file: add a header
+  
   with open(pathlib.Path(target.directory, 'commands.csv'), 'w') as f:
     f.write("start time,completion time,command,return code\n")
 
