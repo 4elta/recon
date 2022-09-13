@@ -39,6 +39,7 @@
 
   printf "\n#### %s://%s:%s/\n\n", schema, host, port
 
+  status_line = "none"
   x_frame_options = "missing"
   csp = "missing"
   hsts = "missing"
@@ -48,6 +49,14 @@
   if (schema == "http") {
     hsts = "none"
   }
+
+  next
+}
+
+# HTTP/1.1 200 OK
+# https://www.rfc-editor.org/rfc/rfc2616#section-6.1
+/^HTTP\/[0-9]+(\.[0-9]+)? [0-9]{3} [\w ]+\r$/ {
+  status_line = "present"
 }
 
 tolower($0) ~ /^x-frame-options:/ {
@@ -157,23 +166,27 @@ tolower($0) ~ /^referrer-policy:/ {
 }
 
 END {
-  if (x_frame_options == "missing") {
-    printf "* missing `X-Frame-Options` header\n"
-  }
+  if (status_line == "none") {
+    printf "error analysing file: HTTP status line missing\n"
+  } else {
+    if (x_frame_options == "missing") {
+      printf "* missing `X-Frame-Options` header\n"
+    }
 
-  if (csp == "missing") {
-    printf "* missing `Content-Security-Policy` header\n"
-  }
+    if (csp == "missing") {
+      printf "* missing `Content-Security-Policy` header\n"
+    }
 
-  if (hsts == "missing") {
-    printf "* missing `Strict-Transport-Security` header\n"
-  }
+    if (hsts == "missing") {
+      printf "* missing `Strict-Transport-Security` header\n"
+    }
 
-  if (x_content_type_options == "missing") {
-    printf "* missing `X-Content-Type-Options` header\n"
-  }
+    if (x_content_type_options == "missing") {
+      printf "* missing `X-Content-Type-Options` header\n"
+    }
 
-  if (referrer_policy == "missing") {
-    printf "* missing `Referrer-Policy` header\n"
+    if (referrer_policy == "missing") {
+      printf "* missing `Referrer-Policy` header\n"
+    }
   }
 }
