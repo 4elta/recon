@@ -217,14 +217,14 @@ def queue_HTTP_service_scan(target: Target, service: Service, scan: Scan):
   port = service.port
   application_protocol = service.application_protocol
   address = target.address
-  
-  scheme = 'http'
-  if application_protocol.startswith('ssl|') or application_protocol.startswith('tls|'):
-    scheme = 'https'
 
   hostnames = target.hostnames
   if len(hostnames) == 0:
     hostnames.append(address)
+
+  scheme = 'http'
+  if application_protocol.startswith('ssl|') or application_protocol.startswith('tls|'):
+    scheme = 'https'
 
   # we have to run the scan for each hostname associated with the target
   for hostname in hostnames:
@@ -330,7 +330,7 @@ async def scan_services(target: Target):
 
     # iterate over each suitable scan
     for scan in find_suitable_scans(application_protocol):
-      if 'http' in application_protocol:
+      if scan.service in ('http', 'tls'):
         queue_HTTP_service_scan(target, service, scan)
       else:
         queue_generic_service_scan(target, service, scan)
