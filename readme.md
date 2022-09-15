@@ -14,8 +14,10 @@ This allows for an automated and consistent assessment of specific services (i.e
 Install the required tools:
 
 ```sh
-sudo apt install curl dnsutils enum4linux-ng feroxbuster nikto nmap onesixtyone seclists smbclient snmp sslyze testssl.sh whatweb
-pip3 install defusedxml rich toml
+git clone https://github.com/cddmp/enum4linux-ng.git; cd enum4linux-ng; sudo
+python3 setup.py install
+sudo apt install curl dnsutils feroxbuster nikto nmap onesixtyone seclists smbclient snmp sslyze testssl.sh whatweb
+pip3 install -r requirements.txt
 ```
 
 Install the tool suite:
@@ -36,7 +38,7 @@ ln -s $(realpath icke.sh) ~/bin/icke
 ln -s $(realpath recon.py) ~/bin/recon
 ```
 
-## usage 
+## usage
 
 ```txt
 $ recon -h
