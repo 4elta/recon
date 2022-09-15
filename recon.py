@@ -178,7 +178,7 @@ async def run_command(command: Command, target: Target):
     # make sure that the multiple coroutines don't write to the 'commands' file at the same time
     async with target.lock:
       with open(pathlib.Path(target.directory, 'commands.csv'), 'a') as f:
-        csv.writer(f, delimiter=',', csv.QUOTE_MINIMAL).writerow([timestamp_start, timestamp_completion, command.string, return_code])
+        csv.writer(f, delimiter=',', quoting=csv.QUOTE_MINIMAL).writerow([timestamp_start, timestamp_completion, command.string, return_code])
     
     progress.remove_task(task_ID)
     progress.console.print(f"[green]{command.description}: finished")
