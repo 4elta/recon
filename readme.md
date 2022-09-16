@@ -14,10 +14,8 @@ This allows for an automated and consistent assessment of specific services (i.e
 Install the required tools:
 
 ```sh
-git clone https://github.com/cddmp/enum4linux-ng.git; cd enum4linux-ng; sudo
-python3 setup.py install
+git clone https://github.com/cddmp/enum4linux-ng.git; cd enum4linux-ng; sudo python3 setup.py install
 sudo apt install curl dnsutils feroxbuster nikto nmap onesixtyone seclists smbclient snmp sslyze testssl.sh whatweb
-pip3 install -r requirements.txt
 ```
 
 Install the tool suite:
@@ -25,6 +23,8 @@ Install the tool suite:
 ```sh
 cd /path/to/tools
 git clone https://github.com/4elta/recon.git
+cd recon
+pip3 install -r requirements.txt
 ```
 
 Be sure to have the scripts of the suite in your `PATH` variable; at least the `icke.sh` should be, as it is only referenced by name (in `config.toml`).
