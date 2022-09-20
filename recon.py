@@ -56,8 +56,7 @@ class Target:
     self.directory = directory
     self.services = []
     self.scans = {}
-    self.lock = None
-    self.semaphore = None
+    self.semaphore = None # limiting the number of concurrently running scans
 
 class Scan:
   def __init__(self, service, name, command, patterns, run_once):
@@ -72,6 +71,25 @@ class Command:
     self.description = description
     self.string = string
     self.patterns = patterns
+
+class CommandLog:
+
+  path = None
+  lock = None # ensures that only a single thread can write to the commands log
+
+  @classmethod
+  def init(cls, path, lock, header):
+    cls.path = path
+    cls.lock = lock
+
+    with open(cls.path, 'w') as f:
+      csv.writer(f, delimiter=',', quoting=csv.QUOTE_MINIMAL).writerow(header)
+
+  @classmethod
+  async def add_entry(cls, entry):
+    async with cls.lock:
+      with open(cls.path, 'a') as f:
+        csv.writer(f, delimiter=',', quoting=csv.QUOTE_MINIMAL).writerow(entry)
 
 def log(msg):
   if VERBOSE:
@@ -175,10 +193,7 @@ async def run_command(command: Command, target: Target):
 
     timestamp_completion = time.time()
 
-    # make sure that the multiple coroutines don't write to the 'commands' file at the same time
-    async with target.lock:
-      with open(pathlib.Path(target.directory, 'commands.csv'), 'a') as f:
-        csv.writer(f, delimiter=',', quoting=csv.QUOTE_MINIMAL).writerow([timestamp_start, timestamp_completion, command.string, return_code])
+    await CommandLog.add_entry([timestamp_start, timestamp_completion, command.string, return_code])
     
     progress.remove_task(task_ID)
     progress.console.print(f"[green]{command.description}: finished")
@@ -306,8 +321,6 @@ async def scan_services(target: Target):
   # initialize Lock and Semaphore
   # https://stackoverflow.com/a/55918049
   
-  # a lock is needed so the coroutines don't overwrite each other when writing to the 'commands' file
-  target.lock = asyncio.Lock()
   # a semaphore is needed to limit the number of concurrent scans per target
   target.semaphore = asyncio.Semaphore(CONCURRENT_SCANS)
   
@@ -318,11 +331,6 @@ async def scan_services(target: Target):
   results_directory = pathlib.Path(target.directory, 'services')
   log(f"results directory: {results_directory}")
   results_directory.mkdir(exist_ok=True)
-
-  # initialize the command log file: add a header
-  
-  with open(pathlib.Path(target.directory, 'commands.csv'), 'w') as f:
-    f.write("start time,completion time,command,return code\n")
 
   # iterate over the services found to be running on the target
   for service in target.services:
@@ -468,6 +476,12 @@ def process(args):
     base_directory = args.output.resolve()
     log(f"base directory: '{base_directory}'")
     base_directory.mkdir(exist_ok=True)
+
+    CommandLog.init(
+      pathlib.Path(base_directory, 'commands.csv'),
+      asyncio.Lock(),
+      ['start time', 'completion time', 'command', 'return code']
+    )
 
     input_file = args.input.resolve()
     if not input_file.exists():
