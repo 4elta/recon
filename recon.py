@@ -4,7 +4,6 @@
 
 import argparse
 import asyncio
-from concurrent.futures import Executor, ThreadPoolExecutor, as_completed
 import csv
 import pathlib
 import random
@@ -112,12 +111,6 @@ def format(*args, frame_index=1, **kvargs):
   vals.update(kvargs)
 
   return string.Formatter().vformat(' '.join(args), args, vals)
-
-def stop_exucutor(executor: Executor):
-  
-  task_ID = progress.add_task("stopping ... press ^C to kill running tasks")
-  executor.shutdown(cancel_futures=True)
-  progress.remove_task(task_ID)
 
 def create_summary(target: Target):
   
@@ -318,12 +311,6 @@ def queue_generic_service_scan(target: Target, service: Service, scan: Scan):
   
 async def scan_services(target: Target):
 
-  # initialize Lock and Semaphore
-  # https://stackoverflow.com/a/55918049
-  
-  # a semaphore is needed to limit the number of concurrent scans per target
-  target.semaphore = asyncio.Semaphore(CONCURRENT_SCANS)
-  
   # extract the target's address from the object
   # it's referenced like this in the scan configs
   address = target.address
@@ -356,21 +343,21 @@ async def scan_services(target: Target):
   for task in tasks:
     await task
   
-def scan_target(target: Target):
+async def scan_target(target: Target, semaphore: asyncio.Semaphore):
 
-  # create directory
   target.directory.mkdir(exist_ok=True)
 
   # sort the target's services based on its port
   target.services.sort(key=lambda service: service.port)
 
-  # create summary to be included in the LaTeX/Markdown report
   create_summary(target)
 
-  # perform service-specific scans
-  asyncio.run(scan_services(target))
+  # make sure that only a specific number of targets are scanned in parallel
+  async with semaphore:
 
-  progress.console.print(f"[bold green]{target.address}: finished")
+    await scan_services(target)
+
+    progress.console.print(f"[bold green]{target.address}: finished")
 
 def parse_result_file(base_directory, result_file):
   targets = {}
@@ -446,7 +433,7 @@ def parse_result_file(base_directory, result_file):
 
   return targets
 
-def process(args):
+async def process(args):
   global VERBOSE
   VERBOSE = args.verbose
 
@@ -456,8 +443,8 @@ def process(args):
   global OVERWRITE
   OVERWRITE = args.overwrite_results
 
-  global CONCURRENT_SCANS
-  CONCURRENT_SCANS = args.concurrent_scans
+  # limit the number of concurrently scanned targets
+  concurrent_targets = asyncio.Semaphore(args.concurrent_targets)
 
   if args.config:
     config_file_path = args.config
@@ -491,19 +478,21 @@ def process(args):
     targets = parse_result_file(base_directory, args.input)
     log(f"parsed {len(targets)} targets")
 
-    with ThreadPoolExecutor(max_workers=args.concurrent_targets) as executor:
-      futures = []
-      for address, target in targets.items():
-        futures.append(executor.submit(scan_target, target))
+    # each target in its own task ...
+    tasks = []
+    for address, target in targets.items():
+      # limit the number of concurrent scans per target
+      target.semaphore = asyncio.Semaphore(args.concurrent_scans)
 
-      try:
-        for future in as_completed(futures):
-          future.result()
-        progress.console.print("[bold green]done")
-      except KeyboardInterrupt:
-        progress.console.print("[bold red]aborted by user")
-        stop_exucutor(executor)
+      tasks.append(
+        asyncio.create_task(
+          scan_target(target, concurrent_targets)
+        )
+      )
 
+    for task in tasks:
+      await task
+      
 def main():
   parser = argparse.ArgumentParser()
 
@@ -516,7 +505,12 @@ def main():
   parser.add_argument('-n', '--dry_run', action='store_true', help="do not run any command; just create/update the 'commands.log' file")
   parser.add_argument('-y', '--overwrite_results', action='store_true', help="overwrite existing result files")
 
-  process(parser.parse_args())
+  try:
+    asyncio.run(
+      process(parser.parse_args())
+    )
+  except KeyboardInterrupt:
+    sys.exit("aborted by user")
 
 if __name__ == '__main__':
   main()
