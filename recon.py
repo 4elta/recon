@@ -75,20 +75,22 @@ class CommandLog:
 
   path = None
   lock = None # ensures that only a single thread can write to the commands log
+  delimiter = ','
 
   @classmethod
-  def init(cls, path, lock, header):
+  def init(cls, path, lock, header, delimiter):
     cls.path = path
     cls.lock = lock
+    cls.delimiter = delimiter
 
     with open(cls.path, 'w') as f:
-      csv.writer(f, delimiter=',', quoting=csv.QUOTE_MINIMAL).writerow(header)
+      csv.writer(f, delimiter=delimiter, quoting=csv.QUOTE_MINIMAL).writerow(header)
 
   @classmethod
   async def add_entry(cls, entry):
     async with cls.lock:
       with open(cls.path, 'a') as f:
-        csv.writer(f, delimiter=',', quoting=csv.QUOTE_MINIMAL).writerow(entry)
+        csv.writer(f, delimiter=cls.delimiter, quoting=csv.QUOTE_MINIMAL).writerow(entry)
 
 def log(msg):
   if VERBOSE:
@@ -467,7 +469,8 @@ async def process(args):
     CommandLog.init(
       pathlib.Path(base_directory, 'commands.csv'),
       asyncio.Lock(),
-      ['start time', 'completion time', 'command', 'return code']
+      ['start time', 'completion time', 'command', 'return code'],
+      args.delimiter
     )
 
     input_file = args.input.resolve()
@@ -502,8 +505,9 @@ def main():
   parser.add_argument('-t', '--concurrent_targets', type=int, default=3, help="how many targets should be scanned concurrently (default: 3)")
   parser.add_argument('-s', '--concurrent_scans', type=int, default=2, help="how many scans should be running concurrently on a single target (default: 2)")
   parser.add_argument('-v', '--verbose', action='store_true', help="show additional info including all output of all scans")
-  parser.add_argument('-n', '--dry_run', action='store_true', help="do not run any command; just create/update the 'commands.log' file")
+  parser.add_argument('-n', '--dry_run', action='store_true', help="do not run any command; just create/update the 'commands.csv' file")
   parser.add_argument('-y', '--overwrite_results', action='store_true', help="overwrite existing result files")
+  parser.add_argument('-d', '--delimiter', default=',', help="character used to delimit columns in the 'commands.csv' file (default: ',')")
 
   try:
     asyncio.run(
