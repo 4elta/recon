@@ -60,6 +60,8 @@ optional arguments:
   -n, --dry_run         do not run any command; just create/update the 'commands.log' file
   -y, --overwrite_results
                         overwrite existing result files
+  -d DELIMITER, --delimiter DELIMITER
+                        character used to delimit columns in the 'commands.csv' file (default: ',')
 ```
 
 ## analyze and summarize specific scans
@@ -67,7 +69,7 @@ optional arguments:
 **HTTP security header**
 
 ```sh
-/path/to/recon-tool-suite/analyzers/http-headers.awk /path/to/project/recon/*/services/*-index.log
+/path/to/recon-tool-suite/analyzers/http-headers-nmap.awk /path/to/project/recon/*/services/http*nmap.log
 ```
 
 **TLS configuration**

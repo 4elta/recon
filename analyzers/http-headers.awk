@@ -5,6 +5,11 @@
 # invoke this program like this:
 # /path/to/this/file /path/to/recon/*/services/*-index.log
 
+BEGIN {
+  printf "\nDEPRECATION NOTICE:\n"
+  printf "please use 'analyzers/http-headers-nmap.awk' instead\n"
+}
+
 BEGINFILE {
   host = ""
   status_line = ""
