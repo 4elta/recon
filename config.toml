@@ -176,7 +176,7 @@ patterns = [ '^smb', '^microsoft\-ds', '^netbios' ]
   [smb.scans.smbclient]
   command = 'smbclient --list={address} --no-pass --command="recurse ON; ls" 2>&1 | tee {result_file}'
   run_once = true
-  
+
   [smb.scans.'enum4linux-ng']
   command = 'NO_COLOR=yes; enum4linux-ng.py -As -oA {result_file} {address}'
   run_once = true
@@ -218,7 +218,7 @@ patterns = [ '^telnet' ]
 patterns = [ 'https', '^ssl\|', '^tls\|' ]
 
   [tls.scans.testssl]
-  command = '#testssl --nodns min --mapping iana --color 0 {hostname}:{port} 2>&1 | tee "{result_file}"'
+  command = '#testssl --nodns min --mapping iana --color 0 --warnings batch {hostname}:{port} 2>&1 | tee "{result_file}"'
 
   [tls.scans.sslscan]
   command = '#sslscan --show-certificate --no-colour {hostname}:{port} 2>&1 | tee "{result_file}"'
