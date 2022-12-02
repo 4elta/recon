@@ -14,46 +14,18 @@ function append_to_array(array, value) {
   array[length(array)+1] = value
 }
 
-/^# target:/ {
-  if (target != "" && target != $3) {
-    if (aggressive == "true") {
-      printf "* supports \"aggressive mode\"\n"
-    }
-
-    printf "* offered encryption algorithms:\n"
-    for (i in enc) {
-      printf "  * `%s`\n", enc[i]
-    }
-
-    printf "* offered hash algorithms:\n"
-    for (i in hash) {
-      printf "  * `%s`\n", hash[i]
-    }
-
-    printf "* offered authentication algorithms:\n"
-    for (i in auth) {
-      printf "  * `%s`\n", auth[i]
-    }
-
-    printf "* offered DH groups:\n"
-    for (i in group) {
-      printf "  * `%s`\n", group[i]
-    }
-
-    printf "* offered key lengths:\n"
-    for (i in key_length) {
-      printf "  * %s\n", key_length[i]
-    }
-  }
-
+BEGINFILE {
   delete enc
   delete hash
   delete auth
   delete group
   delete key_length
+}
 
-  target = $3
-  printf "\n#### %s\n\n", target
+/^# target:/ {
+  host = $3
+  printf "\n## %s\n\n", host
+  append_to_array(hosts, host)
   next
 }
 
@@ -93,7 +65,7 @@ function append_to_array(array, value) {
   next
 }
 
-END {
+ENDFILE {
   if (aggressive == "true") {
     printf "* supports \"aggressive mode\"\n"
   }
@@ -121,5 +93,12 @@ END {
   printf "* offered key lengths:\n"
   for (i in key_length) {
     printf "  * %s\n", key_length[i]
+  }
+}
+
+END {
+  printf "\n# affected assets\n\n"
+  for (i in hosts) {
+    printf "* `%s`\n", hosts[i]
   }
 }

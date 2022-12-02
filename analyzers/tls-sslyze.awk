@@ -6,6 +6,25 @@
 # invoke this program like this:
 # /path/to/this/file /path/to/recon/*/services/*-sslyze.log
 
+# function to append a value to an array, if that array does not yet contain the value
+function append_to_array(array, value) {
+  for (i in array) {
+    if (value == array[i])
+      return
+  }
+  array[length(array)+1] = value
+}
+
+# function to convert the UNIX epoch into ISO date/time format
+function iso_date(epoch) {
+  cmd = "date --date='@" epoch "' --iso-8601=seconds"
+  cmd | getline date_time
+  close(cmd)
+
+  return date_time
+}
+
+# function to change single quotes into backticks
 function backtick(field) {
   gsub("'", "`", field)
   return field
@@ -20,8 +39,69 @@ function print_items(matches) {
 }
 
 BEGIN {
+  # get the current date/time in seconds since the UNIX epoch
+  cmd = "date \"+%s\""
+  cmd | getline current_datetime
+
+  # look-ahead time for expiring certificates
+  look_ahead_days = 30
+  look_ahead_time = look_ahead_days * 24 * 60 * 60
+
+  # Mozilla configuration
   configuration = "intermediate"
   state = ""
+}
+
+# get host
+/SCAN RESULTS FOR / {
+  match($0, /SCAN RESULTS FOR ([^:]+):([0-9]+) -/, matches)
+  host = matches[1]
+  port = matches[2]
+
+  printf "\n\n## %s:%d\n\n", host, port
+  next
+}
+
+# the server could present more than one certificate; get the certificate number
+/Certificate #[0-9]+ / {
+  match($0, /#([0-9]+) /, matches)
+  certificate_nr = matches[1]
+  next
+}
+
+# is the certificate valid?
+/Not Before: / || /Not After: / {
+  # Not Before:      1970-01-01
+  # 1   2            3
+  
+  # convert the date/time string into the number of seconds since the UNIX epoch
+  cmd = "date --date='" $3 "' \"+%s\""
+  cmd | getline datetime
+  close(cmd)
+
+  if ($2 == "Before:" && current_datetime <= datetime) {
+    printf "* certificate #%d will only be valid after %s\n", certificate_nr, iso_date(datetime)
+    append_to_array(hosts, host)
+  }
+
+  if ($2 == "After:") {
+    if (current_datetime + look_ahead >= datetime) {
+      printf "* certificate #%d expired since %s\n", certificate_nr, iso_date(datetime)
+      append_to_array(hosts, host)
+    } else if (current_datetime + look_ahead_time >= datetime) {
+      printf "* certificate #%d expires in %s days or less (%s)\n", certificate_nr, look_ahead_days, iso_date(datetime)
+      append_to_array(hosts, host)
+    }
+  }
+
+  next
+}
+
+# is the certificate self signed?
+/Mozilla CA Store/ && /self signed/ {
+  printf "* certificate #%d not trusted: self signed\n", certificate_nr
+  append_to_array(hosts, host)
+  next
 }
 
 /Checking results against Mozilla's "(modern|intermediate|old)" configuration/ {
@@ -43,8 +123,8 @@ BEGIN {
 }
 
 /[^:]+:[0-9]+: FAILED - Not compliant.$/ {
-  host = substr($1, 1, length($1) - 1)
-  printf "\n\n#### %s\n\nDeviations from Mozilla's \"%s\" configuration:\n\n", host, configuration
+  append_to_array(hosts, host)
+  printf "\nDeviations from Mozilla's \"%s\" configuration:\n\n", configuration
   next
 }
 
@@ -96,7 +176,7 @@ BEGIN {
 
 /rsa_key_size:/ {
   match($0, /key size is ([0-9]+)/, matches)
-  printf "* RSA key size: %s\n"
+  printf "* RSA key size: %s\n", matches[1]
   next
 }
 
@@ -155,4 +235,11 @@ BEGIN {
 
 ENDFILE {
   state = ""
+}
+
+END {
+  printf "\n# affected assets\n\n"
+  for (i in hosts) {
+    printf "* `%s`\n", hosts[i]
+  }
 }
