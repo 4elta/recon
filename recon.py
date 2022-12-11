@@ -13,15 +13,16 @@ import subprocess
 import sys
 import time
 
+
 try:
   # https://rich.readthedocs.io/en/latest/index.html
-  from rich.progress import (
-    Progress,
-    SpinnerColumn,
-    TaskID,
-  )
+  import rich
 except:
   sys.exit("this script requires the 'rich' module.\nplease install it via 'pip3 install rich'.")
+
+from rich.console import RenderGroup
+from rich.live import Live
+from rich.progress import Progress, SpinnerColumn
 
 try:
   # https://github.com/uiri/toml
@@ -35,7 +36,15 @@ try:
 except:
   sys.exit("this script requires the 'defusedxml' module.\nplease install it via 'pip3 install defusedxml'.")
 
-progress = Progress(
+OVERALL_PROGRESS = Progress(
+  SpinnerColumn(),
+  "[progress.description]{task.description}",
+  "{task.completed}/{task.total}",
+  transient = True,
+)
+OVERALL_TASK = None
+
+JOB_PROGRESS = Progress(
   SpinnerColumn(),
   "[progress.description]{task.description}",
   transient = True,
@@ -146,7 +155,7 @@ async def run_command(command: Command, target: Target):
 
   # make sure that only a specific number of scans are running per target
   async with target.semaphore:
-    task_ID = progress.add_task(f"{command.description}")
+    task_ID = JOB_PROGRESS.add_task(f"{command.description}")
 
     log(command.string)
 
@@ -172,7 +181,7 @@ async def run_command(command: Command, target: Target):
           for pattern in command.patterns:
             match = re.search(pattern, line)
             if match:
-              progress.console.print(f"{command.description}: \"{line.strip()}\"")
+              JOB_PROGRESS.console.print(f"{command.description}: \"{line.strip()}\"")
         else:
           break
 
@@ -190,8 +199,8 @@ async def run_command(command: Command, target: Target):
 
     await CommandLog.add_entry([timestamp_start, timestamp_completion, command.string, return_code])
     
-    progress.remove_task(task_ID)
-    progress.console.print(f"[green]{command.description}: finished")
+    JOB_PROGRESS.remove_task(task_ID)
+    #JOB_PROGRESS.console.print(f"[green]{command.description}: finished")
 
 def find_suitable_scans(application_protocol):
 
@@ -346,7 +355,7 @@ async def scan_services(target: Target):
     await task
   
 async def scan_target(target: Target, semaphore: asyncio.Semaphore):
-
+  
   target.directory.mkdir(exist_ok=True)
 
   # sort the target's services based on its port
@@ -359,7 +368,8 @@ async def scan_target(target: Target, semaphore: asyncio.Semaphore):
 
     await scan_services(target)
 
-    progress.console.print(f"[bold green]{target.address}: finished")
+    JOB_PROGRESS.console.print(f"[bold green]{target.address}: finished")
+    OVERALL_PROGRESS.update(OVERALL_TASK, advance=1)
 
 def parse_result_file(base_directory, result_file):
   targets = {}
@@ -461,26 +471,34 @@ async def process(args):
   with open(config_file_path, 'r') as f:
     SERVICES_CONFIG = toml.load(f)
 
-  with progress:
-    base_directory = args.output.resolve()
-    log(f"base directory: '{base_directory}'")
-    base_directory.mkdir(exist_ok=True)
+  base_directory = args.output.resolve()
+  log(f"base directory: '{base_directory}'")
+  base_directory.mkdir(exist_ok=True)
 
-    CommandLog.init(
-      pathlib.Path(base_directory, 'commands.csv'),
-      asyncio.Lock(),
-      ['start time', 'completion time', 'command', 'return code'],
-      args.delimiter
-    )
+  CommandLog.init(
+    pathlib.Path(base_directory, 'commands.csv'),
+    asyncio.Lock(),
+    ['start time', 'completion time', 'command', 'return code'],
+    args.delimiter
+  )
 
-    input_file = args.input.resolve()
-    if not input_file.exists():
-      sys.exit(f"input file '{input_file}' does not exist!")
+  input_file = args.input.resolve()
+  if not input_file.exists():
+    sys.exit(f"input file '{input_file}' does not exist!")
 
-    # parse Nmap result file of the service scan (XML)
-    targets = parse_result_file(base_directory, args.input)
-    log(f"parsed {len(targets)} targets")
+  # parse Nmap result file of the service scan (XML)
+  targets = parse_result_file(base_directory, args.input)
+  log(f"parsed {len(targets)} targets")
 
+  global OVERALL_TASK
+  OVERALL_TASK = OVERALL_PROGRESS.add_task("overall progress:", total=len(targets))
+
+  group = RenderGroup(
+    JOB_PROGRESS,
+    OVERALL_PROGRESS,
+  )
+
+  with Live(group):
     # each target in its own task ...
     tasks = []
     for address, target in targets.items():
@@ -495,6 +513,8 @@ async def process(args):
 
     for task in tasks:
       await task
+
+    OVERALL_PROGRESS.remove_task(OVERALL_TASK)
       
 def main():
   parser = argparse.ArgumentParser()
