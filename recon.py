@@ -20,7 +20,7 @@ try:
 except:
   sys.exit("this script requires the 'rich' module.\nplease install it via 'pip3 install rich'.")
 
-from rich.console import RenderGroup
+from rich.console import Group
 from rich.live import Live
 from rich.progress import Progress, SpinnerColumn
 
@@ -493,7 +493,7 @@ async def process(args):
   global OVERALL_TASK
   OVERALL_TASK = OVERALL_PROGRESS.add_task("overall progress:", total=len(targets))
 
-  group = RenderGroup(
+  group = Group(
     JOB_PROGRESS,
     OVERALL_PROGRESS,
   )
