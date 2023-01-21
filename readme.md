@@ -15,7 +15,7 @@ Install the required tools:
 
 ```sh
 git clone https://github.com/cddmp/enum4linux-ng.git; cd enum4linux-ng; sudo python3 setup.py install
-sudo apt install curl dnsutils feroxbuster nikto nmap onesixtyone seclists smbclient snmp sslyze testssl.sh whatweb
+sudo apt install curl dnsutils feroxbuster ike-scan nikto nmap onesixtyone seclists smbclient snmp sslyze testssl.sh whatweb
 ```
 
 Install the tool suite:
@@ -68,25 +68,25 @@ optional arguments:
 
 **HTTP security header**
 
-```sh
+```shell
 /path/to/recon-tool-suite/analyzers/http-headers-nmap.awk /path/to/project/recon/*/services/http*nmap.log
 ```
 
 **TLS configuration**
 
-```sh
+```shell
 /path/to/recon-tool-suite/analyzers/tls-sslyze.awk /path/to/project/recon/*/services/*-sslyze.log
 ```
 
 **SSH configuration**
 
-```sh
+```shell
 /path/to/recon-tool-suite/analyzers/ssh-nmap.awk /path/to/project/recon/*/services/ssh*nmap.log
 ```
 
 **IKE configuration**
 
-```sh
+```shell
 /path/to/recon-tool-suite/analyzers/ike-icke.awk /path/to/project/recon/*/services/*-icke.log
 ```
 

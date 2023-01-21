@@ -70,27 +70,27 @@ ENDFILE {
     printf "* supports \"aggressive mode\"\n"
   }
 
-  printf "* offered encryption algorithms:\n"
+  printf "* supports encryption algorithms:\n"
   for (i in enc) {
     printf "  * `%s`\n", enc[i]
   }
 
-  printf "* offered hash algorithms:\n"
+  printf "* supports hash algorithms:\n"
   for (i in hash) {
     printf "  * `%s`\n", hash[i]
   }
 
-  printf "* offered authentication algorithms:\n"
+  printf "* supports authentication methods:\n"
   for (i in auth) {
     printf "  * `%s`\n", auth[i]
   }
 
-  printf "* offered DH groups:\n"
+  printf "* supports DH groups:\n"
   for (i in group) {
     printf "  * `%s`\n", group[i]
   }
 
-  printf "* offered key lengths:\n"
+  printf "* supports key lengths:\n"
   for (i in key_length) {
     printf "  * %s\n", key_length[i]
   }
