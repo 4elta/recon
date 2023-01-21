@@ -85,7 +85,7 @@ BEGIN {
   }
 
   if ($2 == "After:") {
-    if (current_datetime + look_ahead >= datetime) {
+    if (current_datetime >= datetime) {
       printf "* certificate #%d expired since %s\n", certificate_nr, iso_date(datetime)
       append_to_array(hosts, host)
     } else if (current_datetime + look_ahead_time >= datetime) {
