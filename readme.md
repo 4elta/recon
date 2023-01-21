@@ -57,7 +57,7 @@ optional arguments:
   -s CONCURRENT_SCANS, --concurrent_scans CONCURRENT_SCANS
                         how many scans should be running concurrently on a single target (default: 2)
   -v, --verbose         show additional info including all output of all scans
-  -n, --dry_run         do not run any command; just create/update the 'commands.log' file
+  -n, --dry_run         do not run any command; just create/update the 'commands.csv' file
   -y, --overwrite_results
                         overwrite existing result files
   -d DELIMITER, --delimiter DELIMITER
