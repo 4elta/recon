@@ -20,6 +20,8 @@ BEGINFILE {
   delete auth
   delete group
   delete key_length
+
+  host = ""
 }
 
 /^# target:/ {
@@ -66,33 +68,35 @@ BEGINFILE {
 }
 
 ENDFILE {
-  if (aggressive == "true") {
-    printf "* supports \"aggressive mode\"\n"
-  }
+  if (host) {
+    if (aggressive == "true") {
+      printf "* supports \"aggressive mode\"\n"
+    }
 
-  printf "* supports encryption algorithms:\n"
-  for (i in enc) {
-    printf "  * `%s`\n", enc[i]
-  }
+    printf "* supports encryption algorithms:\n"
+    for (i in enc) {
+      printf "  * `%s`\n", enc[i]
+    }
 
-  printf "* supports hash algorithms:\n"
-  for (i in hash) {
-    printf "  * `%s`\n", hash[i]
-  }
+    printf "* supports hash algorithms:\n"
+    for (i in hash) {
+      printf "  * `%s`\n", hash[i]
+    }
 
-  printf "* supports authentication methods:\n"
-  for (i in auth) {
-    printf "  * `%s`\n", auth[i]
-  }
+    printf "* supports authentication methods:\n"
+    for (i in auth) {
+      printf "  * `%s`\n", auth[i]
+    }
 
-  printf "* supports DH groups:\n"
-  for (i in group) {
-    printf "  * `%s`\n", group[i]
-  }
+    printf "* supports DH groups:\n"
+    for (i in group) {
+      printf "  * `%s`\n", group[i]
+    }
 
-  printf "* supports key lengths:\n"
-  for (i in key_length) {
-    printf "  * %s\n", key_length[i]
+    printf "* supports key lengths:\n"
+    for (i in key_length) {
+      printf "  * %s\n", key_length[i]
+    }
   }
 }
 
