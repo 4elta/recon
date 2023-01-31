@@ -156,7 +156,10 @@ tolower($0) ~ /strict-transport-security:/ {
   sub(/^\| +/, "", $0)
   hsts = $0
 
-  if ($0 !~ /max-age=63072000/) {
+  match($0, /max-age=([0-9]+)/, matches)
+  max_age = matches[1]
+
+  if (max_age < 31536000) {
     printf "* misconfigured: `%s`\n", $0
     append_to_array(hosts, host)
     append_to_array(services, service)
