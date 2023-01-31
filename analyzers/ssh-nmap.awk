@@ -33,10 +33,13 @@ BEGIN {
   port = ports[1]
   printf "\n## %s:%s\n\n", host, port
 
+  service = host ":" port
+
   if ($0 ~ /protocol/ && $0 !~ /protocol 2/) {
     match($0, /protocol (1|2)(\.[0-9])?/)
     printf "* insecure protocol version: %s\n", substr($0, RSTART, RLENGTH)
     append_to_array(hosts, host)
+    append_to_array(services, service)
   }
 
   state = "port"
@@ -76,35 +79,45 @@ BEGIN {
 (state == auth_methods) && ! /publickey/ {
   printf "* weak %s: `%s`\n", state, $2
   append_to_array(hosts, host)
+  append_to_array(services, service)
   next
 }
 
 (state == kex_algorithms) && ! ( /diffie-hellman-group-exchange-sha256/ || /diffie-hellman-group14-sha256/ || /diffie-hellman-group1(5|6|8)-sha512/ || /rsa2048-sha256/ || /ecdh-sha2-nistp(256|384|521)/ || /curve25519-sha256/ ) {
   printf "* weak %s: `%s`\n", state, $2
   append_to_array(hosts, host)
+  append_to_array(services, service)
   next
 }
 
 (state == server_host_key_algorithms) && ! ( /pgp-sign-dss/ || /ecdsa-sha2-nistp(256|384|521)/ || /x509v3-ecdsa-sha2-nistp(256|384|521)/ || /rsa-sha2-(256|512)/ || /ssh-ed25519/ ) {
   printf "* weak %s: `%s`\n", state, $2
   append_to_array(hosts, host)
+  append_to_array(services, service)
   next
 }
 
 (state == encryption_algorithms) && ! ( /AEAD_AES_(128|256)_GCM/ || /aes(128|192|256)-(cbc|ctr|gcm)/ || /chacha20-poly1305/ ) {
   printf "* weak %s: `%s`\n", state, $2
   append_to_array(hosts, host)
+  append_to_array(services, service)
   next
 }
 
 (state == mac_algorithms) && ! ( /hmac-sha2-(256|512)(-etm)?/ || /umac-128(-etm)?/ ) {
   printf "* weak %s: `%s`\n", state, $2
   append_to_array(hosts, host)
+  append_to_array(services, service)
   next
 }
 
 END {
-  printf "\n# affected assets\n\n"
+  printf "\n# affected services\n\n"
+  for (i in services) {
+    printf "* `%s`\n", services[i]
+  }
+
+  printf "\n# affected hosts\n\n"
   for (i in hosts) {
     printf "* `%s`\n", hosts[i]
   }

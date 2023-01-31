@@ -101,7 +101,7 @@ ENDFILE {
 }
 
 END {
-  printf "\n# affected assets\n\n"
+  printf "\n# affected hosts\n\n"
   for (i in hosts) {
     printf "* `%s`\n", hosts[i]
   }

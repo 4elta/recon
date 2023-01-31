@@ -80,33 +80,45 @@ BEGIN {
 /Start/ && /-->>/ {
   # Start 2021-11-20 21:50:22        -->> 11.22.33.44:443 (11.22.33.44) <<--
   # 1     2          3               4    5               6
-  host = $5
-  append_to_array(hosts, host)
-  printf "\n#### %s\n\n", host
+  match($5, /([^:]+):([0-9]+) -/, matches)
+  host = matches[1]
+  port = matches[2]
+
+  service = host ":" port
+
+  printf "\n#### %s:%d\n\n", host, port
 }
 
 # old protocols: SSLv2, SSLv3, TLSv1, TLSv1.1
 
 /^ SSLv2 + offered/ {
-  append_to_array(protocol_ssl2, host)
+  append_to_array(hosts, host)
+  append_to_array(services, service)
+  append_to_array(protocol_ssl2, service)
   printf "* %s\n", desc_protocol_ssl2
   next
 }
 
 /^ SSLv3 + offered/ {
-  append_to_array(protocol_ssl3, host)
+  append_to_array(hosts, host)
+  append_to_array(services, service)
+  append_to_array(protocol_ssl3, service)
   printf "* %s\n", desc_protocol_ssl3
   next
 }
 
 /^ TLS 1 + offered/ {
-  append_to_array(protocol_tls10, host)
+  append_to_array(hosts, host)
+  append_to_array(services, service)
+  append_to_array(protocol_tls10, service)
   printf "* %s\n", desc_protocol_tls10
   next
 }
 
 /^ TLS 1.1 + offered/ {
-  append_to_array(protocol_tls11, host)
+  append_to_array(hosts, host)
+  append_to_array(services, service)
+  append_to_array(protocol_tls11, service)
   printf "* %s\n", desc_protocol_tls11
   next
 }
@@ -114,7 +126,9 @@ BEGIN {
 # TLSv1.3 not supported
 
 /^ TLS 1.3 + not offered/  {
-  append_to_array(protocol_tls13, host)
+  append_to_array(hosts, host)
+  append_to_array(services, service)
+  append_to_array(protocol_tls13, service)
   printf "* %s\n", desc_protocol_tls13
   next
 }
@@ -125,7 +139,9 @@ BEGIN {
   # Signature Algorithm          SHA256 with RSA
   # 1         2                  3 ...
 
-  append_to_array(cert_sig_alg, host)
+  append_to_array(hosts, host)
+  append_to_array(services, service)
+  append_to_array(cert_sig_alg, service)
   printf "* %s:", desc_cert_sig_alg
 
   for (i = 3; i <= NF; i++) {
@@ -142,7 +158,9 @@ BEGIN {
   # 1      2   3                 4   5
 
   if ($5 < 2048) {
-    append_to_array(cert_short_rsa_key, host)
+    append_to_array(hosts, host)
+    append_to_array(services, service)
+    append_to_array(cert_short_rsa_key, service)
     printf "* %s: %s\n", desc_cert_short_rsa_key, $5
   }
   next
@@ -154,7 +172,9 @@ BEGIN {
   # Chain of trust               NOT ok (self signed CA in chain)
   # 1     2  3                   4   5  6 ...
 
-  append_to_array(cert_trust, host)
+  append_to_array(hosts, host)
+  append_to_array(services, service)
+  append_to_array(cert_trust, service)
   printf "* %s:", desc_cert_trust
 
   # remove braces
@@ -173,7 +193,9 @@ BEGIN {
   # Certificate Validity (UTC)   expired (2019-09-29 15:34 --> 2020-11-28 18:53)
   # 1           2        3       4       5           6     7   8          9
 
-  append_to_array(cert_expired, host)
+  append_to_array(hosts, host)
+  append_to_array(services, service)
+  append_to_array(cert_expired, service)
   printf "* %s %s %s -- %s %s\n", desc_cert_expired, $5, $6, $8, $9
   next
 }
@@ -181,19 +203,25 @@ BEGIN {
 # various vulnerabilities
 
 /^ Secure Renegotiation \(RFC 5746\)/ && ! /supported/ {
-  append_to_array(vuln_reneg_server, host)
+  append_to_array(hosts, host)
+  append_to_array(services, service)
+  append_to_array(vuln_reneg_server, service)
   printf "* %s\n", desc_vuln_reneg_server
   next
 }
 
 /^ Secure Client-Initiated Renegotiation/ && ! /not vulnerable/ {
-  append_to_array(vuln_reneg_client, host)
+  append_to_array(hosts, host)
+  append_to_array(services, service)
+  append_to_array(vuln_reneg_client, service)
   printf "* %s\n", desc_vuln_reneg_client
   next
 }
 
 /^ TLS_FALLBACK_SCSV \(RFC 7507\)/ && /Downgrade attack prevention NOT supported/ {
-  append_to_array(vuln_scsv, host)
+  append_to_array(hosts, host)
+  append_to_array(services, service)
+  append_to_array(vuln_scsv, service)
   printf "* %s\n", desc_vuln_scsv
   next
 }
@@ -203,7 +231,9 @@ BEGIN {
 
 # https://en.wikipedia.org/wiki/CRIME
 /^ CRIME, TLS \(CVE-2012-4929\)/ && ! /not vulnerable/ {
-  append_to_array(vuln_crime, host)
+  append_to_array(hosts, host)
+  append_to_array(services, service)
+  append_to_array(vuln_crime, service)
   printf "* %s\n", desc_vuln_crime
   next
 }
@@ -211,14 +241,18 @@ BEGIN {
 # https://en.wikipedia.org/wiki/Lucky_Thirteen_attack
 # this is an attack against implementations of the TLS protocol that use the CBC mode of operation
 /^ LUCKY13 \(CVE-2013-0169\)/ && ! /not vulnerable/ {
-  append_to_array(vuln_lucky13, host)
+  append_to_array(hosts, host)
+  append_to_array(services, service)
+  append_to_array(vuln_lucky13, service)
   printf "* %s\n", desc_vuln_lucky13
   next
 }
 
 # https://heartbleed.com/
 /^ Heartbleed \(CVE-2014-0160\)/ && ! /not vulnerable/ {
-  append_to_array(vuln_heartbleed, host)
+  append_to_array(hosts, host)
+  append_to_array(services, service)
+  append_to_array(vuln_heartbleed, service)
   printf "* %s\n", desc_vuln_heartbleed
   next
 }
@@ -229,14 +263,18 @@ BEGIN {
 # https://www.imperialviolet.org/2014/06/05/earlyccs.html
 # this is an attack against implementations of the ChangeCipherSpec (CCS) in OpenSSL
 /^ CCS \(CVE-2014-0224\)/ && ! /not vulnerable/ {
-  append_to_array(vuln_ccs, host)
+  append_to_array(hosts, host)
+  append_to_array(services, service)
+  append_to_array(vuln_ccs, service)
   printf "* %s\n", desc_vuln_ccs
   next
 }
 
 # https://freakattack.com/
 /^ FREAK \(CVE-2015-0204\)/ && ! /not vulnerable/ {
-  append_to_array(vuln_freak, host)
+  append_to_array(hosts, host)
+  append_to_array(services, service)
+  append_to_array(vuln_freak, service)
   printf "* %s\n", desc_vuln_freak
   next
 }
@@ -246,7 +284,9 @@ BEGIN {
 
 # https://drownattack.com/
 /^ DROWN \(CVE-2016-0800, CVE-2016-0703\)/ && ! /not vulnerable/ {
-  append_to_array(vuln_drown, host)
+  append_to_array(hosts, host)
+  append_to_array(services, service)
+  append_to_array(vuln_drown, service)
   printf "* %s\n", desc_vuln_drown
   next
 }
@@ -256,14 +296,18 @@ BEGIN {
 
 # https://filippo.io/Ticketbleed/
 /^ Ticketbleed \(CVE-2016-9244\)/ && ! ( /applicable only for HTTPS/ || /not vulnerable/ ) {
-  append_to_array(vuln_ticketbleed, host)
+  append_to_array(hosts, host)
+  append_to_array(services, service)
+  append_to_array(vuln_ticketbleed, service)
   printf "* %s\n", desc_vuln_ticketbleed
   next
 }
 
 # https://www.robotattack.org/
 /^ ROBOT/ && ! ( /not vulnerable/ || /Server does not support any cipher suites that use RSA key transport/ ) {
-  append_to_array(vuln_robot, host)
+  append_to_array(hosts, host)
+  append_to_array(services, service)
+  append_to_array(vuln_robot, service)
   printf "* %s\n", desc_vuln_robot
   next
 }
@@ -289,6 +333,9 @@ BEGIN {
   # x1302   TLS_AES_256_GCM_SHA384                            ECDH 253   AESGCM      256      TLS_AES_256_GCM_SHA384
   # 1       2                                                 3    4     5           6        7...
 
+  append_to_array(hosts, host)
+  append_to_array(services, service)
+
   printf "* offered %s", $2
 
   # show DH parameters if present
@@ -300,59 +347,59 @@ BEGIN {
 }
 
 /^ x/ && /_MD5/ {
-  append_to_array(suite_hash_md5, host)
+  append_to_array(suite_hash_md5, service)
 }
 
 /^ x/ && /_SHA / {
-  append_to_array(suite_hash_sha1, host)
+  append_to_array(suite_hash_sha1, service)
 }
 
 /^ x/ && /_3?DES_/ {
-  append_to_array(suite_cipher_des, host)
+  append_to_array(suite_cipher_des, service)
 }
 
 /^ x/ && /_RC2_/ {
-  append_to_array(suite_cipher_rc2, host)
+  append_to_array(suite_cipher_rc2, service)
 }
 
 /^ x/ && /_RC4_/ {
-  append_to_array(suite_cipher_rc4, host)
+  append_to_array(suite_cipher_rc4, service)
 }
 
 /^ x/ && /_IDEA_/ {
-  append_to_array(suite_cipher_idea, host)
+  append_to_array(suite_cipher_idea, service)
 }
 
 /^ x/ && /_CBC_/ {
-  append_to_array(suite_cipher_mode_cbc, host)
+  append_to_array(suite_cipher_mode_cbc, service)
 }
 
 /^ x/ && /DH_anon/ {
-  append_to_array(suite_auth_anon, host)
+  append_to_array(suite_auth_anon, service)
 }
 
 /^ x/ && /_GOST/ {
-  append_to_array(suite_gost, host)
+  append_to_array(suite_gost, service)
 }
 
 /^ x/ && /_NULL_/ {
-  append_to_array(suite_null, host)
+  append_to_array(suite_null, service)
 }
 
 /^ x/ && /_PSK_/ {
-  append_to_array(suite_keyex_psk, host)
+  append_to_array(suite_keyex_psk, service)
 }
 
 /^ x/ && /DH (768|1024)/ {
-  append_to_array(suite_keyex_dh_short, host)
+  append_to_array(suite_keyex_dh_short, service)
 }
 
 /^ x/ && ! ( /(EC)?DHE/ || ( /^ x13/ && /(EC)?DH / ) ) {
-  append_to_array(suite_keyex_pfs, host)
+  append_to_array(suite_keyex_pfs, service)
 }
 
 END {
-  printf "\n\nsummary grouped by vulnerabilities\n\n"
+  printf "\n# summary grouped by vulnerabilities\n\n"
 
   print_array(protocol_ssl2, desc_protocol_ssl2)
   print_array(protocol_ssl3, desc_protocol_ssl3)
@@ -397,4 +444,9 @@ END {
   print_array(suite_keyex_psk, desc_suite_keyex_psk)
   print_array(suite_keyex_dh_short, desc_suite_keyex_dh_short)
   print_array(suite_keyex_pfs, desc_suite_keyex_pfs)
+
+  printf "\n# affected hosts\n\n"
+  for (i in hosts) {
+    printf "* `%s`\n", hosts[i]
+  }
 }

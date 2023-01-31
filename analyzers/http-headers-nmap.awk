@@ -47,6 +47,8 @@ BEGINFILE {
 
   printf "\n## %s://%s:%s\n\n", schema, host, port
 
+  service = schema "://" host ":" port
+
   state = "port"
   next
 }
@@ -72,6 +74,7 @@ tolower($0) ~ /x-frame-options:/ {
   if ($0 !~ /DENY/ && $0 !~ /SAMEORIGIN/) {
     printf "* misconfigured: `%s`\n", $0
     append_to_array(hosts, host)
+    append_to_array(services, service)
   }
   
   next
@@ -81,6 +84,7 @@ tolower($0) ~ /x-xss-protection:/ && ! /0/ {
   sub(/^\| +/, "", $0)
   printf "* misconfigured: `%s`\n", $0
   append_to_array(hosts, host)
+  append_to_array(services, service)
   next
 }
 
@@ -107,10 +111,12 @@ tolower($0) ~ /content-security-policy:/ {
       if (dir ~ /unsafe-inline/) {
         printf "* misconfigured CSP: `script-src 'unsafe-inline'` allows the execution of unsafe in-page scripts and event handlers\n"
         append_to_array(hosts, host)
+        append_to_array(services, service)
       }
       if (dir ~ /unsafe-eval/) {
         printf "* misconfigured CSP: `script-src 'unsafe-eval'` allows the execution of code injected into DOM APIs such as `eval()`\n"
         append_to_array(hosts, host)
+        append_to_array(services, service)
       }
     }
 
@@ -119,6 +125,7 @@ tolower($0) ~ /content-security-policy:/ {
       if (dir !~ /none/) {
         printf "* misconfigured CSP: `%s`\n", dir
         append_to_array(hosts, host)
+        append_to_array(services, service)
       }
     }
   }
@@ -126,11 +133,13 @@ tolower($0) ~ /content-security-policy:/ {
   if (script_src == "missing") {
     printf "* misconfigured CSP: missing `script-src` directive\n"
     append_to_array(hosts, host)
+    append_to_array(services, service)
   }
 
   if (object_src == "missing") {
     printf "* misconfigured CSP: missing `object-src` directive allows the injection of plugins which can execute JavaScript; you should set it to `none`\n"
     append_to_array(hosts, host)
+    append_to_array(services, service)
   }
 
   next
@@ -141,6 +150,7 @@ tolower($0) ~ /strict-transport-security:/ {
     # https://datatracker.ietf.org/doc/html/rfc6797#section-7.2
     printf "* misconfigured STS: an HSTS host must not include the STS header field in responses conveyed over non-secure transport (i.e. HTTP)\n"
     append_to_array(hosts, host)
+    append_to_array(services, service)
   }
 
   sub(/^\| +/, "", $0)
@@ -149,6 +159,7 @@ tolower($0) ~ /strict-transport-security:/ {
   if ($0 !~ /max-age=63072000/) {
     printf "* misconfigured: `%s`\n", $0
     append_to_array(hosts, host)
+    append_to_array(services, service)
   }
 
   next
@@ -161,6 +172,7 @@ tolower($0) ~ /x-content-type-options:/ {
   if ($0 !~ /nosniff/) {
     printf "* misconfigured: `%s`\n", $0
     append_to_array(hosts, host)
+    append_to_array(services, service)
   }
 
   next
@@ -173,6 +185,7 @@ tolower($0) ~ /referrer-policy:/ {
   if ($0 ~ /unsafe-url/) {
     printf "* misconfigured: `%s`\n", $0
     append_to_array(hosts, host)
+    append_to_array(services, service)
   }
 
   next
@@ -186,33 +199,43 @@ ENDFILE {
       if (x_frame_options == "missing") {
         printf "* missing `X-Frame-Options` header\n"
         append_to_array(hosts, host)
+        append_to_array(services, service)
       }
 
       if (csp == "missing") {
         printf "* missing `Content-Security-Policy` header\n"
         append_to_array(hosts, host)
+        append_to_array(services, service)
       }
 
       if (hsts == "missing") {
         printf "* missing `Strict-Transport-Security` header\n"
         append_to_array(hosts, host)
+        append_to_array(services, service)
       }
 
       if (x_content_type_options == "missing") {
         printf "* missing `X-Content-Type-Options` header\n"
         append_to_array(hosts, host)
+        append_to_array(services, service)
       }
 
       if (referrer_policy == "missing") {
         printf "* missing `Referrer-Policy` header\n"
         append_to_array(hosts, host)
+        append_to_array(services, service)
       }
     }
   }
 }
 
 END {
-  printf "\n# affected assets\n\n"
+  printf "\n# affected services\n\n"
+  for (i in services) {
+    printf "* `%s`\n", services[i]
+  }
+
+  printf "\n# affected hosts\n\n"
   for (i in hosts) {
     printf "* `%s`\n", hosts[i]
   }

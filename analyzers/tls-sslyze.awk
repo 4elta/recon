@@ -58,6 +58,8 @@ BEGIN {
   host = matches[1]
   port = matches[2]
 
+  service = host ":" port
+
   printf "\n\n## %s:%d\n\n", host, port
   next
 }
@@ -82,15 +84,18 @@ BEGIN {
   if ($2 == "Before:" && current_datetime <= datetime) {
     printf "* certificate #%d will only be valid after %s\n", certificate_nr, iso_date(datetime)
     append_to_array(hosts, host)
+    append_to_array(services, service)
   }
 
   if ($2 == "After:") {
     if (current_datetime >= datetime) {
       printf "* certificate #%d expired since %s\n", certificate_nr, iso_date(datetime)
       append_to_array(hosts, host)
+      append_to_array(services, service)
     } else if (current_datetime + look_ahead_time >= datetime) {
       printf "* certificate #%d expires in %s days or less (%s)\n", certificate_nr, look_ahead_days, iso_date(datetime)
       append_to_array(hosts, host)
+      append_to_array(services, service)
     }
   }
 
@@ -101,6 +106,7 @@ BEGIN {
 /Mozilla CA Store/ && /self signed/ {
   printf "* certificate #%d not trusted: self signed\n", certificate_nr
   append_to_array(hosts, host)
+  append_to_array(services, service)
   next
 }
 
@@ -124,6 +130,7 @@ BEGIN {
 
 /[^:]+:[0-9]+: FAILED - Not compliant.$/ {
   append_to_array(hosts, host)
+  append_to_array(services, service)
   printf "\nDeviations from Mozilla's \"%s\" configuration:\n\n", configuration
   next
 }
@@ -238,7 +245,12 @@ ENDFILE {
 }
 
 END {
-  printf "\n# affected assets\n\n"
+  printf "\n# affected services\n\n"
+  for (i in services) {
+    printf "* `%s`\n", services[i]
+  }
+
+  printf "\n# affected hosts\n\n"
   for (i in hosts) {
     printf "* `%s`\n", hosts[i]
   }
