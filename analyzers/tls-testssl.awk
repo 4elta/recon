@@ -157,7 +157,7 @@ BEGIN {
   # Server key size              RSA 2048 bits
   # 1      2   3                 4   5
 
-  if ($5 < 2048) {
+  if ($5 < 3000) {
     append_to_array(hosts, host)
     append_to_array(services, service)
     append_to_array(cert_short_rsa_key, service)
@@ -326,7 +326,7 @@ BEGIN {
   /_3?DES_/ || /_RC(2|4)_/ || /_IDEA_/ || \
   /_CBC_/ || \
   /_GOST/ || /_NULL_/ || \
-  /_PSK_/ || /DH_anon_/ || /DH (768|1024)/ || \
+  /_PSK_/ || /DH_anon_/ || /DH (768|1024|2048)/ || \
   ! ( /(EC)?DHE/ || ( /^ x13/ && /(EC)?DH / ) ) \
 ) {
   #Hexcode  Cipher Suite Name (IANA/RFC)                      KeyExch.   Encryption  Bits     Cipher Suite Name (OpenSSL)
@@ -390,7 +390,7 @@ BEGIN {
   append_to_array(suite_keyex_psk, service)
 }
 
-/^ x/ && /DH (768|1024)/ {
+/^ x/ && /DH (768|1024|2048)/ {
   append_to_array(suite_keyex_dh_short, service)
 }
 
