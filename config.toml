@@ -171,7 +171,7 @@ patterns = [ '^asterisk', '^sip', '^ventrilo' ]
 patterns = [ '^smb', '^microsoft\-ds', '^netbios' ]
 
   [smb.scans.nmap]
-  command = 'nmap -Pn -sV -p {port} --script="banner,(nbstat or smb* or ssl*) and not (brute or broadcast or dos or external or fuzzer)" --script-args="unsafe=1" -oN "{result_file}" {address}'
+  command = 'nmap -Pn -sV -p {port} --script="banner,(nbstat or smb* or ssl*) and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}" {address}'
 
   [smb.scans.smbclient]
   command = 'smbclient --list={address} --no-pass --command="recurse ON; ls" 2>&1 | tee {result_file}'
