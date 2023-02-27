@@ -39,7 +39,7 @@ BEGIN {
   desc_protocol_tls13 = "TLS 1.3 not offered"
 
   desc_cert_sig_alg = "insecure certificate signature algorithm"
-  desc_cert_short_rsa_key = "certificate's RSA key (i.e. its modulus) has less than 2048 bits"
+  desc_cert_short_rsa_key = "certificate's RSA key (i.e. its modulus) has less than 3000 bits"
   desc_cert_trust = "certificate chain not trusted"
   desc_cert_expired = "certificate expired"
 

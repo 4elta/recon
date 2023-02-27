@@ -50,7 +50,7 @@ BEGIN {
   printf "* %s vulnerable to Heartbleed\n", $1
 }
 
-/^(Preferred|Accepted)/ && ( /-MD5/ || /-SHA / || /-3?DES-/ || /-RC(2|4)-/ || /-IDEA-/ || /ADH-/ || /GOST/ || /NULL/ || /PSK/ || /ANON/ || /DHE (768|1024) bits/ || /-CBC-/ || !/(EC)?DHE/ ) {
+/^(Preferred|Accepted)/ && ( /-MD5/ || /-SHA / || /-3?DES-/ || /-RC(2|4)-/ || /-IDEA-/ || /ADH-/ || /GOST/ || /NULL/ || /PSK/ || /ANON/ || /DHE (768|1024|2048) bits/ || /-CBC-/ || !/(EC)?DHE/ ) {
   # Accepted  TLSv1.2  256 bits  ECDHE-RSA-AES256-SHA          Curve 25519 DHE 253
   # 1         2        3   4     5                             6...
 
