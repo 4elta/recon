@@ -53,14 +53,14 @@ BEGIN {
 }
 
 # get host
-/SCAN RESULTS FOR / {
-  match($0, /SCAN RESULTS FOR ([^:]+):([0-9]+) -/, matches)
+/[^:]+:[0-9]+\s+=> [0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}/ {
+  match($0, /\s*([^:]+):([0-9]+)\s+=>/, matches)
   host = matches[1]
   port = matches[2]
 
   service = host ":" port
 
-  printf "\n\n## %s:%d\n\n", host, port
+  printf "\n\n## %s:%d\n", host, port
   next
 }
 
@@ -110,10 +110,10 @@ BEGIN {
   next
 }
 
-/Checking results against Mozilla's "(modern|intermediate|old)" configuration/ {
+/Checking results against Mozilla's "[^"]+" configuration/ {
   state = "compliance"
 
-  match($0, /(modern|intermediate|old)/, matches)
+  match($0, /"([^"]+)"/, matches)
   configuration = matches[1]
 
   next
@@ -125,6 +125,11 @@ BEGIN {
 
 /OK - Compliant/ {
   state = ""
+  nextfile
+}
+
+/ERROR - Scan did not run successfully/ {
+  printf "\nerror: scan did not run successfully; review the scan log.\n"
   nextfile
 }
 
@@ -245,12 +250,12 @@ ENDFILE {
 }
 
 END {
-  printf "\n# affected services\n\n"
+  printf "\n\n# affected services\n\n"
   for (i in services) {
     printf "* `%s`\n", services[i]
   }
 
-  printf "\n# affected hosts\n\n"
+  printf "\n\n# affected hosts\n\n"
   for (i in hosts) {
     printf "* `%s`\n", hosts[i]
   }
