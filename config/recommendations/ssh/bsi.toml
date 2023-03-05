@@ -1,0 +1,52 @@
+protocol_versions = [ "2.0" ]
+
+# the names for methods/algorithms may contain an `@`.
+# these are vendor specific implementations.
+# see https://www.rfc-editor.org/rfc/rfc4251#section-6
+
+key_exchange_methods = [
+  "diffie-hellman-group-exchange-sha256",
+  "diffie-hellman-group15-sha512",
+  "diffie-hellman-group16-sha512",
+  "ecdh-sha2-nistp256",
+  "ecdh-sha2-nistp384",
+  "ecdh-sha2-nistp521",
+  "curve25519-sha256@libssh.org", # this is not listed in TR-02102-4
+]
+
+encryption_algorithms = [
+  "AEAD_AES_128_GCM",
+  "AEAD_AES_256_GCM",
+  "aes128-cbc",
+  "aes192-cbc",
+  "aes256-cbc",
+  "aes128-ctr",
+  "aes192-ctr",
+  "aes256-ctr",
+  # the following algorithms are not listed in TR-02102-4
+  "aes128-gcm@openssh.com",
+  "aes256-gcm@openssh.com",
+  "chacha20-poly1305@openssh.com",
+]
+
+MAC_algorithms = [
+  "hmac-sha2-256",
+  "hmac-sha2-512",
+  # the following algorithms are not listed in TR-02102-4
+  "hmac-sha2-256-etm@openssh.com", # ETM: encrypt-then-MAC
+  "hmac-sha2-512-etm@openssh.com",
+  "umac-128@openssh.com",
+  "umac-128-etm@openssh.com",
+]
+
+client_authentication_methods = [ "publickey" ]
+
+[server_host_keys]
+"pgp-sign-dss" = 3000
+"ecdsa-sha2-nistp256" = 250
+"ecdsa-sha2-nistp384" = 250
+"ecdsa-sha2-nistp521" = 250
+"x509v3-ecdsa-sha2-nistp256" = 250
+"x509v3-ecdsa-sha2-nistp384" = 250
+"x509v3-ecdsa-sha2-nistp521" = 250
+"ssh-ed25519" = 250 # this is not listed in TR-02102-4

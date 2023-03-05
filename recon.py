@@ -248,7 +248,7 @@ def queue_HTTP_service_scan(target: Target, service: Service, scan: Scan):
 
   # we have to run the scan for each hostname associated with the target
   for hostname in hostnames:
-    result_file = pathlib.Path(results_directory, f"{scan.service}-{port}-{hostname}-{scan.name}.log")
+    result_file = pathlib.Path(results_directory, f'{scan.service},{port},{hostname},{scan.name}')
     
     # run scan only if result file does not yet exist or "overwrite_results" flag is set
     if result_file.exists() and not OVERWRITE:
@@ -281,7 +281,7 @@ def queue_generic_service_scan(target: Target, service: Service, scan: Scan):
 
   # does this service belong to a group that should only be scanned once (e.g. SMB)?
   if scan.run_once:
-    result_file = pathlib.Path(results_directory, f'{scan.service}-{scan.name}.log')
+    result_file = pathlib.Path(results_directory, f'{scan.service},{scan.name}')
 
     # run scan only if result file does not yet exist or "overwrite_results" flag is set
     if result_file.exists() and not OVERWRITE:
@@ -298,7 +298,7 @@ def queue_generic_service_scan(target: Target, service: Service, scan: Scan):
       return # continue with another service of the target
 
   else: # service does not belong to a group that should only be scanned once
-    result_file = pathlib.Path(results_directory, f'{scan.service}-{transport_protocol}-{port}-{scan.name}.log')
+    result_file = pathlib.Path(results_directory, f'{scan.service},{transport_protocol},{port},{scan.name}')
 
     # run scan only if result file does not yet exist or "overwrite_results" flag is set
     if result_file.exists() and not OVERWRITE:
@@ -463,7 +463,11 @@ async def process(args):
     if not config_file_path.exists():
       sys.exit(f"the specified configuration file '{config_file_path}' does not exist!")
   else:
-    config_file_path = pathlib.Path(pathlib.Path(__file__).resolve().parent, "config.toml")
+    config_file_path = pathlib.Path(
+      pathlib.Path(__file__).resolve().parent,
+      "config",
+      "recon.toml"
+    )
     if not config_file_path.exists():
       sys.exit(f"the default configuration file '{config_file_path}' does not exist!")
 
@@ -521,7 +525,7 @@ def main():
 
   parser.add_argument('-i', '--input', type=pathlib.Path, default='services.xml', help="the result file of the Nmap service scan (default: 'services.xml')")
   parser.add_argument('-o', '--output', type=pathlib.Path, default='./recon', help="where the results are stored (default: './recon')")
-  parser.add_argument('-c', '--config', type=pathlib.Path, help="path to the scan configuration file (default: '/path/to/recon-suite/config.toml')")
+  parser.add_argument('-c', '--config', type=pathlib.Path, help="path to the scan configuration file (default: '/path/to/recon-suite/config/recon.toml')")
   parser.add_argument('-t', '--concurrent_targets', type=int, default=3, help="how many targets should be scanned concurrently (default: 3)")
   parser.add_argument('-s', '--concurrent_scans', type=int, default=2, help="how many scans should be running concurrently on a single target (default: 2)")
   parser.add_argument('-v', '--verbose', action='store_true', help="show additional info including all output of all scans")

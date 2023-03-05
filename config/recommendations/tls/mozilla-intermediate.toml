@@ -1,0 +1,41 @@
+protocol_versions = [ "TLS 1.2", "TLS 1.3" ]
+
+[certificate]
+elliptic_curves = [ "prime256v1", "secp384r1" ]
+signature_algorithms = [
+  "sha256WithRSAEncryption",
+  "ecdsa-with-SHA256",
+  "ecdsa-with-SHA384",
+  "ecdsa-with-SHA515"
+]
+lifespan = 366
+
+  [certificate.minimum_key_length]
+  RSA = 2048
+  ECDSA = 256
+
+[cipher_suite]
+elliptic_curves = [ "X25519", "prime256v1", "secp384r1" ]
+names = [
+  "TLS_AES_128_GCM_SHA256",
+  "TLS_AES_256_GCM_SHA384",
+  "TLS_CHACHA20_POLY1305_SHA256",
+  "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
+  "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+  "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
+  "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
+  "TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256",
+  "TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256",
+  "TLS_DHE_RSA_WITH_AES_256_GCM_SHA384",
+  "TLS_DHE_RSA_WITH_AES_128_GCM_SHA256"
+]
+preference = "client"
+
+  [cipher_suite.minimum_key_length]
+  DH = 2048
+  ECDH = 256
+
+[extensions]
+yes = [
+  "status_request"
+]

@@ -31,9 +31,10 @@ Be sure to have the scripts of the suite in your `PATH` variable; at least the `
 Also, make sure that the scripts have the *executable* flag set.
 
 ```sh
-chmod +x analyzers/*
+chmod +x analyze.py
 chmod +x icke.sh
 chmod +x recon.py
+ln -s $(realpath analyze.py) ~/bin/analyze
 ln -s $(realpath icke.sh) ~/bin/icke
 ln -s $(realpath recon.py) ~/bin/recon
 ```
@@ -51,7 +52,7 @@ optional arguments:
   -o OUTPUT, --output OUTPUT
                         where the results are stored (default: './recon')
   -c CONFIG, --config CONFIG
-                        path to the scan configuration file (default: '/path/to/recon-suite/config.toml')
+                        path to the scan configuration file (default: '/path/to/recon-suite/config/recon.toml')
   -t CONCURRENT_TARGETS, --concurrent_targets CONCURRENT_TARGETS
                         how many targets should be scanned concurrently (default: 3)
   -s CONCURRENT_SCANS, --concurrent_scans CONCURRENT_SCANS
@@ -64,30 +65,31 @@ optional arguments:
                         character used to delimit columns in the 'commands.csv' file (default: ',')
 ```
 
-## analyze and summarize specific scans
+## analyze and summarize specific scans/services
 
-**HTTP security header**
+```txt
+$ analyze.py -h
+usage: analyze.py [-h] [-i INPUT] [--json JSON] [--csv CSV] {tls,ssh} tool recommendations
 
-```shell
-/path/to/recon-tool-suite/analyzers/http-headers-nmap.awk /path/to/project/recon/*/services/http*nmap.log
+positional arguments:
+  {tls,ssh}             specify the service/protocol whose results are to be analyzed
+  tool                  specify the tool whose results are to be analyzed
+  recommendations       path to the recommendations document (e.g.: '/path/to/recon/config/recommendations/tls/mozilla-intermediate.toml')
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -i INPUT, --input INPUT
+                        path to the root directory that holds the results to be analysed (default: './recon')
+  --json JSON           in addition to the analysis printed in Markdown to STDOUT, also save the analysis as a JSON document
+  --csv CSV             in addition to the analysis printed in Markdown to STDOUT, also save the analysis as a CSV document
 ```
 
-**TLS configuration**
+already implemented:
 
-```shell
-/path/to/recon-tool-suite/analyzers/tls-sslyze.awk /path/to/project/recon/*/services/*-sslyze.log
-```
+* TLS configuration (via the results of `testssl`)
+* SSH configuration (via the results of `nmap`)
 
-**SSH configuration**
+not yet implemented:
 
-```shell
-/path/to/recon-tool-suite/analyzers/ssh-nmap.awk /path/to/project/recon/*/services/ssh*nmap.log
-```
-
-**IKE configuration**
-
-```shell
-/path/to/recon-tool-suite/analyzers/ike-icke.awk /path/to/project/recon/*/services/*-icke.log
-```
-
-
+* HTTP security header
+* IKE configuration
