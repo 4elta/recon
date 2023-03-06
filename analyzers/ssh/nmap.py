@@ -90,8 +90,7 @@ class Parser:
 
           service['description'] = " ".join(descriptions)
 
-          extrainfo = service_node.get('extrainfo')
-          service['protocol_version'] = self.parse_protocol_version(extrainfo)
+          service['protocol_version'] = self.parse_protocol_version(service_node.get('extrainfo'))
 
         for script_node in port_node.iter('script'):
           script_ID = script_node.get('id')

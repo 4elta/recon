@@ -86,8 +86,8 @@ optional arguments:
 
 already implemented:
 
-* TLS configuration (via the results of `testssl`)
-* SSH configuration (via the results of `nmap`)
+* TLS configuration (via the results from `testssl` or `sslscan`)
+* SSH configuration (via the results from `nmap`)
 
 not yet implemented:
 

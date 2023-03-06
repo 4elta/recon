@@ -218,7 +218,7 @@ patterns = [ '^telnet' ]
 patterns = [ 'https', '^ssl\|', '^tls\|' ]
 
   [tls.scans.sslscan]
-  command = '#sslscan --show-certificate --no-colour {hostname}:{port} 2>&1 | tee "{result_file}.log"'
+  command = '#sslscan --show-certificate --ocsp --show-sigs --xml="{result_file}.xml" {hostname}:{port} 2>&1 | tee "{result_file}.log"'
 
   [tls.scans.sslyze]
   command = '#sslyze --json_out "{result_file}.json" {hostname}:{port} 2>&1 | tee "{result_file}.log"'
@@ -228,6 +228,9 @@ patterns = [ 'https', '^ssl\|', '^tls\|' ]
 
 [tls_opportunistic]
 patterns = [ 'ftp', 'pop3', 'nntp', 'imap', 'ldap', 'smtp', 'rdp', 'ms-term-services', 'ms-wbt-server', 'pcoip', 'xmpp', 'postgres', 'mongodb' ]
+
+  [tls.scans.sslscan]
+  command = '#sslscan --show-certificate --show-sigs --starttls-{application_protocol} --xml="{result_file}.xml" {address}:{port} 2>&1 | tee "{result_file}.log"'
 
   [tls_opportunistic.scans.sslyze]
   command = '#sslyze --starttls auto --json_out "{result_file}.json" {address}:{port} 2>&1 | tee "{result_file}.log"'

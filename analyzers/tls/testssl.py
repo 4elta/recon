@@ -3,12 +3,12 @@ import json
 import pathlib
 import re
 
-from . import SERVICE_SCHEMA
+from . import CERTIFICATE_SCHEMA, SERVICE_SCHEMA
 
 PROTOCOL_VERSIONS = {
   'SSLv2': 'SSL 2',
   'SSLv3': 'SSL 3',
-  'TLS1': 'TLS 1',
+  'TLS1': 'TLS 1.0',
   'TLS1_1': 'TLS 1.1',
   'TLS1_2': 'TLS 1.2',
   'TLS1_3': 'TLS 1.3'
@@ -78,66 +78,95 @@ class Parser:
         )
       )
 
+      certificate = copy.deepcopy(CERTIFICATE_SCHEMA)
+      service['certificates'].append(certificate)
+
       for f in findings:
+
+        # protocol versions
         if f['id'] in PROTOCOL_VERSIONS and f['finding'].startswith('offered'):
           service['protocol_versions'].append(PROTOCOL_VERSIONS[f['id']])
           continue
 
+        # certificate public key
         if f['id'] == 'cert_keySize':
-          service['certificate']['public_key'] = self.parse_key_size(f['finding'])
+          self.parse_public_key(
+            f['finding'],
+            certificate['public_key']
+          )
           continue
 
+        # certificate signature algorithms
         if f['id'] == 'cert_signatureAlgorithm':
-          service['certificate']['signature_algorithm'] = self.parse_signature_algorithm(f['finding'])
+          self.parse_signature_algorithm(
+            f['finding'],
+            certificate['signature_algorithm']
+          )
           continue
+
+        # certificate subjects
 
         if f['id'] == 'cert_commonName':
-          subject = f['finding'].strip()
-          if subject not in service['certificate']['subjects']:
-            service['certificate']['subjects'].append(subject)
+          self.parse_common_name(
+            f['finding'],
+            certificate['subjects']
+          )
           continue
 
         if f['id'] == 'cert_subjectAltName':
-          for subject in f['finding'].split(' '):
-            if subject not in service['certificate']['subjects']:
-              service['certificate']['subjects'].append(subject)
+          self.parse_subject_alt_names(
+            f['finding'],
+            certificate['subjects']
+          )
           continue
 
+        # certificate validity
+
         if f['id'] == 'cert_notBefore':
-          service['certificate']['validity']['not_before'] = f"{f['finding']}:00"
+          certificate['validity']['not_before'] = self.parse_validity(f['finding'])
           continue
 
         if f['id'] == 'cert_notAfter':
-          service['certificate']['validity']['not_after'] = f"{f['finding']}:00"
+          certificate['validity']['not_after'] = self.parse_validity(f['finding'])
           continue
 
+        # groups (elliptic curve groups, finite field DH groups)
         if f['id'] == 'PFS_ECDHE_curves':
-          service['cipher_suites']['elliptic_curves'] = f['finding'].split(' ')
+          self.parse_groups(
+            f['finding'],
+            service['key_exchange']['groups']
+          )
           continue
+
+        # preference
 
         # 1. client sends a list of cipher suites it supports
         # 2. server has two strategies to choose a cipher suite:
         #   a. use the client's preference of ciphers
         #   b. use its own preference
         if f['id'] == 'cipher_order':
-          if f['finding'].startswith('server'):
-            service['cipher_suites']['preference'] = 'server'
-          if f['finding'].startswith('client'):
-            service['cipher_suites']['preference'] = 'client'
+          service['preference'] = self.parse_preference(f['finding'])
           continue
 
         if f['id'].startswith('cipher_x'):
-          service['cipher_suites']['list'].append(self.parse_cipher_suite(f['finding']))
+          self.parse_cipher_suite(
+            f['finding'],
+            service['cipher_suites'],
+            service['key_exchange']
+          )
           continue
 
         # TLS extensions
         # https://www.iana.org/assignments/tls-extensiontype-values/tls-extensiontype-values.xhtml
-
         if f['id'] == 'TLS_extensions':
-          service['extensions'] = self.parse_TLS_extensions(f['finding'])
+          self.parse_extensions(
+            f['finding'],
+            service['extensions']
+          )
           continue
 
         # misc. information about the server/certificate/etc
+        service['misc'] = {}
 
         if f['id'] == 'fallback_SCSV' and f['severity'] not in ('OK', 'INFO'):
           service['misc']['fallback_SCSV'] = f['finding']
@@ -247,55 +276,95 @@ class Parser:
             service['issues'].append(issue)
           continue
 
-  def parse_key_size(self, description):
-    key_type, key_size, _ = description.split(' ')
+  def parse_protocol_version(self, description, protocol_versions):
+    if description.startswith('offered'):
+      protocol_versions.append(PROTOCOL_VERSIONS[f['id']])
+
+  def parse_public_key(self, description, public_key):
+    key_type, key_bits, _ = description.split(' ')
 
     if key_type == 'EC':
       key_type = 'ECDSA'
 
-    return {
-      'type': key_type,
-      'size': int(key_size)
-    }
+    key_bits = int(key_bits)
 
-  def parse_signature_algorithm(self, description):
+    public_key['type'] = key_type
+    public_key['bits'] = key_bits
+
+  def parse_signature_algorithm(self, description, signature_algorithm):
+    # SHA256 with RSA
+    # SHA256 with ECDSA
     sig = description.split(' ')
 
     if 'RSA' in sig:
       # https://www.rfc-editor.org/rfc/rfc3447.html#appendix-A.2
-      return f'{sig[0].lower()}WithRSAEncryption'
+      signature_algorithm = f'{sig[0].lower()}WithRSAEncryption'
     elif 'EC' in sig:
       # https://www.rfc-editor.org/rfc/rfc5480.html#appendix-A
-      return f'{sig[2].lower()}-with-{sig[0].upper()}'
+      signature_algorithm = f'{sig[2].lower()}-with-{sig[0].upper()}'
 
-  def parse_cipher_suite(self, description):
-    parts = re.split('   +', description)
+  def parse_common_name(self, description, subjects):
+    subject = description.strip()
+    if subject not in subjects:
+      subjects.append(subject)
 
-    name = parts[1]
-    cipher_suite = self.cipher_suites_specifications[name]
+  def parse_subject_alt_names(self, description, subjects):
+    for subject in description.split(' '):
+      subject = description.strip()
+      if subject not in subjects:
+        subjects.append(subject)
 
-    # CIPHER_SUITE_SCHEMA
-    return {
-      'name': name,
-      'key_exchange_algorithm': parts[2],
-      'authentication_algorithm': cipher_suite['auth_algorithm'],
-      'encryption_algorithm': cipher_suite['enc_algorithm'],
-      'hash_algorithm': name.split('_')[-1],
-    }
+  def parse_validity(self, description):
+    return f"{description}:00"
 
-  def parse_TLS_extensions(self, description):
+  def parse_groups(self, description, groups):
+    for group in description.split(' '):
+      if group == 'X25519':
+        group = 'x25519'
+
+      groups.append(group)
+
+  def parse_preference(self, description):
+    if description.startswith('server'):
+      return 'server'
+    elif description.startswith('client'):
+      return 'client'
+
+  def parse_cipher_suite(self, description, cipher_suites, key_exchange):
+    #         cipher suite                                      kex
+    # xc02c   TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384           ECDH 253   AESGCM      256
+    # x9f     TLS_DHE_RSA_WITH_AES_256_GCM_SHA384               DH 512     AESGCM      256
+    session_info = re.split('   +', description)
+
+    #print(description)
+
+    cipher_suite = session_info[1]
+    cipher_suites.append(cipher_suite)
+
+    kex = session_info[2]
+
+    if ' ' in kex:
+      parts = kex.split(' ')
+      kex = (parts[0], int(parts[1]))
+    else:
+      kex = (kex, None)
+
+    kex_methods = key_exchange['methods']
+    if kex[0] not in kex_methods:
+      kex_methods[kex[0]] = kex[1]
+    elif kex[1] and kex_methods[kex[0]] and kex[1] < kex_methods[kex[0]]:
+      kex_methods[kex[0]] = kex[1]
+
+  def parse_extensions(self, description, extensions):
     m = re.findall(
       r"'([^/]+)/#\d+'",
       description
     )
 
-    extensions = []
     for ext in m:
       extension = ext.lower().replace(' ', '_')
       if extension not in extensions:
         extensions.append(extension)
-
-    return extensions
 
   def parse_HSTS_time(self, description):
     m = re.search(
