@@ -125,8 +125,9 @@ class Parser:
           )
 
       for certificate in service['certificates']:
-        if host not in certificate['subjects']:
+        if not self.evaluate_certificate_trust(certificate, host):
           service['issues'].append("certificate not trusted: certificate does not match supplied URI")
+          break
 
   def parse_cipher_node(self, node, cipher_suites, key_exchange):
     cipher_suite = node.get('cipher') # most often OpenSSL name
@@ -240,6 +241,18 @@ class Parser:
       node.find('expired'),
       service['issues']
     )
+
+  def evaluate_certificate_trust(self, certificate, host):
+    for subject in certificate['subjects']:
+      #  wildcard certificate
+      #                               cheap trick to test whether the host is a DNS hostname (or at least an IPv4 address)
+      #                                               test parent domain of host and subject
+      if subject.startswith('*.') and '.' in host and host.split('.')[1:] == subject.split('.')[1:]:
+        return True
+      if host == subject:
+        return True
+
+    return False
 
 
 
