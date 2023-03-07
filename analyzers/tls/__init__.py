@@ -180,10 +180,13 @@ class Analyzer:
     pub_key = certificate['public_key']
 
     if pub_key['type'] not in recommendation['public_key']['types']:
-      if pub_key['bits'] and pub_key['bits'] < recommendation['public_key']['types'][pub_key['type']]:
+      if pub_key['bits']:
         issues.append(f"server's public key: {pub_key['type']} {pub_key['bits']} bits")
       else:
         issues.append(f"server's public key: {pub_key['type']}")
+    else:
+      if pub_key['bits'] and pub_key['bits'] < recommendation['public_key']['types'][pub_key['type']]:
+        issues.append(f"server's public key: {pub_key['type']} {pub_key['bits']} bits")
 
     if pub_key['curve'] and pub_key['curve'] not in recommendation['public_key']['curves']:
       issues.append(f"server's public key: curve `{pub_key['curve']}`")
@@ -194,7 +197,7 @@ class Analyzer:
       issues.append(f"server's certificate: signature algorithm `{sig_alg}`")
 
   def analyze_preference(self, preference, recommendation, issues):
-    if not recommendation == preference:
+    if not preference == recommendation:
       issues.append(f"cipher preference: {preference}")
 
   def analyze_cipher_suites(self, cipher_suites, recommendation, issues):

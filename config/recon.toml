@@ -59,7 +59,7 @@ patterns = [ 'http' ]
   command = '#cewl --depth 3 --min_word_length 5 --write "{result_file}.log" {scheme}://{hostname}:{port}'
 
   [http.scans.nikto]
-  command = 'nikto -ask=no -host {scheme}://{hostname}:{port} 2>&1 | tee "{result_file}.log"'
+  command = 'nikto -ask no -Cgidirs all -host {hostname} -port {port} -nointeractive -Format xml -output "{result_file}.xml" 2>&1 | tee "{result_file}.log"'
 
   [http.scans.feroxbuster]
   command = '#feroxbuster --insecure --quiet --depth 1 --extensions txt,html,php,asp,aspx,jsp --wordlist /usr/share/seclists/Discovery/Web-Content/common.txt --url {scheme}://{hostname}:{port}/ 2>&1 | tee "{result_file}.log"'

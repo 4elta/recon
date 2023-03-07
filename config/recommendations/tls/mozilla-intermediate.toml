@@ -17,7 +17,7 @@ cipher_suites = [
 ]
 
 [key_exchange]
-methods = { DH = 2048, ECDH = 250 }
+methods = { DH = 2000, ECDH = 250 }
 groups = [ "x25519", "prime256v1", "secp384r1", "ffdhe2048" ]
 
 [extensions]
@@ -37,5 +37,5 @@ signature_algorithms = [
 lifespan = 366
 
   [certificate.public_key]
-  types = { RSA = 2048, ECDSA = 250 }
+  types = { RSA = 2000, ECDSA = 250 }
   curves = [ "prime256v1", "secp384r1" ]

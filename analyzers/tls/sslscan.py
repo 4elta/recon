@@ -129,15 +129,19 @@ class Parser:
           service['issues'].append("certificate not trusted: certificate does not match supplied URI")
 
   def parse_cipher_node(self, node, cipher_suites, key_exchange):
-    cipher_suite = node.get('cipher')
+    cipher_suite = node.get('cipher') # most often OpenSSL name
 
-    if '-' in cipher_suite: # OpenSSL name
-      for name, cs in self.cipher_suites_specifications.items():
-        if cs['openssl_name'] == cipher_suite:
-          cipher_suite = name
-          break
+    cipher_suite_ID = node.get('id')[2:]
+    hex_byte_1 = f'0x{cipher_suite_ID[:2]}'
+    hex_byte_2 = f'0x{cipher_suite_ID[2:]}'
 
-    cipher_suites.append(cipher_suite)
+    for name, cs in self.cipher_suites_specifications.items():
+      if cs['hex_byte_1'] == hex_byte_1 and cs['hex_byte_2'] == hex_byte_2:
+        cipher_suite = name
+        break
+
+    if cipher_suite not in cipher_suites:
+      cipher_suites.append(cipher_suite)
 
     if node.get('dhebits'):
       kex = ( 'DH', int(node.get('dhebits')) )
@@ -187,7 +191,7 @@ class Parser:
 
   def parse_certificate_self_signed_node(self, node, issues):
     if node.text == 'true':
-      issue.append("certificte not trusted: self signed")
+      issues.append("certificte not trusted: self signed")
 
   def parse_certificate_validity(self, node):
     # Feb  2 23:00:24 2023 GMT
