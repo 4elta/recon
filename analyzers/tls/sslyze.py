@@ -35,6 +35,130 @@ class Parser:
     return self.services
 
   def parse_file(self, path):
+    '''
+    # https://github.com/nabla-c0d3/sslyze/blob/release/json_output_schema.json
+
+    certificate_info_schema = {
+      "status": "(COMPLETED|ERROR|NOT_SCHEDULED)",
+      "result": { # optional
+        "certificate_deployments": [
+          {
+            "received_certificate_chain": [ # received_certificate_chain: The certificate chain sent by the server; index 0 is the leaf certificate.
+              {
+                "not_valid_before": "YYYY-MM-DD hh:mm:ss",
+                "not_valid_after": "YYYY-MM-DD hh:mm:ss",
+                "subject": { "rfc4514_string": "example.com" }, # optional
+                "subject_alternative_name": {
+                  "dns": [ "example.com", "*.example.com" ],
+                  "ip_addresses": [ "IPv4 address", "IPv6 address" ], # optional
+                },
+                "signature_hash_algorithm": {
+                  "name": "ecdsa-with-SHA256",
+                  "digest_size": 256
+                },
+                "public_key": {
+                  "algorithm": "RSA|ECDSA",
+                  "key_size": 256, # optional
+                  "ec_curve_name" = "prime256v1" # optional
+                }
+              }
+            ],
+            "leaf_certificate_subject_matches_hostname": True,
+            "received_chain_has_valid_order": True, # optional
+            "path_validation_results": {
+              "was_validation_successful": True,
+              "openssl_error_string": "OpenSSL error message" # optional
+            },
+            "verified_chain_has_sha1_signature": False, # optional
+            "verified_chain_has_legacy_symantec_anchor": False, # optional
+          },
+        ]
+      },
+    }
+
+    cipher_suites_schema = {
+      "status": "(COMPLETED|ERROR|NOT_SCHEDULED)",
+      "result": { # optional
+        "tls_version_used": "SSL_2_0|SSL_3_0|TLS_1_0|TLS_1_1|TLS_1_2|TLS_1_3",
+        "is_tls_version_supported": True,
+        "accepted_cipher_suites": [
+          "cipher_suite": { "name": "TLS_CHACHA20_POLY1305_SHA256" },
+          "ephemeral_key": { # optional
+            "type_name": "ECDH",
+            "size": 253,
+            "curve_name": "X25519" # optional
+          }
+        ]
+      }
+    }
+
+    scan_result_schema = {
+      "server_scan_results": [
+        {
+          "scan_status": "(COMPLETED|ERROR_NO_CONNECTIVITY)",
+          "server_location": {
+            "hostname": "example.com",
+            "ip_address": "10.11.12.13",
+            "port": 443,
+          },
+          "scan_result": { # optional
+            "certificate_info": certificate_info_schema,
+            "ssl_2_0_cipher_suites": cipher_suites_schema,
+            "ssl_3_0_cipher_suites": cipher_suites_schema,
+            "tls_1_0_cipher_suites": cipher_suites_schema,
+            "tls_1_1_cipher_suites": cipher_suites_schema,
+            "tls_1_2_cipher_suites": cipher_suites_schema,
+            "tls_1_3_cipher_suites": cipher_suites_schema,
+            "tls_compression": {
+              "status" = "(COMPLETED|ERROR|NOT_SCHEDULED)",
+              "result" = { "supports_compression": False } # optional
+            },
+            "tls_1_3_early_data": { # https://www.rfc-editor.org/rfc/rfc8446#section-2.3
+              "status" = "(COMPLETED|ERROR|NOT_SCHEDULED)",
+              "result": { "supports_early_data": False } # optional
+            },
+            "openssl_ccs_injection": {
+              "status" = "(COMPLETED|ERROR|NOT_SCHEDULED)",
+              "result": { "is_vulnerable_to_ccs_injection": False } # optional
+            },
+            "tls_fallback_scsv": {
+              "status" = "(COMPLETED|ERROR|NOT_SCHEDULED)",
+              "result": { "supports_fallback_scsv": False } # optional
+            },
+            "heartbleed": {
+              "status" = "(COMPLETED|ERROR|NOT_SCHEDULED)",
+              "result": { "is_vulnerable_to_heartbleed": False } # optional
+            },
+            "robot": {
+              "status" = "(COMPLETED|ERROR|NOT_SCHEDULED)",
+              "result": { "robot_result": "VULNERABLE_WEAK_ORACLE|VULNERABLE_STRONG_ORACLE|NOT_VULNERABLE_NO_ORACLE|NOT_VULNERABLE_RSA_NOT_SUPPORTED|UNKNOWN_INCONSISTENT_RESULTS" } # optional
+            },
+            "session_renegotiation": {
+              "status" = "(COMPLETED|ERROR|NOT_SCHEDULED)",
+              "result": { # optional
+                "supports_secure_renegotiation": True,
+                "is_vulnerable_to_client_renegotiation_dos": False
+              }
+            },
+            "session_resumption": { # only TLS 1.2 supports session resumption (via Session ID and TLS Ticket)
+              "status" = "(COMPLETED|ERROR|NOT_SCHEDULED)",
+              "result": { # optional
+                "session_id_resumption_result": "FULLY_SUPPORTED|PARTIALLY_SUPPORTED|NOT_SUPPORTED|SERVER_IS_TLS_1_3_ONLY",
+                "tls_ticket_resumption_result": "FULLY_SUPPORTED|PARTIALLY_SUPPORTED|NOT_SUPPORTED|SERVER_IS_TLS_1_3_ONLY"
+              }
+            },
+            "elliptic_curves": {
+              "status" = "(COMPLETED|ERROR|NOT_SCHEDULED)",
+              "result": { # optional
+                "supports_ecdh_key_exchange": True,
+                "supported_curves": [ {"name": "X25519"}, {"name": "prime256v1"} ] # optional
+              }
+            },
+          },
+        },
+      ]
+    }
+    '''
 
     with open(path, 'r') as f:
       results = json.load(f)
