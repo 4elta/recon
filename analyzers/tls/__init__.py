@@ -22,9 +22,118 @@ CERTIFICATE_SCHEMA = {
   # ECDSA: https://www.rfc-editor.org/rfc/rfc5758#section-3.2
 
   'validity': {
-    'not_before': None, # YYYY-MM-DD hh:mm:ss UTC
+    'not_before': None, # "YYYY-MM-DD hh:mm:ss" UTC
     'not_after': None,
   },
+}
+
+
+VULNERABILITIES = {
+
+  # legacy (insecure) renegotiation
+  'client-initiated renegotiation DoS': {
+    'description': 'vulnerable to client-initiated renegotiation DoS',
+    'CVE': [ 'CVE-2011-1473' ],
+    'references': [ 'https://www.rfc-editor.org/rfc/rfc5746.html#section-4.4' ]
+  },
+
+  # CBC vulnerability in SSL 3.0 and TLS 1.0
+  'BEAST': {
+    'description': 'potentially vulnerable to BEAST (Browser Exploit Against SSL/TLS): ciphers in CBC mode with SSL 3.0 or TLS 1.0',
+    'CVE': [ 'CVE-2011-3389' ],
+    'references': [ 'https://web.archive.org/web/20140603102506/https://bug665814.bugzilla.mozilla.org/attachment.cgi?id=540839' ]
+  },
+
+  # server accepts TLS compression, or uses SPDY header compression
+  'CRIME': {
+    'description': 'vulnerable to CRIME (Compression Ratio Info-leak Made Easy): TLS compression or SPDY header compression',
+    'CVE': [ 'CVE-2012-4929' ],
+    'references': [ 'https://en.wikipedia.org/wiki/CRIME' ]
+  },
+
+  # HTTP compression
+  'BREACH': {
+    'description': 'potentially vulnerable to BREACH: HTTP compression detected',
+    'CVE': [ 'CVE-2013-3587' ],
+    'references': [ 'https://www.breachattack.com/' ]
+  },
+
+  # certain implementations of the TLS protocol that use the CBC mode of operation are vulnerable
+  'Lucky Thirteen': {
+    'description': 'potentially vulnerable to Lucky Thirteen: ciphers in CBC mode',
+    'CVE': [ 'CVE-2013-0169' ],
+    'references': [ 'https://en.wikipedia.org/wiki/Lucky_Thirteen_attack' ]
+  },
+
+  # vulnerable version of heartbeat TLS extension
+  'Heartbleed': {
+    'description': 'vulnerable to Heartbleed: vulnerable version of the heartbeat TLS extension (OpenSSL 1.0.1 through 1.0.1f)',
+    'CVE': [ 'CVE-2014-0160' ],
+    'references': [ 'https://heartbleed.com/' ]
+  },
+
+  # legacy protocols (SSL 3)
+  'POODLE': {
+    'description': 'vulnerable to POODLE (Padding Oracle On Downgraded Legacy Encryption): SSL 3.0',
+    'CVE': [ 'CVE-2014-3566' ],
+    'references': [ 'https://en.wikipedia.org/wiki/POODLE' ]
+  },
+
+  # this is an attack against implementations of the ChangeCipherSpec (CCS) in outdated versions of OpenSSL
+  'OpenSSL CCS injection': {
+    'description': 'vulnerable to CCS (ChangeCipherSpec) injection: outdated version of OpenSSL',
+    'CVE': [ 'CVE-2014-0224' ],
+    'references': [ 'https://www.imperialviolet.org/2014/06/05/earlyccs.html' ]
+  },
+
+  # server supports RSA with moduli of 512 bits or less
+  'FREAK': {
+    'description': 'vulnerable to FREAK (Factoring RSA Export Keys): RSA with moduli of 512 bits or less',
+    'CVE': [ 'CVE-2015-0204' ],
+    'references': [ 'https://en.wikipedia.org/wiki/FREAK' ]
+  },
+
+  # weak DH keys
+  'Logjam': {
+    'description': 'vulnerable to Logjam: weak DH keys',
+    'CVE': [ 'CVE-2015-4000' ],
+    'references': [ 'https://weakdh.org/' ]
+  },
+
+  # server supports SSL 2
+  'DROWN': {
+    'description': 'vulnerable to DROWN (Decrypting RSA with Obsolete and Weakened eNcryption): SSL 2.0',
+    'CVE': [ 'CVE-2016-0800' ],
+    'references': [ 'https://drownattack.com/' ]
+  },
+
+  # support of DES/3DES
+  'Sweet32': {
+    'description': 'vulnerable to Sweet32: DES/3DES',
+    'CVE': [ 'CVE-2016-2183', 'CVE-2016-6329' ],
+    'references': [ 'https://sweet32.info/' ]
+  },
+
+  # vulnerable implementation of Session Tickets
+  'Ticketbleed': {
+    'description': 'vulnerable to Ticketbleed: insecure implementation for handling Session Tickets',
+    'CVE': [ 'CVE-2016-9244' ],
+    'references': [ 'https://filippo.io/Ticketbleed/' ]
+  },
+
+  # use of RSA for key exchange
+  'ROBOT': {
+    'description': "vulnerable to ROBOT (Return Of Bleichenbacher's Oracle Threat): RSA for key exchange",
+    'CVE': [ 'CVE-2017-13099' ],
+    'references': [ 'https://www.robotattack.org/' ]
+  },
+
+  'VULNERABILITY': {
+    'description': '',
+    'CVE': [],
+    'references': [ '' ]
+  },
+
 }
 
 SERVICE_SCHEMA = {
@@ -57,6 +166,8 @@ SERVICE_SCHEMA = {
   # https://www.iana.org/assignments/tls-extensiontype-values/tls-extensiontype-values.xhtml#tls-extensiontype-values-1
 
   'issues': [],
+
+  'vulnerabilities': [],
 }
 
 class Analyzer:
@@ -77,6 +188,8 @@ class Analyzer:
       from .testssl import Parser
     elif self.tool == 'sslscan':
       from .sslscan import Parser
+    elif self.tool == 'sslyze':
+      from .sslyze import Parser
     else:
       sys.exit(f"unknown tool '{self.tool}'")
 
@@ -156,6 +269,12 @@ class Analyzer:
           self.recommendations['extensions'],
           issues
         )
+
+      # analyze vulnerabilities
+      for vulnerability_ID in service['vulnerabilities']:
+        vulnerability = VULNERABILITIES[vulnerability_ID]
+        # TODO: add CVE, references?
+        issues.append(vulnerability['description'])
 
     return services
 

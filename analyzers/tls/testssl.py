@@ -6,8 +6,8 @@ import re
 from . import CERTIFICATE_SCHEMA, SERVICE_SCHEMA
 
 PROTOCOL_VERSIONS = {
-  'SSLv2': 'SSL 2',
-  'SSLv3': 'SSL 3',
+  'SSLv2': 'SSL 2.0',
+  'SSLv3': 'SSL 3.0',
   'TLS1': 'TLS 1.0',
   'TLS1_1': 'TLS 1.1',
   'TLS1_2': 'TLS 1.2',
@@ -178,91 +178,67 @@ class Parser:
 
         # vulnerabilities
 
-        # https://www.rfc-editor.org/rfc/rfc5746.html#section-4.4
-        # legacy (insecure) renegotiation
         if f['id'] == 'secure_client_renego' and f['severity'] not in ('OK', 'INFO'):
-          service['issues'].append('vulnerable to client-initiated renegotiation DoS (CVE-2011-1473)')
+          service['vulnerabilities'].append('client-initiated renegotiation DoS')
           continue
 
-        # https://en.wikipedia.org/wiki/Transport_Layer_Security#BEAST_attack
-        # CBC vulnerability in TLS1
         if f['id'] == 'BEAST' and f['severity'] not in ('OK', 'INFO'):
-          service['issues'].append('potentially vulnerable to BEAST (Browser Exploit Against SSL/TLS): ciphers in CBC mode with TLS 1')
+          service['vulnerabilities'].append('BEAST')
           continue
 
-        # https://en.wikipedia.org/wiki/CRIME
-        # server accepts TLS compression, or uses SPDY header compression
         if f['id'] == 'CRIME_TLS' and f['severity'] not in ('OK', 'INFO'):
-          service['issues'].append('vulnerable to CRIME (Compression Ratio Info-leak Made Easy): TLS compression or SPDY header compression')
+          service['vulnerabilities'].append('CRIME')
           continue
 
-        # https://www.breachattack.com/
-        # HTTP compression
         if f['id'] == 'BREACH' and f['severity'] not in ('OK', 'INFO'):
-          service['issues'].append('potentially vulnerable to BREACH: HTTP compression detected')
+          service['vulnerabilities'].append('BREACH')
           continue
 
-        # https://en.wikipedia.org/wiki/Lucky_Thirteen_attack
-        # certain implementations of the TLS protocol that use the CBC mode of operation are vulnerable
         if f['id'] == 'LUCKY13' and f['severity'] not in ('OK', 'INFO'):
-          service['issues'].append('potentially vulnerable to Lucky Thirteen (CVE-2013-0169): ciphers in CBC mode')
+          service['vulnerabilities'].append('Lucky Thirteen')
           continue
 
-        # https://heartbleed.com/
-        # vulnerable version of heartbeat TLS extension
         if f['id'] == 'heartbleed' and f['severity'] not in ('OK', 'INFO'):
-          service['issues'].append('vulnerable to Heartbleed (CVE-2014-0160): vulnerable version of the heartbeat TLS extension (OpenSSL 1.0.1 through 1.0.1f)')
+          service['vulnerabilities'].append('Heartbleed')
           continue
 
-        # https://en.wikipedia.org/wiki/POODLE
-        # legacy protocols (SSL 3)
         if f['id'] == 'POODLE_SSL' and f['severity'] not in ('OK', 'INFO'):
-          service['issues'].append('vulnerable to POODLE (Padding Oracle On Downgraded Legacy Encryption; CVE-2014-3566): SSL 3')
+          service['vulnerabilities'].append('POODLE')
           continue
 
-        # https://www.imperialviolet.org/2014/06/05/earlyccs.html
-        # this is an attack against implementations of the ChangeCipherSpec (CCS) in outdated versions of OpenSSL
         if f['id'] == 'CCS' and f['severity'] not in ('OK', 'INFO'):
-          service['issues'].append('vulnerable to CCS (ChangeCipherSpec) injection (CVE-2014-0224): outdated version of OpenSSL')
+          service['vulnerabilities'].append('OpenSSL CCS injection')
           continue
 
-        # https://en.wikipedia.org/wiki/FREAK
-        # server supports RSA with moduli of 512 bits or less,
         if f['id'] == 'FREAK' and f['severity'] not in ('OK', 'INFO'):
-          service['issues'].append('vulnerable to FREAK (Factoring RSA Export Keys; CVE-2015-0204): RSA with moduli of 512 bits or less')
+          service['vulnerabilities'].append('FREAK')
           continue
 
-        # https://weakdh.org/
-        # Logjam (CVE-2015-4000), weak DH keys
         if f['id'] == 'LOGJAM' and f['severity'] not in ('OK', 'INFO'):
-          service['issues'].append('vulnerable to Logjam (CVE-2015-4000): weak DH keys')
+          service['vulnerabilities'].append('Logjam')
           continue
 
-        # https://drownattack.com/
-        # server supports SSL 2
         if f['id'] == 'DROWN' and f['severity'] not in ('OK', 'INFO'):
-          service['issues'].append('vulnerable to DROWN (Decrypting RSA with Obsolete and Weakened eNcryption; CVE-2016-0800): SSL 2')
+          service['vulnerabilities'].append('DROWN')
           continue
 
         # https://sweet32.info/
         # support of DES/3DES
         if f['id'] == 'SWEET32' and f['severity'] not in ('OK', 'INFO'):
-          service['issues'].append('vulnerable to Sweet32 (CVE-2016-2183, CVE-2016-6329): DES/3DES')
+          service['vulnerabilities'].append('Sweet32')
           continue
 
-        # https://filippo.io/Ticketbleed/
-        # vulnerable implementation of Session Tickets
         if f['id'] == 'ticketbleed' and f['severity'] not in ('OK', 'INFO'):
-          service['issues'].append('vulnerable to Ticketbleed (CVE-2016-9244): insecure implementation for handling Session Tickets')
+          service['vulnerabilities'].append('Ticketbleed')
           continue
 
         # https://www.robotattack.org/
         # use of RSA for key exchange
         if f['id'] == 'ROBOT' and f['severity'] not in ('OK', 'INFO'):
-          service['issues'].append("vulnerable to ROBOT (Return Of Bleichenbacher's Oracle Threat; CVE-2017-13099): RSA for key exchange")
+          service['vulnerabilities'].append('ROBOT')
           continue
 
-        # other issues
+        # (other) issues
 
         if f['id'] == 'cert_trust':
           if f['severity'] not in ('OK', 'INFO'):

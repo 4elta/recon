@@ -85,18 +85,22 @@ class Parser:
           service['misc'] = {}
         service['misc']['fallback_SCSV'] = 'supported'
 
+      # vulnerabilities
+
       renegotiation_node = ssltest_node.find('renegotiation')
       if renegotiation_node and renegotiation_node.get('supported') == '1' and renegotiation_node.get('secure') == '0':
-        service['issues'].append('vulnerable to client-initiated renegotiation DoS (CVE-2011-1473)')
+        service['vulnerabilities'].append('client-initiated renegotiation DoS')
 
       compression_node = ssltest_node.find('compression')
       if compression_node and compression_node.get('supported') == '1':
-        service['issues'].append('vulnerable to CRIME (Compression Ratio Info-leak Made Easy): TLS compression or SPDY header compression')
+        service['vulnerabilities'].append('CRIME')
 
       for heartbleed_node in ssltest_node.iter('heartbleed'):
         if heartbleed_node.get('vulnerable') == '1':
-          service['issues'].append('vulnerable to Heartbleed (CVE-2014-0160): vulnerable version of the heartbeat TLS extension (OpenSSL 1.0.1 through 1.0.1f)')
+          service['vulnerabilities'].append('Heartbleed')
           break
+
+      # cipher suites
 
       for cipher_node in ssltest_node.iter('cipher'):
         self.parse_cipher_node(
