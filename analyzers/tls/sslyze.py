@@ -99,7 +99,7 @@ class Parser:
       service['vulnerabilities'].append('CRIME')
 
     if self.parse_generic_scan_result(scan_result['openssl_ccs_injection'], 'is_vulnerable_to_ccs_injection'):
-      service['vulnerabilities'].append('OpenSSL CCS injection')
+      service['vulnerabilities'].append('OpenSSL_CCS_injection')
 
     if self.parse_generic_scan_result(scan_result['heartbleed'], 'is_vulnerable_to_heartbleed'):
       service['vulnerabilities'].append('Heartbleed')
@@ -231,7 +231,7 @@ class Parser:
     result = result['result']
 
     if result['is_vulnerable_to_client_renegotiation_dos']:
-      service['vulnerabilities'].append('client-initiated renegotiation DoS')
+      service['vulnerabilities'].append('client_initiated_renegotiation_DoS')
 
   def parse_elliptic_curves(self, result, service):
     if not result['status'] == 'COMPLETED' or 'result' not in result:

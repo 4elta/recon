@@ -179,7 +179,7 @@ class Parser:
         # vulnerabilities
 
         if f['id'] == 'secure_client_renego' and f['severity'] not in ('OK', 'INFO'):
-          service['vulnerabilities'].append('client-initiated renegotiation DoS')
+          service['vulnerabilities'].append('client_initiated_renegotiation_DoS')
           continue
 
         if f['id'] == 'BEAST' and f['severity'] not in ('OK', 'INFO'):
@@ -195,7 +195,7 @@ class Parser:
           continue
 
         if f['id'] == 'LUCKY13' and f['severity'] not in ('OK', 'INFO'):
-          service['vulnerabilities'].append('Lucky Thirteen')
+          service['vulnerabilities'].append('Lucky_Thirteen')
           continue
 
         if f['id'] == 'heartbleed' and f['severity'] not in ('OK', 'INFO'):
@@ -207,7 +207,7 @@ class Parser:
           continue
 
         if f['id'] == 'CCS' and f['severity'] not in ('OK', 'INFO'):
-          service['vulnerabilities'].append('OpenSSL CCS injection')
+          service['vulnerabilities'].append('OpenSSL_CCS_injection')
           continue
 
         if f['id'] == 'FREAK' and f['severity'] not in ('OK', 'INFO'):

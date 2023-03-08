@@ -89,7 +89,7 @@ class Parser:
 
       renegotiation_node = ssltest_node.find('renegotiation')
       if renegotiation_node and renegotiation_node.get('supported') == '1' and renegotiation_node.get('secure') == '0':
-        service['vulnerabilities'].append('client-initiated renegotiation DoS')
+        service['vulnerabilities'].append('client_initiated_renegotiation_DoS')
 
       compression_node = ssltest_node.find('compression')
       if compression_node and compression_node.get('supported') == '1':
