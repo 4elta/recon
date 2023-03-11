@@ -1,0 +1,75 @@
+[header]
+mandatory = [
+  "strict-transport-security",
+  "content-security-policy",
+  "referrer-policy",
+  "x-content-type-options",
+]
+
+[header.strict-transport-security]
+# https://www.rfc-editor.org/rfc/rfc6797#section-6.1
+name = '`strict-transport-security` header:'
+regex = "max-age=(?P<expire_time>[0-9]+)(?:; +includeSubDomains(?:; +preload)?)?"
+on_match = { next = [ "expire_time" ] }
+on_mismatch = { issue = "syntax error" }
+
+[header.strict-transport-security.expire_time]
+lower_bound = 63072000
+#upper_bound = ###
+on_mismatch = { issue = "`max-age` (i.e. expire time) too short" }
+
+[header.content-security-policy]
+# https://w3c.github.io/webappsec-csp/#csp-header
+name = "`content-security-policy` header:"
+regex = "(?P<policy_directive>(?:child|connect|default|font|frame|img|manifest|media|object|prefetch|worker)-src|(?:script|style)-src(?:-(?:elem|attr))?|webrtc|bae-uri|sandbox|form-action|frame-ancestors|navigate-to|report-(?:uri|to)|require-trusted-types-for|trusted-types|upgrade-insecure-requests) (?P<policy_values>[^;]+)(?:; *)?"
+on_match = { next = [ "script-src", "object-src" ] }
+
+[header.content-security-policy.script-src]
+regex = "script-src"
+on_mismatch = { issue = "`script-src` directive missing" }
+on_match = { next = ["unsafe-inline", "unsafe-eval"] }
+
+[header.content-security-policy.script-src.unsafe-inline]
+regex = "(?:script-src)[^;]+(?:'unsafe-inline')[^;]*"
+on_match = { issue = "`script-src` directive contains `unsafe-inline` keyword: this allows the execution of unsafe in-page scripts and event handlers" }
+
+[header.content-security-policy.script-src.unsafe-eval]
+regex = "(?:script-src)[^;]+(?:'unsafe-eval')[^;]*"
+on_match = { issue = "`script-src` directive contains `unsafe-eval` keyword: this allows the execution of code injected into DOM APIs such as `eval()`" }
+
+[header.content-security-policy.object-src]
+regex = "object-src"
+on_mismatch = { issue = "`object-src` directive missing: this allows the injection of plugins which can execute JavaScript; you should set it to `none`" }
+on_match = { next = ["unsafe-inline", "unsafe-eval"] }
+
+[header.content-security-policy.object-src.unsafe-inline]
+regex = "(?:object-src)[^;]+(?:'unsafe-inline')[^;]*"
+on_match = { issue = "`object-src` directive contains `unsafe-inline` keyword" }
+
+[header.content-security-policy.object-src.unsafe-eval]
+regex = "(?:object-src)[^;]+(?:'unsafe-eval')[^;]*"
+on_match = { issue = "`object-src` directive contains `unsafe-eval` keyword" }
+
+[header.x-content-type-options]
+# https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Content-Type-Options
+name = "`x-content-type-options` header:"
+regex = "nosniff"
+on_mismatch = { issue = "incorrect value" }
+
+[header.x-frame-options]
+# https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Frame-Options
+name = "`x-frame-options` header:"
+regex = "DENY|SAMEORIGIN"
+on_mismatch = { issue = "incorrect value" }
+
+[header.x-xss-protection]
+# https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-XSS-Protection
+name = "`x-xss-protection` header:"
+regex = "0|(?:1; mode=block)"
+on_mismatch = { issue = "incorrect value" }
+
+[header.referrer-policy]
+# https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referrer-Policy
+name = "`referrer-policy` header:"
+regex = "unsafe-url"
+on_match = { issue = "`unsafe-url` policy will leak potentially-private information" }

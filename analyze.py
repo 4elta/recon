@@ -59,6 +59,9 @@ def process(args):
   elif args.service == 'ssh':
     import analyzers.ssh
     analyzer = analyzers.ssh.Analyzer(args.tool, recommendations)
+  elif args.service == 'http':
+    import analyzers.http
+    analyzer = analyzers.http.Analyzer(args.tool, recommendations)
 
   if analyzer:
     services = analyzer.analyze(files)
@@ -95,7 +98,7 @@ def main():
 
   parser.add_argument(
     'service',
-    choices = ['tls', 'ssh'],
+    choices = ['tls', 'ssh', 'http'],
     help = "specify the service/protocol whose results are to be analyzed"
   )
 
