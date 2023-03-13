@@ -44,7 +44,7 @@ class Analyzer:
 
       mandatory_headers = list(
         set(
-          self.recommendations['header']['mandatory']
+          self.recommendations['mandatory_headers']
         ).difference(
           service['response_headers'].keys()
         )

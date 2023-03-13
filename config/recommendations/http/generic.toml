@@ -1,7 +1,6 @@
 # https://github.com/koenbuyens/securityheaders#security-headers
 
-[header]
-mandatory = [
+mandatory_headers = [
   "strict-transport-security",
   "content-security-policy",
   "referrer-policy",
@@ -50,6 +49,9 @@ on_mismatch = { issue = "`script-src` directive missing" }
 on_match = { next = [ "unsafe-inline", "unsafe-eval" ] }
 
 [header.content-security-policy.script-src.unsafe-inline]
+# "Specifying nonce makes a modern browser ignore 'unsafe-inline' which could still be set for older browsers without nonce support."
+# https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/Sources#nonce-base64-value
+# therefore, even if the directive includes `'nonce-...'` along with `'unsafe-inline'`, we will flag it.
 regex = "(?:script-src)[^;]+(?:'unsafe-inline')[^;]*"
 on_match = { issue = "`script-src` directive contains `unsafe-inline` keyword: this allows the execution of unsafe in-page scripts and event handlers" }
 
