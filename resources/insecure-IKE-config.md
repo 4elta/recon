@@ -1,6 +1,6 @@
 # insecure IKE configuration
 
-this documents's only purpose is to provide a guide on how to setup an **intentionally insecure** VPN server in order to test the `icke` (`ike-scan`) tool.
+this document's only purpose is to provide a guide on how to setup an **intentionally insecure** VPN server in order to test the `icke` (`ike-scan`) tool.
 
 follow the guide on [how to set up an IKEv2 VPN server with strongSwan](https://www.digitalocean.com/community/tutorials/how-to-set-up-an-ikev2-vpn-server-with-strongswan-on-ubuntu-22-04) by DigitalOcean.
 
@@ -8,7 +8,7 @@ follow the guide on [how to set up an IKEv2 VPN server with strongSwan](https://
 
 see [IKE Aggressive Mode](https://www.doyler.net/security-not-included/ike-aggressive-mode-vpn).
 
-* edit `/etc/ipsec.secrets`:
+### edit `/etc/ipsec.secrets`
 
 ```text
 : RSA "server-key.pem"
@@ -17,7 +17,7 @@ see [IKE Aggressive Mode](https://www.doyler.net/security-not-included/ike-aggre
 
 see [PSK secret](https://wiki.strongswan.org/projects/strongswan/wiki/PskSecret).
 
-* edit `/etc/ipsec.conf`:
+### edit `/etc/ipsec.conf`
 
 ```text
 config setup
@@ -50,7 +50,7 @@ conn ikev2-vpn
 
 see the [man page for `ipsec.conf`](https://linux.die.net/man/5/ipsec.conf).
 
-* edit `/etc/strongswan.conf`:
+### edit `/etc/strongswan.conf`
 
 ```text
 charon {
@@ -66,7 +66,7 @@ include strongswan.d/*.conf
 
 see the [documentation about Aggressive Mode in strongSwan](https://docs.strongswan.org/docs/5.9/support/faq.html#_aggressive_mode)
 
-* reload strongSwan:
+### reload strongSwan
 
 ```shell
 sudo systemctl restart strongswan-starter.service
