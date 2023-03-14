@@ -72,7 +72,8 @@ $ analyze.py -h
 usage: analyze.py [-h] [-i INPUT] [--json JSON] [--csv CSV] {tls,ssh} tool recommendations
 
 positional arguments:
-  {tls,ssh,http}        specify the service/protocol whose results are to be analyzed
+  {tls,ssh,http,isakmp}
+                        specify the service/protocol whose results are to be analyzed
   tool                  specify the tool whose results are to be analyzed
   recommendations       path to the recommendations document (e.g.: '/path/to/recon/config/recommendations/tls/mozilla-intermediate.toml')
 
@@ -89,7 +90,4 @@ already implemented:
 * TLS configuration (via the results from `testssl` or `sslscan`)
 * SSH configuration (via the results from `nmap`)
 * HTTP configuration (via the results from `nmap`)
-
-not yet implemented:
-
-* IKE configuration
+* ISAKMP/IKE configuration (via the results from `icke`)
