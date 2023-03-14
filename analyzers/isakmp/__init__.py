@@ -51,11 +51,7 @@ class Analyzer:
     # analyze services based on recommendations
 
     for identifier, service in services.items():
-
       issues = service['issues']
-
-      print(identifier) #TODO
-      print(json.dumps(service, indent=2)) #TODO
 
       if 'versions' in self.recommendations:
         self.analyze_list(
@@ -117,19 +113,9 @@ class Analyzer:
 
     if 'aggressive' in recommendation and not service['aggressive'] == recommendation['aggressive']:
       if service['aggressive']:
-        issues.append(f"supports Aggressive Mode")
+        issues.append(f"IKEv1 Aggressive Mode supported")
       else:
-        issues.append(f"does not support Aggressive Mode")
-
-
-    '''
-        'encryption_algorithms': [], # https://www.iana.org/assignments/ipsec-registry/ipsec-registry.xhtml#ipsec-registry-4
-        'key_lengths': {},
-        'hash_algorithms': [], # https://www.iana.org/assignments/ipsec-registry/ipsec-registry.xhtml#ipsec-registry-6
-        'authentication_methods': [], # https://www.iana.org/assignments/ipsec-registry/ipsec-registry.xhtml#ipsec-registry-8
-        'groups': [], # https://www.iana.org/assignments/ipsec-registry/ipsec-registry.xhtml#ipsec-registry-12
-        'aggressive': None
-    '''
+        issues.append(f"IKEv1 Aggressive Mode not supported")
 
   def analyze_IKEv2(self, service, recommendation, issues):
     if 'encryption_algorithms' in recommendation:
