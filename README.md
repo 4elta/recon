@@ -68,8 +68,8 @@ optional arguments:
 ## analyze and summarize specific scans/services
 
 ```txt
-$ analyze.py -h
-usage: analyze.py [-h] [-i INPUT] [--json JSON] [--csv CSV] {tls,ssh} tool recommendations
+$ analyze -h
+usage: analyze [-h] [-i INPUT] [--json JSON] [--csv CSV] {tls,ssh,http,isakmp} tool recommendations
 
 positional arguments:
   {tls,ssh,http,isakmp}
