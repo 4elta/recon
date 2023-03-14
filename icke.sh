@@ -2,10 +2,16 @@
 
 # "icke bin berliner!"
 
-# this scrip tries to verify whether an IKEv1 server supports specific (problematic) transform attributes (i.e. encryption/hash algorithm, authentication method, etc).
+# this scrip tries to enumerate specific (problematic) transform attributes (i.e. encryption/hash algorithm, authentication method, etc) for IKEv1 servers.
+# at the end, it also tries to establish an IKEv2 handshake with the server.
 # it utilizes [`ike-scan`](https://github.com/royhills/ike-scan).
 
 # [TR-02102-3](https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/Publications/TechGuidelines/TG02102/BSI-TR-02102-3.html) is used as a guideline (even though it covers IKEv2)
+
+SOURCE_PORT=0
+# 0: use a random UDP source port; default=500
+# some IKE implementations require the client to use UDP source port 500 and will not talk to other ports.
+# superuser privileges are normally required to use non-zero source ports below 1024.
 
 # encryption algorithms:
 # see https://www.iana.org/assignments/ipsec-registry/ipsec-registry.xhtml#ipsec-registry-4
@@ -25,6 +31,7 @@ ENCRYPTION_ALGORITHMS=(
 HASH_ALGORITHMS=(
   "1" # MD5
   "2" # SHA
+  #"3" # Tiger, https://en.wikipedia.org/wiki/Tiger_(hash_function)
 )
 
 # authentication methods:
@@ -35,7 +42,7 @@ AUTHENTICATION_METHODS=(
   "3" # RSA signatures
   "4" # encryption with RSA
   "64221" # HybridInitRSA, https://datatracker.ietf.org/doc/html/draft-zegman-ike-hybrid-auth#section-3.2.1
-  "65001" # HybridInitRSA, https://datatracker.ietf.org/doc/html/draft-beaulieu-ike-xauth-02#section-7.2
+  "65001" # XAUTHInitPreShared, https://datatracker.ietf.org/doc/html/draft-beaulieu-ike-xauth-02#section-7.2
 )
 
 # Diffie-Hellman group descriptions
@@ -57,27 +64,41 @@ fi
 
 target="$1"
 
-echo "# target: $target"
+# IKEv1
 
 for encryption_algorithm in "${ENCRYPTION_ALGORITHMS[@]}"; do
   for hash_algorithm in ${HASH_ALGORITHMS[@]}; do
     for authentication_method in ${AUTHENTICATION_METHODS[@]}; do
       for dh_group in ${DH_GROUPS[@]}; do
-        result=$(ike-scan --trans="${encryption_algorithm},${hash_algorithm},${authentication_method},${dh_group}" --multiline $target | awk '/Handshake returned/')
-        if [ ! -z "$result" ]; then
-          printf '\n# ike-scan -a "%s,%s,%s,%s" -M %s\n' "$encryption_algorithm" "$hash_algorithm" "$authentication_method" "$dh_group" "$target"
-          echo $result
+        printf "\nike-scan --sport=%d --trans='%s,%s,%s,%s' %s\n" ${SOURCE_PORT} ${encryption_algorithm} ${hash_algorithm} ${authentication_method} ${dh_group} ${target}
+        result=$(
+          ike-scan \
+            --sport=${SOURCE_PORT} \
+            --trans="${encryption_algorithm},${hash_algorithm},${authentication_method},${dh_group}" \
+            ${target} \
+          | grep 'Handshake returned'
+        )
 
-          # determine whether the VPN server supports *aggressive* mode
-          # https://nvd.nist.gov/vuln/detail/CVE-2002-1623
-          # https://raxis.com/blog/2018/05/23/ike-vpns-supporting-aggressive-mode/
-          result=$(ike-scan --aggressive --id=test --trans="${encryption_algorithm},${hash_algorithm},${authentication_method},${dh_group}" --multiline $target | awk '/Handshake returned/')
-          if [ ! -z "$result" ]; then
-            printf '\n# ike-scan -A -n test -a "%s,%s,%s,%s" -M %s\n' "$encryption_algorithm" "$hash_algorithm" "$authentication_method" "$dh_group" "$target"
-            echo $result
-          fi
+        if [ ! -z "$result" ]; then
+          echo "$result"
+          printf "\nike-scan --sport=%d --trans='%s,%s,%s,%s' --aggressive --dhgroup='%s' --id=test %s\n" ${SOURCE_PORT} ${encryption_algorithm} ${hash_algorithm} ${authentication_method} ${dh_group} ${dh_group} ${target}
+
+          ike-scan \
+            --sport=${SOURCE_PORT} \
+            --trans="${encryption_algorithm},${hash_algorithm},${authentication_method},${dh_group}" \
+            --aggressive --dhgroup=${dh_group} --id=test \
+            ${target} \
+          | grep 'Handshake returned'
         fi
       done
     done
   done
 done
+
+# IKEv2
+
+# this delay seems to be necessary, as otherwise the last scan would not succeed
+sleep 5
+
+printf "\nike-scan --sport=%d --ikev2 %s\n" ${SOURCE_PORT} ${target}
+ike-scan --sport=${SOURCE_PORT} --ikev2 ${target} | grep 'Handshake returned'

@@ -62,6 +62,9 @@ def process(args):
   elif args.service == 'http':
     import analyzers.http
     analyzer = analyzers.http.Analyzer(args.tool, recommendations)
+  elif args.service == 'isakmp':
+    import analyzers.isakmp
+    analyzer = analyzers.isakmp.Analyzer(args.tool, recommendations)
 
   if analyzer:
     services = analyzer.analyze(files)
@@ -98,7 +101,7 @@ def main():
 
   parser.add_argument(
     'service',
-    choices = ['tls', 'ssh', 'http'],
+    choices = ['tls', 'ssh', 'http', 'isakmp'],
     help = "specify the service/protocol whose results are to be analyzed"
   )
 

@@ -1,0 +1,54 @@
+# https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/Publications/TechGuidelines/TG02102/BSI-TR-02102-3.html
+# https://www.nist.gov/publications/guide-ipsec-vpns
+# https://github.com/isaudits/scripts/blob/master/iker.py
+
+versions = [ "IKEv2" ]
+
+[IKEv1]
+
+encryption_algorithms = []
+hash_algorithms = []
+authentication_methods = []
+groups = []
+aggressive = false
+
+[IKEv2]
+# the names/IDs are what `ike-scan` reports:
+# https://github.com/royhills/ike-scan/isakmp.c
+
+encryption_algorithms = [
+  "AES_CBC",
+  "AES_CTR",
+  "AES_GCM_16",
+  "AES_GCM_12",
+  "AES_CCM_16",
+  "AES_CCM_12",
+]
+
+pseudorandom_functions = [
+  "AES128_XCBC",
+  "AES128_CMAC",
+  "HMAC_SHA2_256",
+  "HMAC_SHA2_384",
+  "HMAC_SHA2_512",
+]
+
+integrity_algorithms = [
+  "AES128_XCBC_96",
+  "HMAC_SHA2_256_128",
+  "HMAC_SHA2_384_192",
+  "HMAC_SHA2_512_256",
+]
+
+key_exchange_methods = [
+  "14:modp2048", "15:modp3072", "16:modp4096",
+  "19:ecp256", "20:ecp384", "21:ecp521",
+  #"24:modp2048s256",
+  "28:brainpoolP256r1", "29:brainpoolP384r1", "30:brainpoolP512r1"
+]
+
+authentication_methods = [
+  "ECDSA_SHA256",
+  "ECDSA_SHA384",
+  "ECDSA_SHA512",
+]
