@@ -103,7 +103,7 @@ class CommandLog:
 
 def log(msg):
   if VERBOSE:
-    progress.console.log(msg)
+    OVERALL_PROGRESS.console.log(msg)
 
 def format(*args, frame_index=1, **kvargs):
   '''
