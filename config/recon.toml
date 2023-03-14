@@ -229,7 +229,7 @@ patterns = [ 'https', '^ssl\|', '^tls\|' ]
 [tls_opportunistic]
 patterns = [ 'ftp', 'pop3', 'nntp', 'imap', 'ldap', 'smtp', 'rdp', 'ms-term-services', 'ms-wbt-server', 'pcoip', 'xmpp', 'postgres', 'mongodb' ]
 
-  [tls.scans.sslscan]
+  [tls_opportunistic.scans.sslscan]
   command = '#sslscan --show-certificate --show-sigs --starttls-{application_protocol} --xml="{result_file}.xml" {address}:{port} 2>&1 | tee "{result_file}.log"'
 
   [tls_opportunistic.scans.sslyze]
