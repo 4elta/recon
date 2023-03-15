@@ -91,3 +91,7 @@ already implemented:
 * SSH configuration (via the results from `nmap`)
 * HTTP configuration (via the results from `nmap`)
 * ISAKMP/IKE configuration (via the results from `icke`)
+
+## contribution
+
+In case we have excited your interest in this project (e.g. to contribute some ideas or a new tool to include, or even an analyzer), the [architecture documentation](documentation/architecture.md) might be a great start to learn how the different components of this tool suite are working together.
