@@ -182,7 +182,7 @@ patterns = [ '^smb', '^microsoft\-ds', '^netbios' ]
   run_once = true
 
 [smtp]
-patterns = [ '^smtp' ]
+patterns = [ 'smtp' ]
 
   [smtp.scans.nmap]
   command = 'nmap -Pn -sV -p {port} --script="banner,(smtp* or ssl*) and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" {address}'

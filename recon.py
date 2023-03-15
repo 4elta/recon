@@ -246,6 +246,8 @@ def queue_HTTP_service_scan(target: Target, service: Service, scan: Scan):
   if application_protocol.startswith('ssl|') or application_protocol.startswith('tls|'):
     scheme = 'https'
 
+  application_protocol = 'http'
+
   # we have to run the scan for each hostname associated with the target
   for hostname in hostnames:
     result_file = pathlib.Path(results_directory, f'{scan.service},{port},{hostname},{scan.name}')
@@ -278,6 +280,10 @@ def queue_generic_service_scan(target: Target, service: Service, scan: Scan):
   port = service.port
   application_protocol = service.application_protocol
   address = target.address
+
+  if '|' in application_protocol:
+    # e.g. "ssl|smtp" or "tls|smtp"
+    _, application_protocol = application_protocol.split('|')
 
   # does this service belong to a group that should only be scanned once (e.g. SMB)?
   if scan.run_once:
