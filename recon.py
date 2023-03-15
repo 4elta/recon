@@ -193,7 +193,7 @@ async def run_command(command: Command, target: Target):
       if process.returncode != 0:
         error_msg = await process.stderr.read()
         error_msg = error_msg.decode().strip()
-        progress.console.print(f"[red]{command.description}: {error_msg}")
+        OVERALL_PROGRESS.console.print(f"[red]{command.description}: {error_msg}")
 
     timestamp_completion = time.time()
 
