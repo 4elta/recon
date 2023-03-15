@@ -57,7 +57,7 @@ In case the service was identified as a web service, the following additional va
 * `hostname`: this holds the host's DNS name, or its IP address
 * `scheme`: this is either `http` or `https`
 
-In theory, it's also be possible to inject (small) Python code inside curly brackets, which will get interpreted before the command is scheduled.
+In theory, it's also possible to inject (small) Python code inside curly brackets, which will get interpreted before the command is scheduled.
 
 ## analyzer
 
