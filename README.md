@@ -87,7 +87,7 @@ optional arguments:
 
 already implemented:
 
-* TLS configuration (via the results from `testssl` or `sslscan`)
+* TLS configuration (via the results from `testssl`, `sslscan` or `sslyze`)
 * SSH configuration (via the results from `nmap`)
 * HTTP configuration (via the results from `nmap`)
 * ISAKMP/IKE configuration (via the results from `icke`)
