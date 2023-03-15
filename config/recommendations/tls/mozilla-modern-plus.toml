@@ -8,7 +8,7 @@ preference = "client"
 cipher_suites = [
   "TLS_AES_128_GCM_SHA256",
   "TLS_AES_256_GCM_SHA384",
-  "TLS_CHACHA20_POLY1305_SHA256"
+  "TLS_CHACHA20_POLY1305_SHA256",
 ]
 
 [key_exchange]
@@ -22,13 +22,13 @@ yes = [
   "server_name",
   "extended_master_secret",
   "signature_algorithms_cert",
-  "status_request"
+  "status_request",
 ]
 no = [
   "truncated_hmac",
   "heartbeat",
   "client_certificate_url",
-  "early_data"
+  "early_data", # https://blog.trailofbits.com/2019/03/25/what-application-developers-need-to-know-about-tls-early-data-0rtt/
 ]
 
 [certificate]
@@ -36,7 +36,7 @@ no = [
 signature_algorithms = [
   "ecdsa-with-SHA256",
   "ecdsa-with-SHA384",
-  "ecdsa-with-SHA515"
+  "ecdsa-with-SHA515",
 ]
 
 lifespan = 90
