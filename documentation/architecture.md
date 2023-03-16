@@ -2,9 +2,7 @@
 
 The recon tool suite consists of two main components: the scanner (i.e. `recon.py`) and the analysis (i.e. `analyze.py`).
 The scanner schedules and runs various tools, based on the results of an Nmap service scan.
-The selection of tools, and the parameters used for each, can be specified in a configuration file.
-The results of each of the used tools are saved to files.
-For the analysis component to be able parse and analyze the results, the filenames must adhere to a specific pattern (i.e. `<protocol>,<host information>,<tool name>.<file extenstion>`).
+The analysis component analyzes and summarizes results of specific tools.
 
 ## scanner
 
