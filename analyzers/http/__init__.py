@@ -76,13 +76,24 @@ class Analyzer:
               issues
             )
 
-      # special cases: vulnerability scanners
-      # for example, Nikto does not list the response headers; instead it lists various vulnerabilities it found.
-      # the parsers for scanners like that should collect those items in an array with the name of the tool.
-      # the recommendations config file (for these tools) contains a list of IDs we are interested in.
+      '''
+      special cases: vulnerability scanners
+
+      for example, Nikto does not list the response headers; instead it lists various vulnerabilities it found.
+      the parsers for scanners like that should collect those items in a dictionary (inside the "service" dictionary).
+      "nikto" = {
+        "issue001" = "issue description"
+        "issue987" = "issue description"
+        "issueFOO" = "bar"
+      }
+
+      the recommendations config file (for these tools) contains a list of IDs we are interested in.
+      '''
+
       if tool in self.recommendations and tool in service:
-        for issue in list(set(service[tool]).intersection(self.recommendations[tool])):
-          issues.append(issue)
+        for issue_ID, issue in service[tool].items():
+          if issue_ID in self.recommendations[tool]:
+            issues.append(issue)
 
     return services
 
