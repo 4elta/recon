@@ -43,22 +43,23 @@ class Analyzer:
       issues = service['issues']
 
       if 'mandatory_headers' in self.recommendations:
+        # compile a list of HTTP response headers deemed to be mandatory but which haven't been sent
         mandatory_headers = list(
           set(
-            self.recommendations['mandatory_headers']
+            self.recommendations['mandatory_headers'] # mandatory headers
           ).difference(
-            service['response_headers'].keys()
+            service['response_headers'].keys() # headers the server has sent
           )
         )
 
-        # vor HTTP-only services remove the STS header from the list of mandatory headers
+        # for HTTP-only services remove the STS header from the list of mandatory headers
         if 'scheme' in service and service['scheme'] == 'http':
           try:
             mandatory_headers.remove('strict-transport-security')
           except:
-            # we received an error while trying to remove an element from the list of missing headers
-            # this means the STS header was NOT in the list.
-            # this further means server sent the STS header.
+            # we received an error while trying to remove an element from the list of mandatory headers
+            # this means the STS header was NOT in that list.
+            # this further means that the server sent the STS header.
             # https://datatracker.ietf.org/doc/html/rfc6797#section-7.2
             issues.append("`strict-transport-security` header: an HSTS host must not include this header in responses conveyed over non-secure transport (i.e. HTTP)")
             del service['response_headers']['strict-transport-security']
