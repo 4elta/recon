@@ -42,29 +42,30 @@ class Analyzer:
 
       issues = service['issues']
 
-      mandatory_headers = list(
-        set(
-          self.recommendations['mandatory_headers']
-        ).difference(
-          service['response_headers'].keys()
+      if 'mandatory_headers' in self.recommendations:
+        mandatory_headers = list(
+          set(
+            self.recommendations['mandatory_headers']
+          ).difference(
+            service['response_headers'].keys()
+          )
         )
-      )
 
-      # vor HTTP-only services remove the STS header from the list of mandatory headers
-      if 'scheme' in service and service['scheme'] == 'http':
-        try:
-          mandatory_headers.remove('strict-transport-security')
-        except:
-          # we received an error while trying to remove an element from the list of missing headers
-          # this means the STS header was NOT in the list.
-          # this further means server sent the STS header.
-          # https://datatracker.ietf.org/doc/html/rfc6797#section-7.2
-          issues.append("header: `strict-transport-security`: an HSTS host must not include the STS header field in responses conveyed over non-secure transport (i.e. HTTP)")
-          del service['response_headers']['strict-transport-security']
+        # vor HTTP-only services remove the STS header from the list of mandatory headers
+        if 'scheme' in service and service['scheme'] == 'http':
+          try:
+            mandatory_headers.remove('strict-transport-security')
+          except:
+            # we received an error while trying to remove an element from the list of missing headers
+            # this means the STS header was NOT in the list.
+            # this further means server sent the STS header.
+            # https://datatracker.ietf.org/doc/html/rfc6797#section-7.2
+            issues.append("header: `strict-transport-security`: an HSTS host must not include the STS header field in responses conveyed over non-secure transport (i.e. HTTP)")
+            del service['response_headers']['strict-transport-security']
 
 
-      for missing_header in mandatory_headers:
-        issues.append(f"`{missing_header}` header missing")
+        for missing_header in mandatory_headers:
+          issues.append(f"`{missing_header}` header missing")
 
       for header_name, header_values in service['response_headers'].items():
         if header_name in self.recommendations['header']:
@@ -74,6 +75,14 @@ class Analyzer:
               header_value,
               issues
             )
+
+      # special cases: vulnerability scanners
+      # for example, Nikto does not list the response headers; instead it lists various vulnerabilities it found.
+      # the parsers for scanners like that should collect those items in an array with the name of the tool.
+      # the recommendations config file (for these tools) contains a list of IDs we are interested in.
+      if tool in self.recommendations and tool in service:
+        for issue in list(set(service[tool]).intersection(self.recommendations[tool])):
+          issues.append(issue)
 
     return services
 
