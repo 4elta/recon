@@ -1,4 +1,3 @@
-import csv
 import datetime
 import json
 import pathlib
@@ -74,15 +73,3 @@ class Analyzer:
         issues.append(f"client authentication method: `{deviation}`")
 
     return services
-
-  def save_CSV(self, path, tool):
-    delimiter = ','
-    header = ['tool', 'asset', 'issues']
-
-    with open(path, 'w') as f:
-      csv.writer(f, delimiter=delimiter, quoting=csv.QUOTE_MINIMAL).writerow(header)
-
-      for identifier, service in self.services.items():
-        for issue in service['issues']:
-          row = [tool, identifier, issue]
-          csv.writer(f, delimiter=delimiter, quoting=csv.QUOTE_MINIMAL).writerow(row)

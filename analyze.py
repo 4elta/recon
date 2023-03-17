@@ -2,6 +2,7 @@
 
 import argparse
 import copy
+import csv
 import json
 import pathlib
 import re
@@ -31,6 +32,18 @@ def get_files(directory, service):
       files[tool][suffix].append(str(path))
 
   return files
+
+def save_CSV(services, path, tool):
+  delimiter = ','
+  header = ['tool', 'asset', 'issues']
+
+  with open(path, 'w') as f:
+    csv.writer(f, delimiter=delimiter, quoting=csv.QUOTE_MINIMAL).writerow(header)
+
+    for identifier, service in services.items():
+      for issue in service['issues']:
+        row = [tool, identifier, issue]
+        csv.writer(f, delimiter=delimiter, quoting=csv.QUOTE_MINIMAL).writerow(row)
 
 def process(args):
   if not args.input.exists():
@@ -94,7 +107,7 @@ def process(args):
       json.dump(services, f, indent=2)
 
   if args.csv:
-    analyzer.save_CSV(args.csv, args.tool)
+    save_CSV(services, args.csv, args.tool)
 
 def main():
   parser = argparse.ArgumentParser()

@@ -1,5 +1,4 @@
 import copy
-import csv
 import datetime
 import json
 import pathlib
@@ -166,15 +165,3 @@ class Analyzer:
     if must_support:
       for deviation in list(set(recommendation).difference(supported)):
         issues.append(f"{name} not supported: `{deviation}`")
-
-  def save_CSV(self, path, tool):
-    delimiter = ','
-    header = ['tool', 'asset', 'issues']
-
-    with open(path, 'w') as f:
-      csv.writer(f, delimiter=delimiter, quoting=csv.QUOTE_MINIMAL).writerow(header)
-
-      for identifier, service in self.services.items():
-        for issue in service['issues']:
-          row = [tool, identifier, issue]
-          csv.writer(f, delimiter=delimiter, quoting=csv.QUOTE_MINIMAL).writerow(row)
