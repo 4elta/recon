@@ -136,6 +136,11 @@ name = "`x-powered-by` header:"
 regex = "."
 on_match = { issue = "server discloses information about the application and/or the technology stack" }
 
+[header.x-host]
+name = "`x-host` header:"
+regex = "."
+on_match = { issue = "server/proxy discloses information about the technology stack" }
+
 [header.public-key-pins]
 # https://datatracker.ietf.org/doc/html/rfc7469
 name = "`public-key-pins` header:"
