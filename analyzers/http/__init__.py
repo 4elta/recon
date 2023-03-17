@@ -60,7 +60,7 @@ class Analyzer:
             # this means the STS header was NOT in the list.
             # this further means server sent the STS header.
             # https://datatracker.ietf.org/doc/html/rfc6797#section-7.2
-            issues.append("header: `strict-transport-security`: an HSTS host must not include the STS header field in responses conveyed over non-secure transport (i.e. HTTP)")
+            issues.append("`strict-transport-security` header: an HSTS host must not include this header in responses conveyed over non-secure transport (i.e. HTTP)")
             del service['response_headers']['strict-transport-security']
 
 
