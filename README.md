@@ -41,6 +41,10 @@ ln -s $(realpath recon.py) ~/bin/recon
 
 ## usage
 
+### scanner
+
+schedule and execute various tools based on the findings of the Nmap service scan:
+
 ```txt
 $ recon -h
 usage: recon [-h] [-i INPUT] [-o OUTPUT] [-c CONFIG] [-t CONCURRENT_TARGETS] [-s CONCURRENT_SCANS] [-v] [-n] [-y]
@@ -65,7 +69,9 @@ optional arguments:
                         character used to delimit columns in the 'commands.csv' file (default: ',')
 ```
 
-## analyze and summarize specific scans/services
+### analysis
+
+analyze and summarize the results of specific tools previously run by the scanner:
 
 ```txt
 $ analyze -h
@@ -85,12 +91,18 @@ optional arguments:
   --csv CSV             in addition to the analysis printed in Markdown to STDOUT, also save the analysis as a CSV document
 ```
 
-already implemented:
+currently implemented analyzers/parsers:
 
 * TLS configuration (via the results from `testssl`, `sslscan` or `sslyze`)
 * SSH configuration (via the results from `nmap`)
 * HTTP configuration (via the results from `nmap`)
 * ISAKMP/IKE configuration (via the results from `icke`)
+
+If you need the analysis in a markup format other than Markdown, [`pandoc`](https://pandoc.org/) has you covered.
+
+```txt
+$ analyze [...] | pandoc --from=markdown --to=docx --output="/path/to/analysis.docx"
+```
 
 ## contribution
 
