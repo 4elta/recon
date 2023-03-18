@@ -5,7 +5,7 @@ The recon tool suite can help you automate that and analyze/summarize the result
 
 ## motivation
 
-Instead of manually running various tools (e.g. [sslyze](https://github.com/nabla-c0d3/sslyze), [Nikto](https://cirt.net/nikto2), [feroxbuster](https://github.com/epi052/feroxbuster), etc.) and having to remember all commands and the necessary options, we can configure the recon tool (see [`config.toml`](config.toml)) and have it run the required/appropriate tools based on what the Nmap service scan (e.g. `services.xml`) has found.
+Instead of manually running various tools (e.g. [sslyze](https://github.com/nabla-c0d3/sslyze), [Nikto](https://cirt.net/nikto2), [feroxbuster](https://github.com/epi052/feroxbuster), etc.) and having to remember all commands and the necessary options, we can configure the recon tool (see [`config/recon.toml`](config/recon.toml)) and have it run the required/appropriate tools based on what the Nmap service scan (e.g. `services.xml`) has found.
 In addition to that, the suite also provides tools to analyze and summarize the results of some scans (e.g. HTTP security headers, TLS/SSH/IKE configuration, etc.).
 This allows for an automated and consistent assessment of specific services (i.e. no longer are testers forced to analyze TLS/SSH configurations by hand).
 
@@ -45,7 +45,7 @@ ln -s $(realpath recon.py) ~/bin/recon
 
 schedule and execute various tools based on the findings of the Nmap service scan:
 
-```txt
+```text
 $ recon -h
 usage: recon [-h] [-i INPUT] [-o OUTPUT] [-c CONFIG] [-t CONCURRENT_TARGETS] [-s CONCURRENT_SCANS] [-v] [-n] [-y]
 
@@ -73,7 +73,7 @@ optional arguments:
 
 analyze and summarize the results of specific tools previously run by the scanner:
 
-```txt
+```text
 $ analyze -h
 usage: analyze [-h] [-i INPUT] [--json JSON] [--csv CSV] {tls,ssh,http,isakmp} tool recommendations
 
@@ -98,9 +98,10 @@ currently implemented analyzers/parsers:
 * HTTP configuration (via the results from `nmap`)
 * ISAKMP/IKE configuration (via the results from `icke`)
 
-If you need the analysis in a markup format other than Markdown, [`pandoc`](https://pandoc.org/) has you covered.
+If you need the analysis in a markup format other than Markdown, just [pipe](https://en.wikipedia.org/wiki/Pipeline_(Unix)) the output of the analyzer to [`pandoc`](https://pandoc.org/) and you are good to go.
+Below is an example for a conversation to OOXML (i.e. the format used by Microsoft Word):
 
-```txt
+```text
 $ analyze [...] | pandoc --from=markdown --to=docx --output="/path/to/analysis.docx"
 ```
 

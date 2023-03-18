@@ -134,23 +134,6 @@ def create_summary(target: Target):
 
       f.write(f"* {service.port} ({service.transport_protocol}): `{description}`\n")
 
-  services_file = pathlib.Path(target.directory, 'services.tex')
-  with open(services_file, 'w') as f:
-    f.write(r"\begin{center}" + "\n")
-    f.write(r"\rowcolors{1}{white}{light-gray}" + "\n")
-    f.write(r"\begin{tabular}{r c p{.75\linewidth}}" + "\n")
-    f.write(r"\textbf{port} & \textbf{protocol} & \textbf{service} \\" + "\n")
-
-    for service in target.services:
-      description = service.application_protocol
-      if service.description:
-        description = service.description
-
-      f.writelines(f"{service.port} & {service.transport_protocol} & {description} " + r"\\" + "\n")
-
-    f.writelines(r"\end{tabular}" + "\n")
-    f.writelines(r"\end{center}" + "\n")
-
 async def run_command(command: Command, target: Target):
 
   # make sure that only a specific number of scans are running per target
