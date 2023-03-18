@@ -82,9 +82,9 @@ class Analyzer:
       for example, Nikto does not list the response headers; instead it lists various vulnerabilities it found.
       the parsers for scanners like that should collect those items in a dictionary (inside the "service" dictionary).
       "nikto" = {
-        "issue001" = "issue description"
-        "issue987" = "issue description"
-        "issueFOO" = "bar"
+        "issue001" : "issue description",
+        "issue987" : "issue description",
+        "issueFOO" : "bar"
       }
 
       the recommendations config file (for these tools) contains a list of IDs we are interested in.
