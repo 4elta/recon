@@ -27,7 +27,7 @@ cd recon
 pip3 install -r requirements.txt
 ```
 
-Be sure to have the scripts of the suite in your `PATH` variable; at least the `icke.sh` should be, as it is only referenced by name (in `config.toml`).
+Be sure to have the scripts of the suite in your `PATH` variable; at least the `icke.sh` should be, as it is only referenced by name (in `config/recon.toml`).
 Also, make sure that the scripts have the *executable* flag set.
 
 ```sh
@@ -91,7 +91,7 @@ optional arguments:
   --csv CSV             in addition to the analysis printed in Markdown to STDOUT, also save the analysis as a CSV document
 ```
 
-currently implemented analyzers/parsers:
+currently implemented analyzers:
 
 * TLS configuration (via the results from `testssl`, `sslscan` or `sslyze`)
 * SSH configuration (via the results from `nmap`)
@@ -99,7 +99,7 @@ currently implemented analyzers/parsers:
 * ISAKMP/IKE configuration (via the results from `icke`)
 
 If you need the analysis in a markup format other than Markdown, just [pipe](https://en.wikipedia.org/wiki/Pipeline_(Unix)) the output of the analyzer to [`pandoc`](https://pandoc.org/) and you are good to go.
-Below is an example for a conversation to OOXML (i.e. the format used by Microsoft Word):
+Below is an example of a conversion to `docx`:
 
 ```text
 $ analyze [...] | pandoc --from=markdown --to=docx --output="/path/to/analysis.docx"
