@@ -40,6 +40,8 @@ on_match = { issue = "policy allows loading sources from the local host" }
 
 [header.content-security-policy.report-uri]
 # https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/report-uri
+# browsers that support `report-to` will ignore the `report-uri` directive.
+# for adding forward compatibility when browsers get `report-to` support, you can specify both `report-uri` and `report-to`.
 regex = "report-uri.+(?!report-to)"
 on_match = { issue = "`report-uri` directive is deprecated; use `report-to` instead" }
 
