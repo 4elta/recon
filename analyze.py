@@ -6,6 +6,7 @@ import csv
 import json
 import pathlib
 import re
+import sys
 
 try:
   # https://github.com/uiri/toml
