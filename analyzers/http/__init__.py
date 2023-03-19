@@ -50,9 +50,9 @@ class Analyzer:
           )
         )
 
-        # for HTTP-only services remove the STS header from the list of mandatory headers
         if 'scheme' in service and service['scheme'] == 'http':
           try:
+            # for HTTP-only services remove the STS header from the list of mandatory headers
             mandatory_headers.remove('strict-transport-security')
           except:
             # we received an error while trying to remove an element from the list of mandatory headers
@@ -61,6 +61,16 @@ class Analyzer:
             # https://datatracker.ietf.org/doc/html/rfc6797#section-7.2
             issues.append("`strict-transport-security` header: an HSTS host must not include this header in responses conveyed over non-secure transport (i.e. HTTP)")
             del service['response_headers']['strict-transport-security']
+
+          # HTTP-only services must redirect to HTTPS
+          if 'location' in service['response_headers']:
+            regex = re.compile('https://')
+            for redirect in service['response_headers']['location']:
+              if 'https://' not in redirect:
+                issues.append("`location` header: HTTP service does not redirect to HTTPS")
+                break
+          else:
+            issues.append("HTTP service does not redirect to HTTPS")
 
 
         for missing_header in mandatory_headers:
