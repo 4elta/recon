@@ -115,7 +115,7 @@ def main():
 
   parser.add_argument(
     'service',
-    choices = ['tls', 'ssh', 'http', 'isakmp'],
+    choices = ['http', 'isakmp', 'ssh', 'tls', ],
     help = "specify the service/protocol whose results are to be analyzed"
   )
 

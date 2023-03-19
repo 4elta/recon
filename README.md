@@ -75,10 +75,10 @@ analyze and summarize the results of specific tools previously run by the scanne
 
 ```text
 $ analyze -h
-usage: analyze [-h] [-i INPUT] [--json JSON] [--csv CSV] {tls,ssh,http,isakmp} tool recommendations
+usage: analyze [-h] [-i INPUT] [--json JSON] [--csv CSV] {http,isakmp,ssh,tls} tool recommendations
 
 positional arguments:
-  {tls,ssh,http,isakmp}
+  {http,isakmp,ssh,tls}
                         specify the service/protocol whose results are to be analyzed
   tool                  specify the tool whose results are to be analyzed
   recommendations       path to the recommendations document (e.g.: '/path/to/recon/config/recommendations/tls/mozilla-intermediate.toml')
