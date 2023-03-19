@@ -79,7 +79,11 @@ class Analyzer:
       special cases: vulnerability scanners
 
       for example, Nikto does not list the response headers; instead it lists various vulnerabilities it found.
-      the parsers for scanners like that should collect those items in a dictionary (inside the "service" dictionary).
+
+      TODO: what's the best way to tackle this?
+
+      the parsers (for scanners like that) should collect those items in a dictionary (inside the "service" dictionary):
+
       "nikto" = {
         "issue001" : "issue description",
         "issue987" : "issue description",
@@ -90,8 +94,8 @@ class Analyzer:
       '''
 
       if self.tool in self.recommendations and self.tool in service:
-        for issue_ID, issue in service[tool].items():
-          if issue_ID in self.recommendations[tool]:
+        for issue_ID, issue in service[self.tool].items():
+          if issue_ID in self.recommendations[self.tool]:
             issues.append(issue)
 
     return services
