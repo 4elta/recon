@@ -31,11 +31,11 @@ regex = "default-src"
 on_mismatch = { issue = "`default-src` directive missing" }
 
 [header.content-security-policy.src_http]
-regex = "(?:[a-z]+-src)[^;]+(?:http:)[^;]*"
+regex = "[a-z]+-src[^;]+http:[^;]*"
 on_match = { issue = "policy allows loading sources over HTTP" }
 
 [header.content-security-policy.src_localhost]
-regex = "(?:[a-z]+-src)[^;]+(?:https?://)?(?:127.0.0.1|localhost)[^;]*"
+regex = "[a-z]+-src[^;]+(?:https?://)?(?:127.0.0.1|localhost)[^;]*"
 on_match = { issue = "policy allows loading sources from the local host" }
 
 [header.content-security-policy.report-uri]
@@ -54,11 +54,11 @@ on_match = { next = [ "unsafe-inline", "unsafe-eval" ] }
 # "Specifying nonce makes a modern browser ignore 'unsafe-inline' which could still be set for older browsers without nonce support."
 # https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/Sources#nonce-base64-value
 # therefore, even if the directive includes `'nonce-...'` along with `'unsafe-inline'`, we will flag it.
-regex = "(?:script-src)[^;]+(?:'unsafe-inline')[^;]*"
+regex = "script-src[^;]+'unsafe-inline'[^;]*"
 on_match = { issue = "`script-src` directive contains `unsafe-inline` keyword: this allows the execution of unsafe in-page scripts and event handlers" }
 
 [header.content-security-policy.script-src.unsafe-eval]
-regex = "(?:script-src)[^;]+(?:'unsafe-eval')[^;]*"
+regex = "script-src[^;]+'unsafe-eval'[^;]*"
 on_match = { issue = "`script-src` directive contains `unsafe-eval` keyword: this allows the execution of code injected into DOM APIs such as `eval()`" }
 
 [header.content-security-policy.object-src]
@@ -67,15 +67,15 @@ on_mismatch = { issue = "`object-src` directive missing: this allows the injecti
 on_match = { next = [ "wildcard", "unsafe-inline", "unsafe-eval" ] }
 
 [header.content-security-policy.object-src.wildcard]
-regex = "(?:object-src)[^;]+(?:[*])[^;]*"
+regex = "object-src[^;]+[*][^;]*"
 on_match = { issue = "`object-src` directive contains the wildcard (`*`)" }
 
 [header.content-security-policy.object-src.unsafe-inline]
-regex = "(?:object-src)[^;]+(?:'unsafe-inline')[^;]*"
+regex = "object-src[^;]+'unsafe-inline'[^;]*"
 on_match = { issue = "`object-src` directive contains `unsafe-inline` keyword" }
 
 [header.content-security-policy.object-src.unsafe-eval]
-regex = "(?:object-src)[^;]+(?:'unsafe-eval')[^;]*"
+regex = "object-src[^;]+'unsafe-eval'[^;]*"
 on_match = { issue = "`object-src` directive contains `unsafe-eval` keyword" }
 
 [header.content-security-policy.base-uri]
