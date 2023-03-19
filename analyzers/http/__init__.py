@@ -110,15 +110,12 @@ class Analyzer:
         names.append(recommendation['name'])
 
     match = True
-    matches = {}
 
     if 'regex' in recommendation:
       p = re.compile(recommendation['regex'])
       m = p.search(value)
 
       match = match and bool(m)
-      if m:
-        matches = m.groupdict()
 
     if 'lower_bound' in recommendation:
       match = match and (int(value) >= recommendation['lower_bound'])

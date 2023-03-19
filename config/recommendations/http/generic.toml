@@ -22,7 +22,7 @@ on_mismatch = { issue = "`max-age` (i.e. expire time) too short" }
 [header.content-security-policy]
 # https://w3c.github.io/webappsec-csp/#csp-header
 name = "`content-security-policy` header:"
-regex = "(?P<policy_directive>(?:child|connect|default|font|frame|img|manifest|media|object|prefetch|worker)-src|(?:script|style)-src(?:-(?:elem|attr))?|webrtc|bae-uri|sandbox|form-action|frame-ancestors|navigate-to|report-(?:uri|to)|require-trusted-types-for|trusted-types|upgrade-insecure-requests) (?P<policy_values>[^;]+)(?:; *)?"
+regex = "(?P<policy_directive>(?:child|connect|default|font|frame|img|manifest|media|object|prefetch|worker)-src|(?:script|style)-src(?:-(?:elem|attr))?|webrtc|base-uri|sandbox|form-action|frame-ancestors|navigate-to|report-(?:uri|to)|require-trusted-types-for|trusted-types|upgrade-insecure-requests) (?P<policy_values>[^;]+)(?:; *)?"
 on_mismatch = { issue = "syntax error" }
 on_match = { next = [ "default-src", "src_http", "src_localhost", "report-uri", "script-src", "object-src", "base-uri" ] }
 
