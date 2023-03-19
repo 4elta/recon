@@ -29,7 +29,6 @@ def get_files(directory, service):
       files[tool][suffix] = []
 
     if path not in files[tool][suffix]:
-      #files[tool][suffix].append(path)
       files[tool][suffix].append(str(path))
 
   return files
@@ -56,13 +55,10 @@ def process(args):
   with open(args.recommendations, 'r') as f:
     recommendations = toml.load(f)
 
-  #print(json.dumps(recommendations, indent=2))
-
   if not args.input.exists():
     sys.exit(f"directory '{args.input}' does not exist")
 
   files = get_files(args.input, args.service)
-  #print(json.dumps(files, indent=2))
 
   analyzer = None
   services = {}

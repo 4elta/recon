@@ -111,8 +111,6 @@ class Analyzer:
     services = self.parser.parse_files(files[self.tool])
     self.services = services
 
-    #print(json.dumps(services, indent=2))
-
     # analyze services based on recommendations
     for identifier, service in services.items():
       issues = service['issues']
