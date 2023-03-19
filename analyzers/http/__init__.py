@@ -40,6 +40,16 @@ class Analyzer:
 
       issues = service['issues']
 
+      if 'scheme' in service and service['scheme'] == 'http':
+        # HTTP-only services must redirect to HTTPS
+        if 'location' in service['response_headers']:
+          for redirect in service['response_headers']['location']:
+            if 'https://' not in redirect:
+              issues.append("`location` header: HTTP service does not redirect to HTTPS")
+              break
+        else:
+          issues.append("HTTP service does not redirect to HTTPS")
+
       if 'mandatory_headers' in self.recommendations:
         # compile a list of HTTP response headers deemed to be mandatory but which haven't been sent
         mandatory_headers = list(
@@ -61,17 +71,6 @@ class Analyzer:
             # https://datatracker.ietf.org/doc/html/rfc6797#section-7.2
             issues.append("`strict-transport-security` header: an HSTS host must not include this header in responses conveyed over non-secure transport (i.e. HTTP)")
             del service['response_headers']['strict-transport-security']
-
-          # HTTP-only services must redirect to HTTPS
-          if 'location' in service['response_headers']:
-            regex = re.compile('https://')
-            for redirect in service['response_headers']['location']:
-              if 'https://' not in redirect:
-                issues.append("`location` header: HTTP service does not redirect to HTTPS")
-                break
-          else:
-            issues.append("HTTP service does not redirect to HTTPS")
-
 
         for missing_header in mandatory_headers:
           issues.append(f"`{missing_header}` header missing")
