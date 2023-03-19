@@ -17,7 +17,17 @@ class Analyzer(AbstractAnalyzer):
   def __init__(self, name, recommendations):
     super().__init__(name, recommendations)
 
-    self.set_parser('nmap')
+    self.services = []
+
+    match tool:
+        case 'nmap':  
+            from .nmap import Parser
+        case 'nikto':
+            from .nikto import Parser
+        case _:
+            sys.exit(f"unknown tool '{self.tool}'")
+
+    self.parser = Parser()
 
   def analyze(self, files):
     super().analyze(files)
