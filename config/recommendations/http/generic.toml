@@ -35,7 +35,7 @@ regex = "(?:[a-z]+-src)[^;]+(?:http:)[^;]*"
 on_match = { issue = "policy allows loading sources over HTTP" }
 
 [header.content-security-policy.src_localhost]
-regex = "(?:[a-z]+-src)[^;]+(?:https?://(?:127.0.0.1|localhost))[^;]*"
+regex = "(?:[a-z]+-src)[^;]+(?:https?://)?(?:127.0.0.1|localhost)[^;]*"
 on_match = { issue = "policy allows loading sources from the local host" }
 
 [header.content-security-policy.report-uri]
