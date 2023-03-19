@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import argparse
-import copy
 import csv
 import json
 import pathlib

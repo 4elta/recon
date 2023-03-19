@@ -1,4 +1,3 @@
-import copy
 import datetime
 import json
 import pathlib
@@ -90,7 +89,7 @@ class Analyzer:
       the recommendations config file (for these tools) contains a list of IDs we are interested in.
       '''
 
-      if tool in self.recommendations and tool in service:
+      if self.tool in self.recommendations and self.tool in service:
         for issue_ID, issue in service[tool].items():
           if issue_ID in self.recommendations[tool]:
             issues.append(issue)
