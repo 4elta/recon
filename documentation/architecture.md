@@ -48,6 +48,7 @@ Each scan command at least needs a header (i.e. `[<protocol>.scans.<tool name>]`
 It has access to the following variables (i.e. `{variable}`):
 
 * `address`: this holds the host's IP address
+* `transport_protocol`: this is either `tcp` or `udp`
 * `port`: this holds the port number where a specific service was found
 * `result_file`: this is the path to where the results are stored (i.e. `/path/to/project/recon/<address>/services/<protocol>,<host information>,<tool name>`)
 * `application_protocol`: this holds the identified application protocol (e.g. `http`, `ssh`, `smtp`, etc.)
