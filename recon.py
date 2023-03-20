@@ -487,6 +487,15 @@ async def process(args):
   targets = parse_result_file(base_directory, args.input)
   log(f"parsed {len(targets)} targets")
 
+  # create CSV file that lists all found services
+  with open(pathlib.Path(base_directory, 'services.csv'), 'w') as f:
+    csv.writer(f, delimiter=args.delimiter, quoting=csv.QUOTE_MINIMAL).writerow(['host', 'transport_protocol', 'port', 'service'])
+
+    for address, target in targets.items():
+      for service in target.services:
+        row = [address, service.transport_protocol, service.port, service.application_protocol]
+        csv.writer(f, delimiter=args.delimiter, quoting=csv.QUOTE_MINIMAL).writerow(row)
+
   global OVERALL_TASK
   OVERALL_TASK = OVERALL_PROGRESS.add_task("overall progress:", total=len(targets))
 
