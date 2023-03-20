@@ -48,10 +48,22 @@ def process(args):
   if not args.input.exists():
     sys.exit(f"the specified directory '{base_dir}' does not exist!")
 
-  if not args.recommendations.exists():
-    sys.exit(f"the recommendations file '{args.recommendations}' does not exist!")
+  if args.recommendations:
+    recommendations_file = args.recommendations
+    if not recommendations_file.exists():
+      sys.exit(f"the recommendations file '{recommendations_file}' does not exist!")
+  else:
+    recommendations_file = pathlib.Path(
+      pathlib.Path(__file__).resolve().parent,
+      "config",
+      "recommendations",
+      args.service,
+      "default.toml"
+    )
+    if not recommendations_file.exists():
+      sys.exit(f"the default recommendations file '{recommendations_file}' does not exist!")
 
-  with open(args.recommendations, 'r') as f:
+  with open(recommendations_file, 'r') as f:
     recommendations = toml.load(f)
 
   if not args.input.exists():
@@ -88,7 +100,7 @@ def process(args):
 
     print(f"\n## {asset}\n")
 
-    print(f"Vulnerabilities and/or deviations from the recommended settings (`{args.recommendations.name}`):\n")
+    print(f"Vulnerabilities and/or deviations from the recommended settings (`{recommendations_file.name}`):\n")
 
     for issue in service['issues']:
       print(f"* {issue}")
@@ -120,9 +132,9 @@ def main():
   )
 
   parser.add_argument(
-    'recommendations',
+    '-r', '--recommendations',
     type = pathlib.Path,
-    help = "path to the recommendations document (e.g.: '/path/to/recon/config/recommendations/tls/mozilla-intermediate.toml')"
+    help = "path to the recommendations document (default: '/path/to/recon/config/recommendations/<protocol>/default.toml')"
   )
 
   parser.add_argument(

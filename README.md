@@ -75,16 +75,17 @@ analyze and summarize the results of specific tools previously run by the scanne
 
 ```text
 $ analyze -h
-usage: analyze [-h] [-i INPUT] [--json JSON] [--csv CSV] {http,isakmp,ssh,tls} tool recommendations
+usage: analyze [-h] [-r RECOMMENDATIONS] [-i INPUT] [--json JSON] [--csv CSV] {http,isakmp,ssh,tls} tool
 
 positional arguments:
   {http,isakmp,ssh,tls}
                         specify the service/protocol whose results are to be analyzed
   tool                  specify the tool whose results are to be analyzed
-  recommendations       path to the recommendations document (e.g.: '/path/to/recon/config/recommendations/tls/mozilla-intermediate.toml')
 
 optional arguments:
   -h, --help            show this help message and exit
+  -r RECOMMENDATIONS, --recommendations RECOMMENDATIONS
+                        path to the recommendations document (default: '/path/to/recon/config/recommendations/<protocol>/default.toml')
   -i INPUT, --input INPUT
                         path to the root directory that holds the results to be analysed (default: './recon')
   --json JSON           in addition to the analysis printed in Markdown to STDOUT, also save the analysis as a JSON document
