@@ -22,7 +22,7 @@ patterns = [ '^distccd' ]
 patterns = [ '^domain' ]
 
   [dns.scans.nmap]
-  command = 'nmap -Pn -sV -p {port} --script="banner,(dns* or ssl*) and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" {address}'
+  command = 'nmap -sT -sU -Pn -sV -p {port} --script="banner,(dns* or ssl*) and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" {address}'
 
   [dns.scans.dig]
   command = 'dig @{address} version.bind chaos txt 2>&1 | tee "{result_file}.log"'
@@ -87,7 +87,7 @@ patterns = [ '^isakmp' ]
 patterns = [ '^kerberos', '^kpasswd' ]
 
   [kerberos.scans.nmap]
-  command = 'nmap -Pn -sV -p {port} --script="banner,krb5-enum-users" -oN "{result_file}.log" {address}'
+  command = 'nmap -sT -sU -Pn -sV -p {port} --script="banner,krb5-enum-users" -oN "{result_file}.log" {address}'
 
 [ldap]
 patterns = [ '^ldap' ]
@@ -121,6 +121,12 @@ patterns = [ '^nntp' ]
 
   [nntp.scans.nmap]
   command = 'nmap -Pn -sV -p {port} --script="banner,nntp-ntlm-info" -oN "{result_file}.log" {address}'
+
+[ntp]
+patterns = [ '^ntp' ]
+
+  [ntp.scans.nmap]
+  command = 'nmap -sT -sU -Pn -sV -p {port} --script="banner,ntp-info,ntp-monlist" -oN "{result_file}.log" {address}'
 
 [oracle]
 patterns = [ '^oracle' ]
@@ -171,7 +177,7 @@ patterns = [ '^asterisk', '^sip', '^ventrilo' ]
 patterns = [ '^smb', '^microsoft\-ds', '^netbios' ]
 
   [smb.scans.nmap]
-  command = 'nmap -Pn -sV -p {port} --script="banner,(nbstat or smb* or ssl*) and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" {address}'
+  command = 'nmap -sT -sU -Pn -sV -p {port} --script="banner,(nbstat or smb* or ssl*) and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" {address}'
 
   [smb.scans.smbclient]
   command = 'smbclient --list={address} --no-pass --command="recurse ON; ls" 2>&1 | tee {result_file}.log'
@@ -191,7 +197,7 @@ patterns = [ 'smtp' ]
 patterns = [ '^snmp' ]
 
   [snmp.scans.nmap]
-  command = 'nmap -Pn -sV -p {port} --script="banner,(snmp* or ssl*) and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" {address}'
+  command = 'nmap -sT -sU -Pn -sV -p {port} --script="banner,(snmp* or ssl*) and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" {address}'
 
   [snmp.scans.onesixtyone]
   command = '#onesixtyone -c /usr/share/seclists/Discovery/SNMP/common-snmp-community-strings-onesixtyone.txt -dd {address} 2>&1 | tee "{result_file}.log"'

@@ -5,6 +5,7 @@
 import argparse
 import asyncio
 import csv
+import os
 import pathlib
 import random
 import re
@@ -444,6 +445,9 @@ async def process(args):
   global OVERWRITE
   OVERWRITE = args.overwrite_results
 
+  if not os.geteuid() == 0 and not args.ignore_uid:
+    sys.exit('depending on what commands/tools this script executes it might have to be run by the root user (i.e. with "sudo").\nyou could try and ignore this warning by using the `--ignore_uid` flag.')
+
   # limit the number of concurrently scanned targets
   concurrent_targets = asyncio.Semaphore(args.concurrent_targets)
 
@@ -521,6 +525,7 @@ def main():
   parser.add_argument('-n', '--dry_run', action='store_true', help="do not run any command; just create/update the 'commands.csv' file")
   parser.add_argument('-y', '--overwrite_results', action='store_true', help="overwrite existing result files")
   parser.add_argument('-d', '--delimiter', default=',', help="character used to delimit columns in the 'commands.csv' file (default: ',')")
+  parser.add_argument('--ignore_uid', action='store_true', help="ignore the warning about incorrect UID.")
 
   try:
     asyncio.run(
