@@ -57,8 +57,6 @@ In case the service was identified as a web service, the following additional va
 * `hostname`: this holds the host's DNS name, or its IP address
 * `scheme`: this is either `http` or `https`
 
-Theoretically, it's also possible to insert (small) Python code inside braces (`{...}`), which is interpreted before the command is scheduled.
-
 ## analysis
 
 The analysis component (i.e. `analyze.py`) provides functionality to analyze and summarize results of specific tools.
