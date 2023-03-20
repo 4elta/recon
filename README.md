@@ -46,7 +46,7 @@ schedule and execute various tools based on the findings of the Nmap service sca
 
 ```text
 $ recon -h
-usage: recon [-h] [-i INPUT] [-o OUTPUT] [-c CONFIG] [-t CONCURRENT_TARGETS] [-s CONCURRENT_SCANS] [-v] [-n] [-y]
+usage: recon [-h] [-i INPUT] [-o OUTPUT] [-c CONFIG] [-t CONCURRENT_TARGETS] [-s CONCURRENT_SCANS] [-v] [-n] [-y] [-d DELIMITER] [--ignore_uid]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -66,6 +66,7 @@ optional arguments:
                         overwrite existing result files
   -d DELIMITER, --delimiter DELIMITER
                         character used to delimit columns in the 'commands.csv' file (default: ',')
+  --ignore_uid          ignore the warning about incorrect UID.
 ```
 
 ### analysis
