@@ -8,7 +8,7 @@
 
 # [TR-02102-3](https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/Publications/TechGuidelines/TG02102/BSI-TR-02102-3.html) is used as a guideline (even though it covers IKEv2)
 
-SOURCE_PORT=0
+SOURCE_PORT=500
 # 0: use a random UDP source port; default=500
 # some IKE implementations require the client to use UDP source port 500 and will not talk to other ports.
 # superuser privileges are normally required to use non-zero source ports below 1024.
