@@ -34,8 +34,8 @@ Also, make sure that the scripts have the *executable* flag set.
 chmod +x analyzers/*
 chmod +x icke.sh
 chmod +x recon.py
-ln -s $(realpath icke.sh) ~/bin/icke
-ln -s $(realpath recon.py) ~/bin/recon
+sudo ln -s $(realpath icke.sh) /usr/local/bin/icke
+sudo ln -s $(realpath recon.py) /usr/local/bin/recon
 ```
 
 ## usage
