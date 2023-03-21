@@ -51,6 +51,9 @@ JOB_PROGRESS = Progress(
   transient = True,
 )
 
+# default timeout (in seconds) after which a command will be cancelled
+MAX_TIME = 60*60
+
 class Service:
   def __init__(self, port, transport_protocol, application_protocol, description):
     self.port = int(port)
@@ -135,6 +138,24 @@ def create_summary(target: Target):
 
       f.write(f"* {service.port} ({service.transport_protocol}): `{description}`\n")
 
+async def read_command_results(process, command):
+  try:
+    # parse STDOUT
+    while True:
+      line = await process.stdout.readline()
+      if line:
+        line = str(line.rstrip(), 'utf8', 'ignore')
+        log(line)
+
+        for pattern in command.patterns:
+          match = re.search(pattern, line)
+          if match:
+            JOB_PROGRESS.console.print(f"{command.description}: \"{line.strip()}\"")
+      else:
+        break
+  except asyncio.exceptions.CancelledError:
+    return
+
 async def run_command(command: Command, target: Target):
 
   # make sure that only a specific number of scans are running per target
@@ -155,29 +176,23 @@ async def run_command(command: Command, target: Target):
         executable = '/bin/bash'
       )
 
-      # parse STDOUT
-      while True:
-        line = await process.stdout.readline()
-        if line:
-          line = str(line.rstrip(), 'utf8', 'ignore')
-          log(line)
+      try:
+        # wait for the task (i.e. read command results) to finish within the specified timeout (in seconds)
+        # https://docs.python.org/3/library/asyncio-task.html#asyncio.wait_for
+        await asyncio.wait_for(read_command_results(process, command), timeout=MAX_TIME)
 
-          for pattern in command.patterns:
-            match = re.search(pattern, line)
-            if match:
-              JOB_PROGRESS.console.print(f"{command.description}: \"{line.strip()}\"")
-        else:
-          break
+        return_code = process.returncode
 
-      # wait for the process to finish
-      await process.wait()
+        if return_code is None:
+          return_code = 0
 
-      return_code = process.returncode
-      
-      if process.returncode != 0:
-        error_msg = await process.stderr.read()
-        error_msg = error_msg.decode().strip()
-        OVERALL_PROGRESS.console.print(f"[red]{command.description}: {error_msg}")
+        if return_code not in (0, 'timeout'):
+          error_msg = await process.stderr.read()
+          error_msg = error_msg.decode().strip()
+          OVERALL_PROGRESS.console.print(f"[red]{command.description}: {error_msg}")
+      except asyncio.exceptions.TimeoutError:
+        OVERALL_PROGRESS.console.print(f"[red]{command.description}: timeout!")
+        return_code = "timeout"
 
     timestamp_completion = time.time()
 
@@ -445,6 +460,9 @@ async def process(args):
   global OVERWRITE
   OVERWRITE = args.overwrite_results
 
+  global MAX_TIME
+  MAX_TIME = args.max_time
+
   if not os.geteuid() == 0 and not args.ignore_uid:
     sys.exit('depending on what commands/tools this script executes it might have to be run by the root user (i.e. with "sudo").\nyou could try and ignore this warning by using the `--ignore_uid` flag.')
 
@@ -530,6 +548,7 @@ def main():
   parser.add_argument('-c', '--config', type=pathlib.Path, help="path to the scan configuration file (default: '/path/to/recon-suite/config/recon.toml')")
   parser.add_argument('-t', '--concurrent_targets', type=int, default=3, help="how many targets should be scanned concurrently (default: 3)")
   parser.add_argument('-s', '--concurrent_scans', type=int, default=2, help="how many scans should be running concurrently on a single target (default: 2)")
+  parser.add_argument('-m', '--max_time', type=int, default=MAX_TIME, help=f"maximum time in seconds each scan is allowed to take (default: {MAX_TIME})")
   parser.add_argument('-v', '--verbose', action='store_true', help="show additional info including all output of all scans")
   parser.add_argument('-n', '--dry_run', action='store_true', help="do not run any command; just create/update the 'commands.csv' file")
   parser.add_argument('-y', '--overwrite_results', action='store_true', help="overwrite existing result files")

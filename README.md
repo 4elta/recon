@@ -46,7 +46,7 @@ schedule and execute various tools based on the findings of the Nmap service sca
 
 ```text
 $ recon -h
-usage: recon [-h] [-i INPUT] [-o OUTPUT] [-c CONFIG] [-t CONCURRENT_TARGETS] [-s CONCURRENT_SCANS] [-v] [-n] [-y] [-d DELIMITER] [--ignore_uid]
+usage: recon [-h] [-i INPUT] [-o OUTPUT] [-c CONFIG] [-t CONCURRENT_TARGETS] [-s CONCURRENT_SCANS] [-m MAX_TIME] [-v] [-n] [-y] [-d DELIMITER] [--ignore_uid]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -60,6 +60,8 @@ optional arguments:
                         how many targets should be scanned concurrently (default: 3)
   -s CONCURRENT_SCANS, --concurrent_scans CONCURRENT_SCANS
                         how many scans should be running concurrently on a single target (default: 2)
+  -m MAX_TIME, --max_time MAX_TIME
+                        maximum time in seconds each scan is allowed to take (default: 3600)
   -v, --verbose         show additional info including all output of all scans
   -n, --dry_run         do not run any command; just create/update the 'commands.csv' file
   -y, --overwrite_results
