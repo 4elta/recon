@@ -139,22 +139,19 @@ def create_summary(target: Target):
       f.write(f"* {service.port} ({service.transport_protocol}): `{description}`\n")
 
 async def read_command_results(process, command):
-  try:
-    # parse STDOUT
-    while True:
-      line = await process.stdout.readline()
-      if line:
-        line = str(line.rstrip(), 'utf8', 'ignore')
-        log(line)
+  # parse STDOUT
+  while True:
+    line = await process.stdout.readline()
+    if line:
+      line = str(line.rstrip(), 'utf8', 'ignore')
+      log(line)
 
-        for pattern in command.patterns:
-          match = re.search(pattern, line)
-          if match:
-            JOB_PROGRESS.console.print(f"{command.description}: \"{line.strip()}\"")
-      else:
-        break
-  except asyncio.exceptions.CancelledError:
-    return
+      for pattern in command.patterns:
+        match = re.search(pattern, line)
+        if match:
+          JOB_PROGRESS.console.print(f"{command.description}: \"{line.strip()}\"")
+    else:
+      return
 
 async def run_command(command: Command, target: Target):
 
