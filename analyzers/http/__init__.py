@@ -91,13 +91,14 @@ class Analyzer:
 
       TODO: what's the best way to tackle this?
 
-      the parsers (for scanners like that) should collect those items in a dictionary (inside the "service" dictionary):
+      the parsers (for scanners like that) should collect those items in a dictionary named after the tool (inside the "service" dictionary).
+      example for a Nikto parser:
 
-      "nikto" = {
-        "issue001" : "issue description",
-        "issue987" : "issue description",
-        "issueFOO" : "bar"
-      }
+      service = copy.deepcopy(SERVICE_SCHEMA)
+      service["nikto"] = {}
+      nikto = service["nikto"]
+      nikto["issue_ID"] = "issue description"
+      nikto["issue_foo"] = "bar"
 
       the recommendations config file (for these tools) contains a list of IDs we are interested in.
       '''
