@@ -65,7 +65,7 @@ optional arguments:
   -y, --overwrite_results
                         overwrite existing result files
   -d DELIMITER, --delimiter DELIMITER
-                        character used to delimit columns in the 'commands.csv' file (default: ',')
+                        character used to delimit columns in the 'commands.csv' and 'services.csv' files (default: ',')
   --ignore_uid          ignore the warning about incorrect UID.
 ```
 

@@ -533,7 +533,7 @@ def main():
   parser.add_argument('-v', '--verbose', action='store_true', help="show additional info including all output of all scans")
   parser.add_argument('-n', '--dry_run', action='store_true', help="do not run any command; just create/update the 'commands.csv' file")
   parser.add_argument('-y', '--overwrite_results', action='store_true', help="overwrite existing result files")
-  parser.add_argument('-d', '--delimiter', default=',', help="character used to delimit columns in the 'commands.csv' file (default: ',')")
+  parser.add_argument('-d', '--delimiter', default=',', help="character used to delimit columns in the 'commands.csv' and 'services.csv' files (default: ',')")
   parser.add_argument('--ignore_uid', action='store_true', help="ignore the warning about incorrect UID.")
 
   try:
