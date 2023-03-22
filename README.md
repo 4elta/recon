@@ -97,10 +97,11 @@ optional arguments:
 
 currently implemented analyzers:
 
-* TLS configuration (via the results from `testssl`, `sslscan` or `sslyze`)
-* SSH configuration (via the results from `nmap`)
-* HTTP configuration (via the results from `nmap`)
+* HTTP response headers (via the results from `nmap`)
 * ISAKMP/IKE configuration (via the results from `icke`)
+* NTP configuration (via the results from `nmap`)
+* SSH configuration (via the results from `nmap`)
+* TLS configuration (via the results from `testssl`, `sslscan` or `sslyze`)
 
 If you need the analysis in a markup format other than Markdown, just [pipe](https://en.wikipedia.org/wiki/Pipeline_(Unix)) the output of the analyzer to [`pandoc`](https://pandoc.org/) and you are good to go.
 Below is an example of a conversion to `docx`:
