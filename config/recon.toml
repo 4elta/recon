@@ -126,7 +126,7 @@ patterns = [ '^nntp' ]
 patterns = [ '^ntp' ]
 
   [ntp.scans.nmap]
-  command = 'nmap -sT -sU -Pn -sV -p {port} --script="banner,ntp-info,ntp-monlist" -oN "{result_file}.log" {address}'
+  command = 'nmap -sT -sU -Pn -sV -p {port} --script="banner,ntp-info,ntp-monlist" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
 
 [oracle]
 patterns = [ '^oracle' ]
