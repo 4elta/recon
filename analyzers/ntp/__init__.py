@@ -55,7 +55,7 @@ class Analyzer:
         issues.append(f"received data: `{info}`")
 
       if len(service['info']):
-        issues.append("vulnerable to information disclosure (CVE-2014-5209) and traffic amplification")
+        issues.append("vulnerable to information disclosure and traffic amplification")
 
       for info in service['info']:
         issues.append(f"received data: `{info}`")
