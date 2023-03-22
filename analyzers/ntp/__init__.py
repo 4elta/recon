@@ -10,7 +10,7 @@ SERVICE_SCHEMA = {
   'transport_protocol': None,
   'port': None,
   'version': None, # e.g. "4.2.8p15"
-  'monlist': None,
+  'monlist': [],
   'info': [],
   'issues': [],
 }
@@ -47,9 +47,12 @@ class Analyzer:
           issues
         )
 
-      if service['monlist']:
+      if len(service['monlist']):
         issues.append("vulnerable to traffic amplification (CVE-2013-5211)")
         # https://nvd.nist.gov/vuln/detail/CVE-2013-5211
+
+      for info in service['monlist']:
+        issues.append(f"received data: `{info}`")
 
       if len(service['info']):
         issues.append("vulnerable to information disclosure (CVE-2014-5209) and traffic amplification")

@@ -74,12 +74,11 @@ class Parser:
         for script_node in port_node.iter('script'):
           script_ID = script_node.get('id')
 
+          if script_ID == 'ntp-monlist':
+            service['monlist'] = self.parse_monlist(script_node)
+
           if script_ID == 'ntp-info':
             service['info'] = self.parse_info(script_node)
-
-          elif script_ID == 'ntp-monlist':
-            service['monlist'] = True
-            # TODO: properly parse this as soon as we have access to an XML result
 
   def parse_version(self, service_node):
     version = service_node.get('version')
@@ -90,6 +89,10 @@ class Parser:
       )
 
       return m.group('version')
+
+  def parse_monlist(self, monlist_node):
+    # TODO: properly parse this as soon as we have access to an XML result
+    return [ 'TODO' ]
 
   def parse_info(self, info_node):
     info = []
