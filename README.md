@@ -15,7 +15,7 @@ Install the required tools:
 
 ```sh
 git clone https://github.com/cddmp/enum4linux-ng.git && (cd enum4linux-ng; sudo python3 setup.py install)
-sudo apt install curl dnsutils feroxbuster ike-scan nikto nmap onesixtyone seclists smbclient snmp sslyze testssl.sh whatweb python3-toml python3-rich python3 defusedxml
+sudo apt install curl dnsutils feroxbuster ike-scan nikto nmap onesixtyone seclists smbclient snmp sslyze testssl.sh whatweb python3-toml python3-rich python3-defusedxml
 ```
 
 Install the tool suite:
