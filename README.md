@@ -77,10 +77,10 @@ analyze and summarize the results of specific tools previously run by the scanne
 
 ```text
 $ analyze -h
-usage: analyze [-h] [-r RECOMMENDATIONS] [-i INPUT] [--json JSON] [--csv CSV] {http,isakmp,ssh,tls} tool
+usage: analyze [-h] [-r RECOMMENDATIONS] [-i INPUT] [--json JSON] [--csv CSV] [-v] {http,isakmp,ntp,ssh,tls} tool
 
 positional arguments:
-  {http,isakmp,ssh,tls}
+  {http,isakmp,ntp,ssh,tls}
                         specify the service/protocol whose results are to be analyzed
   tool                  specify the tool whose results are to be analyzed
 
@@ -92,6 +92,7 @@ optional arguments:
                         path to the root directory that holds the results to be analysed (default: './recon')
   --json JSON           in addition to the analysis printed in Markdown to STDOUT, also save the analysis as a JSON document
   --csv CSV             in addition to the analysis printed in Markdown to STDOUT, also save the analysis as a CSV document
+  -v, --verbose         show additional info
 ```
 
 currently implemented analyzers:
