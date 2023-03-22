@@ -51,12 +51,11 @@ class Analyzer:
         issues.append("vulnerable to traffic amplification (CVE-2013-5211)")
         # https://nvd.nist.gov/vuln/detail/CVE-2013-5211
 
-      if 'info' in self.recommendations:
-        self.analyze_info(
-          service['info'],
-          self.recommendations['info'],
-          issues
-        )
+      if len(service['info']):
+        issues.append("vulnerable to information disclosure (CVE-2014-5209) and traffic amplification")
+
+      for key, value in service['info'].items():
+        issues.append(f'received data: `{key}="{value}"`')
 
     return services
 
@@ -69,7 +68,3 @@ class Analyzer:
 
     if v < r:
       issues.append(f"outdated version: {version} < {recommendation}")
-
-  def analyze_info(self, info, recommendation, issues):
-    for deviation in list(set(info.keys()).difference(recommendation)):
-      issues.append(f"retrieved information: `{deviation}: {info[deviation]}`")

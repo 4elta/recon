@@ -96,6 +96,8 @@ class Parser:
 
     for elem_node in info_node.iter('elem'):
       key = elem_node.get('key')
+      if key == 'receive time stamp':
+        continue
       value = elem_node.text.strip()
       info[key] = value
 
