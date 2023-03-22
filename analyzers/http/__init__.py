@@ -18,7 +18,6 @@ class Analyzer:
   def __init__(self, tool, recommendations):
     self.tool = tool
     self.recommendations = recommendations
-    self.mandatory_directives = []
 
     self.services = []
 

@@ -1,0 +1,5 @@
+version = "4.2.8p15" # https://www.ntp.org/dev/releasetimeline/
+
+monlist = false
+
+info = [ "receive time stamp" ] # https://nmap.org/nsedoc/scripts/ntp-info.html

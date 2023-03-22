@@ -13,6 +13,12 @@ try:
 except:
   sys.exit("this script requires the 'toml' module.\nplease install it via 'pip3 install toml'.")
 
+VERBOSE = False
+
+def log(msg):
+  if VERBOSE:
+    print(msg)
+
 def get_files(directory, service):
   files = {}
 
@@ -45,6 +51,9 @@ def save_CSV(services, path, tool):
         csv.writer(f, delimiter=delimiter, quoting=csv.QUOTE_MINIMAL).writerow(row)
 
 def process(args):
+  global VERBOSE
+  VERBOSE = args.verbose
+
   if not args.input.exists():
     sys.exit(f"the specified directory '{base_dir}' does not exist!")
 
@@ -70,6 +79,7 @@ def process(args):
     sys.exit(f"directory '{args.input}' does not exist")
 
   files = get_files(args.input, args.service)
+  log(json.dumps(files, indent=2))
 
   analyzer = None
   services = {}
@@ -86,6 +96,9 @@ def process(args):
   elif args.service == 'isakmp':
     import analyzers.isakmp
     analyzer = analyzers.isakmp.Analyzer(args.tool, recommendations)
+  elif args.service == 'ntp':
+    import analyzers.ntp
+    analyzer = analyzers.ntp.Analyzer(args.tool, recommendations)
 
   if analyzer:
     services = analyzer.analyze(files)
@@ -122,7 +135,7 @@ def main():
 
   parser.add_argument(
     'service',
-    choices = ['http', 'isakmp', 'ssh', 'tls', ],
+    choices = ['http', 'isakmp', 'ntp', 'ssh', 'tls', ],
     help = "specify the service/protocol whose results are to be analyzed"
   )
 
@@ -154,6 +167,12 @@ def main():
     '--csv',
     type = pathlib.Path,
     help = "in addition to the analysis printed in Markdown to STDOUT, also save the analysis as a CSV document"
+  )
+
+  parser.add_argument(
+    '-v', '--verbose',
+    action = 'store_true',
+    help="show additional info"
   )
 
   process(parser.parse_args())
