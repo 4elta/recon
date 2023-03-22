@@ -11,7 +11,7 @@ SERVICE_SCHEMA = {
   'port': None,
   'version': None, # e.g. "4.2.8p15"
   'monlist': None,
-  'info': {},
+  'info': [],
   'issues': [],
 }
 
@@ -54,8 +54,8 @@ class Analyzer:
       if len(service['info']):
         issues.append("vulnerable to information disclosure (CVE-2014-5209) and traffic amplification")
 
-      for key, value in service['info'].items():
-        issues.append(f'received data: `{key}="{value}"`')
+      for info in service['info']:
+        issues.append(f"received data: `{info}`")
 
     return services
 

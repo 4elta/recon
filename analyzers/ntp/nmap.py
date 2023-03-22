@@ -92,13 +92,13 @@ class Parser:
       return m.group('version')
 
   def parse_info(self, info_node):
-    info = {}
+    info = []
 
     for elem_node in info_node.iter('elem'):
       key = elem_node.get('key')
       if key == 'receive time stamp':
         continue
       value = elem_node.text.strip()
-      info[key] = value
+      info.append(f'{key}="{value}"')
 
     return info
