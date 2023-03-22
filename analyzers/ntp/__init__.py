@@ -72,4 +72,4 @@ class Analyzer:
 
   def analyze_info(self, info, recommendation, issues):
     for deviation in list(set(info.keys()).difference(recommendation)):
-      issues.append(f"retrieved variable: `{deviation}: {info[deviation]}`")
+      issues.append(f"retrieved information: `{deviation}: {info[deviation]}`")
