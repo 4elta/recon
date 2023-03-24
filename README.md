@@ -13,36 +13,40 @@ This allows for an automated and consistent assessment of specific services (i.e
 
 Install the required tools:
 
-```sh
+```shell
 git clone https://github.com/cddmp/enum4linux-ng.git && (cd enum4linux-ng; sudo python3 setup.py install)
 sudo apt install curl dnsutils feroxbuster ike-scan nikto nmap onesixtyone seclists smbclient snmp sslyze testssl.sh whatweb python3-toml python3-rich python3-defusedxml
 ```
 
 Install the tool suite:
 
-```sh
+```shell
 cd /path/to/tools
 git clone https://github.com/4elta/recon.git
 cd recon
 ```
 
-Be sure to have the scripts of the suite in your `PATH` variable; at least the `icke.sh` should be, as it is only referenced by name (in `config/recon.toml`).
-Also, make sure that the scripts have the *executable* flag set.
+Make sure that the scripts have the *executable* flag set:
 
-```sh
+```shell
 chmod +x analyze.py
 chmod +x icke.sh
 chmod +x recon.py
-sudo ln -s $(realpath analyze.py) /usr/local/bin/analyze
-sudo ln -s $(realpath icke.sh) /usr/local/bin/icke
-sudo ln -s $(realpath recon.py) /usr/local/bin/recon
+```
+
+Add (symbolic links to) the scripts to `/usr/local/bin`:
+
+```shell
+sudo ln --symbolic $(realpath analyze.py) /usr/local/bin/analyze
+sudo ln --symbolic $(realpath icke.sh) /usr/local/bin/icke
+sudo ln --symbolic $(realpath recon.py) /usr/local/bin/recon
 ```
 
 ## usage
 
 ### scanner
 
-schedule and execute various tools based on the findings of the Nmap service scan:
+Schedule and execute various tools based on the findings of the Nmap service scan:
 
 ```text
 $ recon -h
@@ -73,7 +77,7 @@ optional arguments:
 
 ### analysis
 
-analyze and summarize the results of specific tools previously run by the scanner:
+Analyze and summarize the results of specific tools previously run by the scanner:
 
 ```text
 $ analyze -h
@@ -81,13 +85,13 @@ usage: analyze [-h] [-r RECOMMENDATIONS] [-i INPUT] [--json JSON] [--csv CSV] [-
 
 positional arguments:
   {http,isakmp,ntp,ssh,tls}
-                        specify the service/protocol whose results are to be analyzed
-  tool                  specify the tool whose results are to be analyzed
+                        specify the service that should be analyzed
+  tool                  specify the tool whose results are to be parsed
 
 optional arguments:
   -h, --help            show this help message and exit
   -r RECOMMENDATIONS, --recommendations RECOMMENDATIONS
-                        path to the recommendations document (default: '/path/to/recon/config/recommendations/<protocol>/default.toml')
+                        path to the recommendations document (default: '/path/to/recon/config/recommendations/<service>/default.toml')
   -i INPUT, --input INPUT
                         path to the root directory that holds the results to be analysed (default: './recon')
   --json JSON           in addition to the analysis printed in Markdown to STDOUT, also save the analysis as a JSON document
@@ -95,13 +99,13 @@ optional arguments:
   -v, --verbose         show additional info
 ```
 
-currently implemented analyzers:
+The following analyzers (and parsers) are currently implemented:
 
-* HTTP response headers (via the results from `nmap`)
-* ISAKMP/IKE configuration (via the results from `icke`)
-* NTP configuration (via the results from `nmap`)
-* SSH configuration (via the results from `nmap`)
-* TLS configuration (via the results from `testssl`, `sslscan` or `sslyze`)
+* HTTP response headers (`nmap`)
+* ISAKMP/IKE configuration (`icke`)
+* NTP configuration (`nmap`)
+* SSH configuration (`nmap`)
+* TLS configuration (`testssl`, `sslscan` or `sslyze`)
 
 If you need the analysis in a markup format other than Markdown, just [pipe](https://en.wikipedia.org/wiki/Pipeline_(Unix)) the output of the analyzer to [`pandoc`](https://pandoc.org/) and you are good to go.
 Below is an example of a conversion to `docx`:
@@ -112,4 +116,4 @@ $ analyze [...] | pandoc --from=markdown --to=docx --output="/path/to/analysis.d
 
 ## contribution
 
-In case we have excited your interest in this project (e.g. to contribute some ideas or a new tool to include, or even an analyzer), the [architecture documentation](documentation/architecture.md) might be a great start to learn how the different components of this tool suite are working together.
+If we have piqued your interest in this project (e.g. to contribute some ideas or a new tool to be included, or even an analyzer), the [architecture documentation](documentation/architecture.md) might be a good place to start to learn how the different components of this tool suite work together.

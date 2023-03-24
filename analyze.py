@@ -136,18 +136,18 @@ def main():
   parser.add_argument(
     'service',
     choices = ['http', 'isakmp', 'ntp', 'ssh', 'tls', ],
-    help = "specify the service/protocol whose results are to be analyzed"
+    help = "specify the service that should be analyzed"
   )
 
   parser.add_argument(
     'tool',
-    help = "specify the tool whose results are to be analyzed"
+    help = "specify the tool whose results are to be parsed"
   )
 
   parser.add_argument(
     '-r', '--recommendations',
     type = pathlib.Path,
-    help = "path to the recommendations document (default: '/path/to/recon/config/recommendations/<protocol>/default.toml')"
+    help = "path to the recommendations document (default: '/path/to/recon/config/recommendations/<service>/default.toml')"
   )
 
   parser.add_argument(
