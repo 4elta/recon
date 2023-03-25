@@ -6,8 +6,8 @@ The recon tool suite can help you automate that and analyze/summarize the result
 ## motivation
 
 Instead of manually running various tools (e.g. [testssl.sh](https://testssl.sh/), [Nikto](https://cirt.net/nikto2), [feroxbuster](https://github.com/epi052/feroxbuster), etc.) and having to remember all commands and the necessary options, we can configure the recon tool (see [`config/recon.toml`](config/recon.toml)) and have it run the required/appropriate tools based on what the Nmap service scan (e.g. `services.xml`) has found.
-In addition to that, the suite also provides tools to analyze and summarize the results of some scans (e.g. HTTP response headers, TLS/SSH/IKE configuration, etc.).
-This allows for an automated and consistent assessment of specific services (i.e. no longer are testers forced to analyze TLS/SSH configurations by hand).
+In addition to that, the suite also provides tools to analyze and summarize the results of some scans (e.g. HTTP response headers, DNS/IKE/SSH/TLS configuration, etc.).
+This allows for an automated and consistent assessment of specific services (i.e. no longer are testers forced to analyze configurations by hand).
 
 ## installation
 
@@ -15,7 +15,7 @@ Install the required tools:
 
 ```shell
 git clone https://github.com/cddmp/enum4linux-ng.git && (cd enum4linux-ng; sudo python3 setup.py install)
-sudo apt install curl dnsutils feroxbuster ike-scan nikto nmap onesixtyone seclists smbclient snmp sslyze testssl.sh whatweb python3-toml python3-rich python3-defusedxml
+sudo apt install curl dnsutils feroxbuster ike-scan nikto nmap onesixtyone seclists smbclient snmp sslyze testssl.sh whatweb python3-toml python3-rich python3-defusedxml python3-dnspython
 ```
 
 Install the tool suite:
@@ -30,6 +30,7 @@ Make sure that the scripts have the *executable* flag set:
 
 ```shell
 chmod +x analyze.py
+chmod +x dns_tester.py
 chmod +x icke.sh
 chmod +x recon.py
 ```
@@ -38,6 +39,7 @@ Add (symbolic links to) the scripts to `/usr/local/bin`:
 
 ```shell
 sudo ln --symbolic $(realpath analyze.py) /usr/local/bin/analyze
+sudo ln --symbolic $(realpath dns_tester.py) /usr/local/bin/dns_tester
 sudo ln --symbolic $(realpath icke.sh) /usr/local/bin/icke
 sudo ln --symbolic $(realpath recon.py) /usr/local/bin/recon
 ```
@@ -84,7 +86,7 @@ $ analyze -h
 usage: analyze [-h] [-r RECOMMENDATIONS] [-i INPUT] [--json JSON] [--csv CSV] [-v] {http,isakmp,ntp,ssh,tls} tool
 
 positional arguments:
-  {http,isakmp,ntp,ssh,tls}
+  {dns,http,isakmp,ntp,ssh,tls}
                         specify the service that should be analyzed
   tool                  specify the tool whose results are to be parsed
 
@@ -96,11 +98,11 @@ optional arguments:
                         path to the root directory that holds the results to be analysed (default: './recon')
   --json JSON           in addition to the analysis printed in Markdown to STDOUT, also save the analysis as a JSON document
   --csv CSV             in addition to the analysis printed in Markdown to STDOUT, also save the analysis as a CSV document
-  -v, --verbose         show additional info
 ```
 
 The following analyzers (and parsers) are currently implemented:
 
+* DNS configuration (`dns_tester`, `nmap`)
 * HTTP response headers (`nmap`)
 * ISAKMP/IKE configuration (`icke`)
 * NTP configuration (`nmap`)

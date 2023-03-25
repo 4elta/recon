@@ -48,14 +48,14 @@ class Analyzer:
         )
 
       if len(service['monlist']):
-        issues.append("vulnerable to traffic amplification (CVE-2013-5211)")
+        issues.append("could be abused for traffic amplification attacks (CVE-2013-5211)")
         # https://nvd.nist.gov/vuln/detail/CVE-2013-5211
 
       for info in service['monlist']:
         issues.append(f"received data: `{info}`")
 
       if len(service['info']):
-        issues.append("vulnerable to information disclosure and traffic amplification")
+        issues.append("vulnerable to information disclosure and could be abused for traffic amplification attacks")
 
       for info in service['info']:
         issues.append(f"received data: `{info}`")
