@@ -34,8 +34,8 @@ class Analyzer:
 
     self.services = []
 
-    if self.tool == 'icke':
-      from .icke import Parser
+    if self.tool == 'ike':
+      from .ike import Parser
     else:
       sys.exit(f"unknown tool '{self.tool}'")
 
