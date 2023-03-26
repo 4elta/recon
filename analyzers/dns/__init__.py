@@ -1,7 +1,6 @@
 import datetime
 import ipaddress
 import json
-import packaging.version
 import pathlib
 import re
 import sys
@@ -54,7 +53,7 @@ class Analyzer:
         issues.append("public DNS server")
 
         if service['recursive']:
-          issues.append("recursive DNS queries could be abused for traffic amplification attacks")
+          issues.append("recursive DNS could be abused for traffic amplification attacks")
           # https://www.cloudflare.com/learning/dns/what-is-recursive-dns/
 
         if service['DNSSEC'] is False:
