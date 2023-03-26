@@ -99,9 +99,9 @@ optional arguments:
 
 The following analyzers (and parsers) are currently implemented:
 
-* DNS configuration (`dns_tester`, `nmap`)
+* DNS configuration (`name_server`, `nmap`)
 * HTTP response headers (`nmap`)
-* ISAKMP/IKE configuration (`icke`)
+* ISAKMP/IKE configuration (`ike`)
 * NTP configuration (`nmap`)
 * SSH configuration (`nmap`)
 * TLS configuration (`testssl`, `sslscan` or `sslyze`)
