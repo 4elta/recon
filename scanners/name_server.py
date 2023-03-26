@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+# scans a name server (DNS) and lists its configuration
+
 import argparse
 import dns # https://github.com/rthalley/dnspython (sudo apt install python3-dnspython)
 import dns.dnssec
@@ -117,10 +119,29 @@ def process(args):
 def main():
   parser = argparse.ArgumentParser()
   
-  parser.add_argument('address')
-  parser.add_argument('--transport_protocol', choices=['tcp', 'udp'], default=TRANSPORT_PROTOCOL)
-  parser.add_argument('--port', type=int, default=PORT)
-  parser.add_argument('--json', type=pathlib.Path)
+  parser.add_argument(
+    'address',
+    help = "the IP address of the name server to be scanned"
+  )
+
+  parser.add_argument(
+    '--transport_protocol',
+    help = f"the transport protocol (i.e. UDP/TCP) which the name server is using (default: '{TRANSPORT_PROTOCOL}')",
+    choices = [ 'tcp', 'udp' ],
+    default = TRANSPORT_PROTOCOL
+  )
+
+  parser.add_argument(
+    '--port',
+    help = f"the port number where the name server is listening for DNS queries (default: {PORT})",
+    type = int,
+    default = PORT
+  )
+  parser.add_argument(
+    '--json',
+    help = "in addition to the scan result being printed to STDOUT, also save the analysis as a JSON document",
+    type = pathlib.Path
+  )
   
   process(parser.parse_args())
   

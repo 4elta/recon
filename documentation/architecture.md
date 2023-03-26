@@ -1,12 +1,12 @@
 # architecture
 
-The recon tool suite consists of two main components: the scanner (i.e. `recon.py`) and the analysis (i.e. `analyze.py`).
+The recon tool suite consists of two main components: the scanner (i.e. `scan.py`) and the analysis (i.e. `analyze.py`).
 The scanner schedules and runs various tools, based on the results of an Nmap service scan.
 The analysis component analyzes and summarizes results of specific tools.
 
 ## scanner
 
-The scanner component (i.e. `recon.py`) takes the result of an Nmap service scan as its input, and schedules and runs various tools, based on the services that were found on a particular host.
+The scanner component (i.e. `scan.py`) takes the result of an Nmap service scan as its input, and schedules and runs various tools, based on the services that were found on a particular host.
 
 ```text
 PORT      STATE  SERVICE  VERSION

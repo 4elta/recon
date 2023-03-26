@@ -21,8 +21,8 @@ patterns = [ '^distccd' ]
 [dns]
 patterns = [ '^domain' ]
 
-  [dns.scans.dns_tester]
-  command = 'dns_tester --port {port} --json "{result_file}.json" {address} 2>&1 | tee "{result_file}.log"'
+  [dns.scans.name_server]
+  command = '"{PATH_TO_SCANNERS}/name_server.py" --port {port} --json "{result_file}.json" {address} 2>&1 | tee "{result_file}.log"'
   run_once = true
 
   [dns.scans.nmap]
@@ -83,8 +83,8 @@ patterns = [ '^imap' ]
 [isakmp]
 patterns = [ '^isakmp' ]
 
-  [isakmp.scans.icke]
-  command = 'icke {address} | tee "{result_file}.log"'
+  [isakmp.scans.ike]
+  command = '"{PATH_TO_SCANNERS}/ike.sh" {address} | tee "{result_file}.log"'
   run_once = true
 
 [kerberos]

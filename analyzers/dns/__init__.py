@@ -11,9 +11,9 @@ SERVICE_SCHEMA = {
   'public': None,
   'transport_protocol': None,
   'port': None,
-  'rDNS': None,
-  'recursive': None,
-  'DNSSEC': None,
+  'rDNS': None, # the result of a reverse DNS lookup of the name server's IP address
+  'recursive': None, # whether or not this name server is a recursive DNS
+  'DNSSEC': None, # whether or not this name server supports DNSSEC
   'issues': [],
 }
 
@@ -25,8 +25,8 @@ class Analyzer:
 
     self.services = []
 
-    if self.tool == 'dns_tester':
-      from .dns_tester import Parser
+    if self.tool == 'name_server':
+      from .name_server import Parser
       self.parser = Parser()
 
     if self.tool == 'nmap':

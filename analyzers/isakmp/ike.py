@@ -6,12 +6,12 @@ from . import SERVICE_SCHEMA
 
 class Parser:
   '''
-  parse results of the Nmap SSH scan.
+  parse results of the `ike` scanner.
 
-  $ nmap -Pn -sV -p ${port} --script="banner,(http* or ssl*) and not (brute or broadcast or dos or external or http-slowloris* or fuzzer)" -oN "${result_file}.log" -oX "${result_file}.xml" ${hostname}
+  $ ike ${address}
   '''
 
-  name = 'icke'
+  name = 'ike'
   file_type = 'log'
 
   def __init__(self):

@@ -54,6 +54,11 @@ JOB_PROGRESS = Progress(
 # default timeout (in seconds) after which a command will be cancelled
 MAX_TIME = 60*60
 
+PATH_TO_SCANNERS = pathlib.Path(
+  pathlib.Path(__file__).resolve().parent,
+  "scanners"
+)
+
 class Service:
   def __init__(self, port, transport_protocol, application_protocol, description):
     self.port = int(port)
@@ -474,7 +479,7 @@ async def process(args):
     config_file_path = pathlib.Path(
       pathlib.Path(__file__).resolve().parent,
       "config",
-      "recon.toml"
+      "scans.toml"
     )
     if not config_file_path.exists():
       sys.exit(f"the default configuration file '{config_file_path}' does not exist!")
@@ -542,7 +547,7 @@ def main():
 
   parser.add_argument('-i', '--input', type=pathlib.Path, default='services.xml', help="the result file of the Nmap service scan (default: 'services.xml')")
   parser.add_argument('-o', '--output', type=pathlib.Path, default='./recon', help="where the results are stored (default: './recon')")
-  parser.add_argument('-c', '--config', type=pathlib.Path, help="path to the scan configuration file (default: '/path/to/recon-suite/config/recon.toml')")
+  parser.add_argument('-c', '--config', type=pathlib.Path, help="path to the scan configuration file (default: '/path/to/recon/config/scans.toml')")
   parser.add_argument('-t', '--concurrent_targets', type=int, default=3, help="how many targets should be scanned concurrently (default: 3)")
   parser.add_argument('-s', '--concurrent_scans', type=int, default=2, help="how many scans should be running concurrently on a single target (default: 2)")
   parser.add_argument('-m', '--max_time', type=int, default=MAX_TIME, help=f"maximum time in seconds each scan is allowed to take (default: {MAX_TIME})")

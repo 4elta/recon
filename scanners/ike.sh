@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-# "icke bin berliner!"
-
 # this scrip tries to enumerate specific (problematic) transform attributes (i.e. encryption/hash algorithm, authentication method, etc) for IKEv1 servers.
 # at the end, it also tries to establish an IKEv2 handshake with the server.
 # it utilizes [`ike-scan`](https://github.com/royhills/ike-scan).

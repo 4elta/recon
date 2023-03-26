@@ -7,12 +7,12 @@ from . import SERVICE_SCHEMA
 
 class Parser:
   '''
-  parse results of the `dns_tester`.
+  parse results of the `name_server` scanner.
 
-  $ dns_tester --json "{result_file}.json" {address} 2>&1 | tee "{result_file}.log"
+  $ name_server --json "{result_file}.json" {address} 2>&1 | tee "{result_file}.log"
   '''
 
-  name = 'dns_tester'
+  name = 'name_server'
   file_type = 'json'
 
   def __init__(self):
