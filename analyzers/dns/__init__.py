@@ -42,6 +42,7 @@ class Analyzer:
     self.services = services
 
     # analyze services based on recommendations
+    # TODO: currently there aren't any recommendations
 
     for identifier, service in services.items():
       issues = service['issues']
