@@ -11,7 +11,7 @@ SOURCE_PORT=500
 # some IKE implementations require the client to use UDP source port 500 and will not talk to other ports.
 # superuser privileges are normally required to use non-zero source ports below 1024.
 
-if [ "$EUID" -ne 0 ] && [ "$SOURCE_PORT" -lt 1024 ]; then
+if [ "$SOURCE_PORT" -lt 1024 ] && [ "$EUID" -ne 0 ]; then
   echo "this script has to be run as the root user!" 1>&2
   exit 1
 fi
@@ -61,7 +61,7 @@ DH_GROUPS=(
 )
 
 if [ -z "$1" ]; then
-  echo "Usage: $(basename $0) <target>"
+  echo "Usage: $(basename $0) <target>" 1>&2
   exit 1
 fi
 
