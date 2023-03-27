@@ -24,7 +24,33 @@ def reverse_DNS_lookup(address):
     rdtype = dns.rdatatype.PTR
   )
 
-  return str(response[0]).rstrip('.')
+  return str(response[0])
+
+def send_query(query, nameserver):
+  if TRANSPORT_PROTOCOL == 'udp':
+    return dns.query.udp(query, nameserver, port=PORT)
+
+  if TRANSPORT_PROTOCOL == 'tcp':
+    return dns.query.tcp(query, nameserver, port=PORT)
+
+def get_SOA(domain, nameserver):
+  query = dns.message.make_query(
+    domain,
+    rdtype = dns.rdatatype.SOA
+  )
+
+  response = send_query(query, nameserver)
+
+  if response.rcode() != dns.rcode.NOERROR:
+    return
+
+  if len(response.authority):
+    return str(response.authority[0].name)
+
+  if len(response.answer):
+    return str(response.answer[0].name)
+
+  return domain
 
 def is_recursive(domain, nameserver):
   # https://serverfault.com/a/1120946
@@ -35,13 +61,9 @@ def is_recursive(domain, nameserver):
     ednsflags = dns.flags.RA
   )
 
-  if TRANSPORT_PROTOCOL == 'udp':
-    response = dns.query.udp(query, nameserver, port=PORT)
+  response = send_query(query, nameserver)
 
-  if TRANSPORT_PROTOCOL == 'tcp':
-    response = dns.query.tcp(query, nameserver, port=PORT)
-
-  return response.rcode() == 0
+  return response.rcode() == dns.rcode.NOERROR
 
 def supports_DNSSEC(domain, nameserver):
   # https://stackoverflow.com/a/26137120
@@ -52,13 +74,9 @@ def supports_DNSSEC(domain, nameserver):
     want_dnssec = True
   )
 
-  if TRANSPORT_PROTOCOL == 'udp':
-    response = dns.query.udp(query, nameserver, port=PORT)
+  response = send_query(query, nameserver)
 
-  if TRANSPORT_PROTOCOL == 'tcp':
-    response = dns.query.tcp(query, nameserver, port=PORT)
-
-  if response.rcode() != 0:
+  if response.rcode() != dns.rcode.NOERROR:
     return False
 
   answer = response.answer
@@ -78,8 +96,17 @@ def supports_DNSSEC(domain, nameserver):
   return True
 
 def process(args):
-  address = args.address
-  print(f"address: {address}")
+  try:
+    address = ipaddress.ip_address(args.address)
+    print(f"address: {address}")
+
+    public = address.is_global
+    print(f"public: {public}")
+  except ValueError as e:
+    sys.exit('\n'.join(e.args))
+
+  # from now on the IP address must be a string instead of an instance of IPv(4|6)Address
+  address = str(address)
 
   global PORT
   PORT = args.port
@@ -89,30 +116,30 @@ def process(args):
   TRANSPORT_PROTOCOL = args.transport_protocol
   print(f"transport protocol: {TRANSPORT_PROTOCOL}")
 
-  result = {
-    'address': address,
-    'transport_protocol': TRANSPORT_PROTOCOL,
-    'port': PORT,
-    'public': False,
-    'rDNS': None,
-    'recursive': None,
-    'DNSSEC': None,
-  }
-
-  result['public'] = ipaddress.ip_address(address).is_global
-  print(f"public: {result['public']}")
-
   hostname = reverse_DNS_lookup(address)
-  result['rDNS'] = hostname
   print(f"rDNS: {hostname}")
 
-  result['recursive'] = is_recursive(hostname, address)
-  print(f"recursive: {result['recursive']}")
+  domain = get_SOA(hostname, address)
+  print(f"domain: {domain}")
 
-  result['DNSSEC'] = supports_DNSSEC(hostname, address)
-  print(f"DNSSEC: {result['DNSSEC']}")
+  recursive = is_recursive(domain, address)
+  print(f"recursive: {recursive}")
+
+  DNSSEC = supports_DNSSEC(domain, address)
+  print(f"DNSSEC: {DNSSEC}")
 
   if args.json:
+    result = {
+      'address': address,
+      'public': public,
+      'transport_protocol': TRANSPORT_PROTOCOL,
+      'port': PORT,
+      'rDNS': hostname,
+      'domain': domain,
+      'recursive': recursive,
+      'DNSSEC': DNSSEC,
+    }
+
     with open(args.json, 'w') as f:
       json.dump(result, f, indent=2)
 
@@ -137,6 +164,7 @@ def main():
     type = int,
     default = PORT
   )
+
   parser.add_argument(
     '--json',
     help = "in addition to the scan result being printed to STDOUT, also save the analysis as a JSON document",
