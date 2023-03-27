@@ -11,7 +11,7 @@ SERVICE_SCHEMA = {
   'port': None,
   'transport_protocol': None,
   'rDNS': None, # the result of a reverse DNS lookup of the name server's IP address
-  'domain': None, # the domain used to test for the 'recursive' and 'DNSSEC' attributes
+  'domain': None, # the domain used to test for the 'DNSSEC' attribute
   'recursive': None, # whether or not this name server is a recursive DNS
   'DNSSEC': None, # whether or not this name server supports DNSSEC
   'issues': [],

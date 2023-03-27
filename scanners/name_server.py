@@ -105,7 +105,7 @@ def process(args):
   except ValueError as e:
     sys.exit('\n'.join(e.args))
 
-  # from now on the IP address must be a string instead of an instance of IPv(4|6)Address
+  # from here on the IP address must be a string instead of an instance of IPv(4|6)Address
   address = str(address)
 
   global PORT
@@ -122,7 +122,7 @@ def process(args):
   domain = get_SOA(hostname, address)
   print(f"domain: {domain}")
 
-  recursive = is_recursive(domain, address)
+  recursive = is_recursive("example.com", address)
   print(f"recursive: {recursive}")
 
   DNSSEC = supports_DNSSEC(domain, address)
