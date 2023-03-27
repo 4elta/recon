@@ -5,6 +5,7 @@
 import argparse
 import dns # https://github.com/rthalley/dnspython (sudo apt install python3-dnspython)
 import dns.dnssec
+import dns.flags
 import dns.message
 import dns.name
 import dns.query
@@ -78,6 +79,16 @@ def supports_DNSSEC(domain, nameserver):
 
   if response.rcode() != dns.rcode.NOERROR:
     return False
+
+  '''
+  Messages carried by UDP are restricted to 512 bytes (not counting the IP
+  or UDP headers).  Longer messages are truncated and the TC bit is set in
+  the header.
+  -- https://www.rfc-editor.org/rfc/rfc1035.html#section-4.2.1
+  '''
+  if response.flags & dns.flags.TC != 0:
+    # TODO: currently, we assume that the truncated data contains valid keys, hence we return "True"
+    return True
 
   answer = response.answer
 
