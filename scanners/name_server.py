@@ -17,12 +17,15 @@ import pathlib
 import sys
 
 # domain which should not fall under the authority of the name server to be tested
-TEST_DOMAIN_RECURSIVE_DNS = "example.com"
+TEST_DOMAIN = "example.com"
 
 # domain which will result in a `SERVFAIL` status when the name server validates DNSSEC
 # https://support.quad9.net/hc/en-us/articles/360050642431-What-does-a-block-from-Quad9-look-like-
 # https://developers.cloudflare.com/support/dns/dnssec/troubleshooting-dnssec/#troubleshooting-dnssec-validation-with-dig
 TEST_DOMAIN_VALIDATE_DNSSEC = "brokendnssec.net"
+
+ECS_ADDRESS = "0.0.0.0"
+ECS_PREFIX = 24
 
 PORT = 53
 TRANSPORT_PROTOCOL = 'udp'
@@ -91,6 +94,23 @@ def validates_DNSSEC(invalid_domain, nameserver):
 
   return response.rcode() == dns.rcode.SERVFAIL
 
+def supports_ECS(domain, nameserver):
+  option = dns.edns.ECSOption(ECS_ADDRESS, ECS_PREFIX)
+  query = dns.message.make_query(
+    domain,
+    rdtype = dns.rdatatype.A,
+    use_edns = 0,
+    options = [option]
+  )
+
+  response = send_query(query, nameserver)
+
+  for option in response.options:
+    if 'ECS' in option.to_text():
+      return True
+
+  return False
+
 def process(args):
   try:
     address = ipaddress.ip_address(args.address)
@@ -118,11 +138,14 @@ def process(args):
   domain = get_SOA(hostname, address)
   print(f"domain: {domain}")
 
-  recursive = is_recursive(TEST_DOMAIN_RECURSIVE_DNS, address)
+  recursive = is_recursive(TEST_DOMAIN, address)
   print(f"recursive: {recursive}")
 
   DNSSEC = validates_DNSSEC(TEST_DOMAIN_VALIDATE_DNSSEC, address)
   print(f"DNSSEC: {DNSSEC}")
+
+  ECS = supports_ECS(TEST_DOMAIN, address)
+  print(f"ECS: {ECS}")
 
   if args.json:
     result = {
@@ -134,6 +157,7 @@ def process(args):
       'domain': domain,
       'recursive': recursive,
       'DNSSEC': DNSSEC,
+      'ECS': ECS,
     }
 
     with open(args.json, 'w') as f:
