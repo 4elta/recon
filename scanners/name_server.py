@@ -42,11 +42,14 @@ def reverse_DNS_lookup(address):
   return str(response[0])
 
 def send_query(query, nameserver):
-  if TRANSPORT_PROTOCOL == 'udp':
-    return dns.query.udp(query, nameserver, port=PORT)
+  try:
+    if TRANSPORT_PROTOCOL == 'udp':
+      return dns.query.udp(query, nameserver, port=PORT)
 
-  if TRANSPORT_PROTOCOL == 'tcp':
-    return dns.query.tcp(query, nameserver, port=PORT)
+    if TRANSPORT_PROTOCOL == 'tcp':
+      return dns.query.tcp(query, nameserver, port=PORT)
+  except:
+    return
 
 def get_SOA(domain, nameserver):
   if domain is None:
@@ -59,7 +62,7 @@ def get_SOA(domain, nameserver):
 
   response = send_query(query, nameserver)
 
-  if response.rcode() != dns.rcode.NOERROR:
+  if response is None or response.rcode() != dns.rcode.NOERROR:
     return
 
   if len(response.authority):
@@ -81,6 +84,9 @@ def is_recursive(domain, nameserver):
 
   response = send_query(query, nameserver)
 
+  if response is None:
+    return
+
   return response.rcode() == dns.rcode.NOERROR
 
 def validates_DNSSEC(invalid_domain, nameserver):
@@ -91,6 +97,9 @@ def validates_DNSSEC(invalid_domain, nameserver):
   )
 
   response = send_query(query, nameserver)
+
+  if response is None:
+    return
 
   return response.rcode() == dns.rcode.SERVFAIL
 
@@ -104,6 +113,9 @@ def supports_ECS(domain, nameserver):
   )
 
   response = send_query(query, nameserver)
+
+  if response is None:
+    return
 
   for option in response.options:
     if 'ECS' in option.to_text():

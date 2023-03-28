@@ -22,7 +22,7 @@ patterns = [ '^distccd' ]
 patterns = [ '^domain' ]
 
   [dns.scans.name_server]
-  command = '"{PATH_TO_SCANNERS}/name_server.py" --port {port} --json "{result_file}.json" {address} 2>&1 | tee "{result_file}.log"'
+  command = '"{PATH_TO_SCANNERS}/name_server.py" --port {port} --transport_protocol {transport_protocol} --json "{result_file}.json" {address} 2>&1 | tee "{result_file}.log"'
 
   [dns.scans.dig]
   command = 'dig @{address} version.bind chaos txt 2>&1 | tee "{result_file}.log"'
