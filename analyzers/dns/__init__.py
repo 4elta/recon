@@ -12,7 +12,7 @@ SERVICE_SCHEMA = {
   'port': None,
   'transport_protocol': None,
   'rDNS': None, # the result of a reverse DNS lookup of the name server's IP address
-  'domain': None, # the domain used to test for the 'DNSSEC' attribute
+  'domain': None, # the domain this name server serves
   'recursive': None, # whether or not this name server is a recursive DNS
   'DNSSEC': None, # whether or not this name server supports DNSSEC
   'ECS': None, # whether of not this name server supports EDNS Client Subnet (ECS)
