@@ -1,4 +1,5 @@
 import datetime
+import importlib
 import json
 import pathlib
 import sys
@@ -82,29 +83,32 @@ class Analyzer:
     "cipher_suites.json"
   )
 
-  def __init__(self, tool, recommendations):
-    self.tool = tool
+  def __init__(self, recommendations):
     self.recommendations = recommendations
 
     self.services = []
 
-    if self.tool == 'testssl':
-      from .testssl import Parser
-    elif self.tool == 'sslscan':
-      from .sslscan import Parser
-    elif self.tool == 'sslyze':
-      from .sslyze import Parser
-    else:
-      sys.exit(f"unknown tool '{self.tool}'")
-
     # load cipher suites specifications
-    cipher_suites_specifications = {}
+    self.cipher_suites_specifications = {}
     with open(Analyzer.cipher_suites_specifications_document, 'r') as f:
       for cs in json.load(f)['ciphersuites']:
         for name in cs:
-          cipher_suites_specifications[name] = cs[name]
+          self.cipher_suites_specifications[name] = cs[name]
 
-    self.parser = Parser(cipher_suites_specifications)
+    self.set_tool('testssl')
+
+  def set_tool(self, tool):
+    module_path = pathlib.Path(
+      pathlib.Path(__file__).resolve().parent,
+      f'{tool}.py'
+    )
+
+    if not module_path.exists():
+      sys.exit(f"unknown tool '{tool}'")
+
+    self.tool = tool
+    module = importlib.import_module(f'{__name__}.{tool}')
+    self.parser = module.Parser(self.cipher_suites_specifications)
 
   def analyze(self, files):
     # parse result files

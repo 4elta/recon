@@ -2,6 +2,7 @@
 
 import argparse
 import csv
+import importlib
 import json
 import pathlib
 import re
@@ -32,16 +33,16 @@ def get_files(directory, service):
 
   return files
 
-def save_CSV(services, path, tool):
+def save_CSV(services, path):
   delimiter = ','
-  header = ['tool', 'asset', 'issues']
+  header = ['asset', 'issues']
 
   with open(path, 'w') as f:
     csv.writer(f, delimiter=delimiter, quoting=csv.QUOTE_MINIMAL).writerow(header)
 
     for identifier, service in services.items():
       for issue in service['issues']:
-        row = [tool, identifier, issue]
+        row = [identifier, issue]
         csv.writer(f, delimiter=delimiter, quoting=csv.QUOTE_MINIMAL).writerow(row)
 
 def process(args):
@@ -72,35 +73,15 @@ def process(args):
   files = get_files(args.input, args.service)
   #print(json.dumps(files, indent=2))
 
-  analyzer = None
   services = {}
 
-  if args.service == 'dns':
-    import analyzers.dns
-    analyzer = analyzers.dns.Analyzer(args.tool, recommendations)
+  module = importlib.import_module(f'analyzers.{args.service}')
+  analyzer = module.Analyzer(recommendations)
 
-  if args.service == 'http':
-    import analyzers.http
-    analyzer = analyzers.http.Analyzer(args.tool, recommendations)
+  if args.tool:
+    analyzer.set_tool(args.tool)
 
-  if args.service == 'isakmp':
-    import analyzers.isakmp
-    analyzer = analyzers.isakmp.Analyzer(args.tool, recommendations)
-
-  if args.service == 'ntp':
-    import analyzers.ntp
-    analyzer = analyzers.ntp.Analyzer(args.tool, recommendations)
-
-  if args.service == 'ssh':
-    import analyzers.ssh
-    analyzer = analyzers.ssh.Analyzer(args.tool, recommendations)
-
-  if args.service == 'tls':
-    import analyzers.tls
-    analyzer = analyzers.tls.Analyzer(args.tool, recommendations)
-
-  if analyzer:
-    services = analyzer.analyze(files)
+  services = analyzer.analyze(files)
 
   affected_assets = []
 
@@ -127,7 +108,7 @@ def process(args):
       json.dump(services, f, indent=2)
 
   if args.csv:
-    save_CSV(services, args.csv, args.tool)
+    save_CSV(services, args.csv)
 
 def main():
   parser = argparse.ArgumentParser()
@@ -139,7 +120,7 @@ def main():
   )
 
   parser.add_argument(
-    'tool',
+    '-t', '--tool',
     help = "specify the tool whose results are to be parsed"
   )
 

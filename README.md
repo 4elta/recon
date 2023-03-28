@@ -80,15 +80,15 @@ Analyze and summarize the results of specific tools previously run by the scanne
 
 ```text
 $ analyze -h
-usage: analyze [-h] [-r RECOMMENDATIONS] [-i INPUT] [--json JSON] [--csv CSV] {dns,http,isakmp,ntp,ssh,tls} tool
+usage: analyze [-h] [-t TOOL] [-r RECOMMENDATIONS] [-i INPUT] [--json JSON] [--csv CSV] {dns,http,isakmp,ntp,ssh,tls}
 
 positional arguments:
   {dns,http,isakmp,ntp,ssh,tls}
                         specify the service that should be analyzed
-  tool                  specify the tool whose results are to be parsed
 
 optional arguments:
   -h, --help            show this help message and exit
+  -t TOOL, --tool TOOL  specify the tool whose results are to be parsed
   -r RECOMMENDATIONS, --recommendations RECOMMENDATIONS
                         path to the recommendations document (default: '/path/to/recon/config/recommendations/<service>/default.toml')
   -i INPUT, --input INPUT

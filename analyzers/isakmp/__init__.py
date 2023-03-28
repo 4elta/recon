@@ -1,4 +1,5 @@
 import datetime
+import importlib
 import json
 import pathlib
 import re
@@ -27,19 +28,26 @@ SERVICE_SCHEMA = {
 
 class Analyzer:
 
-  def __init__(self, tool, recommendations):
-    self.tool = tool
+  def __init__(self, recommendations):
     self.recommendations = recommendations
     self.mandatory_directives = []
 
     self.services = []
 
-    if self.tool == 'ike':
-      from .ike import Parser
-    else:
-      sys.exit(f"unknown tool '{self.tool}'")
+    self.set_tool('ike')
 
-    self.parser = Parser()
+  def set_tool(self, tool):
+    module_path = pathlib.Path(
+      pathlib.Path(__file__).resolve().parent,
+      f'{tool}.py'
+    )
+
+    if not module_path.exists():
+      sys.exit(f"unknown tool '{tool}'")
+
+    self.tool = tool
+    module = importlib.import_module(f'{__name__}.{tool}')
+    self.parser = module.Parser()
 
   def analyze(self, files):
     # parse result files
