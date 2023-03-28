@@ -1,0 +1,5 @@
+# flag name servers that are public
+public = false
+
+# flag name servers that do NOT validate DNSSEC
+DNSSEC = true

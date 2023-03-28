@@ -28,7 +28,7 @@ class Parser:
     with open(path) as f:
       result = json.load(f)
 
-    identifier = result['address']
+    identifier = f"{result['address']}:{result['port']} ({result['transport_protocol']})"
     if identifier in self.services:
       return
 

@@ -16,14 +16,25 @@ import json
 import pathlib
 import sys
 
+# domain which should not fall under the authority of the name server to be tested
+TEST_DOMAIN_RECURSIVE_DNS = "example.com"
+
+# domain which will result in a `SERVFAIL` status when the name server validates DNSSEC
+# https://support.quad9.net/hc/en-us/articles/360050642431-What-does-a-block-from-Quad9-look-like-
+# https://developers.cloudflare.com/support/dns/dnssec/troubleshooting-dnssec/#troubleshooting-dnssec-validation-with-dig
+TEST_DOMAIN_VALIDATE_DNSSEC = "brokendnssec.net"
+
 PORT = 53
 TRANSPORT_PROTOCOL = 'udp'
 
 def reverse_DNS_lookup(address):
-  response = dns.resolver.resolve(
-    dns.reversename.from_address(address),
-    rdtype = dns.rdatatype.PTR
-  )
+  try:
+    response = dns.resolver.resolve(
+      dns.reversename.from_address(address),
+      rdtype = dns.rdatatype.PTR
+    )
+  except dns.resolver.NoAnswer:
+    return
 
   return str(response[0])
 
@@ -35,6 +46,9 @@ def send_query(query, nameserver):
     return dns.query.tcp(query, nameserver, port=PORT)
 
 def get_SOA(domain, nameserver):
+  if domain is None:
+    return
+
   query = dns.message.make_query(
     domain,
     rdtype = dns.rdatatype.SOA
@@ -66,45 +80,16 @@ def is_recursive(domain, nameserver):
 
   return response.rcode() == dns.rcode.NOERROR
 
-def supports_DNSSEC(domain, nameserver):
-  # https://stackoverflow.com/a/26137120
-
+def validates_DNSSEC(invalid_domain, nameserver):
   query = dns.message.make_query(
-    domain,
-    rdtype = dns.rdatatype.DNSKEY,
+    invalid_domain,
+    rdtype = dns.rdatatype.A,
     want_dnssec = True
   )
 
   response = send_query(query, nameserver)
 
-  if response.rcode() != dns.rcode.NOERROR:
-    return False
-
-  '''
-  Messages carried by UDP are restricted to 512 bytes (not counting the IP
-  or UDP headers).  Longer messages are truncated and the TC bit is set in
-  the header.
-  -- https://www.rfc-editor.org/rfc/rfc1035.html#section-4.2.1
-  '''
-  if response.flags & dns.flags.TC != 0:
-    # TODO: currently, we assume that the truncated data contains valid keys, hence we return "True"
-    return True
-
-  answer = response.answer
-
-  if len(answer) != 2:
-    return False
-
-  try:
-    dns.dnssec.validate(
-      answer[0],
-      answer[1],
-      { dns.name.from_text(domain) : answer[0] }
-    )
-  except dns.dnssec.ValidationFailure:
-    return False
-
-  return True
+  return response.rcode() == dns.rcode.SERVFAIL
 
 def process(args):
   try:
@@ -125,7 +110,7 @@ def process(args):
 
   global TRANSPORT_PROTOCOL
   TRANSPORT_PROTOCOL = args.transport_protocol
-  print(f"transport protocol: {TRANSPORT_PROTOCOL}")
+  print(f"transport protocol: {TRANSPORT_PROTOCOL.upper()}")
 
   hostname = reverse_DNS_lookup(address)
   print(f"rDNS: {hostname}")
@@ -133,17 +118,17 @@ def process(args):
   domain = get_SOA(hostname, address)
   print(f"domain: {domain}")
 
-  recursive = is_recursive("example.com", address)
+  recursive = is_recursive(TEST_DOMAIN_RECURSIVE_DNS, address)
   print(f"recursive: {recursive}")
 
-  DNSSEC = supports_DNSSEC(domain, address)
+  DNSSEC = validates_DNSSEC(TEST_DOMAIN_VALIDATE_DNSSEC, address)
   print(f"DNSSEC: {DNSSEC}")
 
   if args.json:
     result = {
       'address': address,
       'public': public,
-      'transport_protocol': TRANSPORT_PROTOCOL,
+      'transport_protocol': TRANSPORT_PROTOCOL.upper(),
       'port': PORT,
       'rDNS': hostname,
       'domain': domain,

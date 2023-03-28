@@ -82,7 +82,7 @@ class Parser:
         if port_node.find('state').get('state') != 'open':
           continue
 
-        transport_protocol = port_node.get('protocol') # tcp/udp
+        transport_protocol = port_node.get('protocol').upper() # tcp/udp
         port = port_node.get('portid') # port number
 
         identifier = f"{address}:{port} ({transport_protocol})"
