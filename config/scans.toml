@@ -1,13 +1,13 @@
 # https://nmap.org/nsedoc/
 
 [cassandra]
-patterns = [ '^apani1' ]
+patterns = [ 'apani1' ]
 
   [cassandra.scans.nmap]
   command = 'nmap -Pn -sV  -p {port} --script="banner,(cassandra* or ssl*) and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" {address}'
 
 [cups]
-patterns = [ '^ipp' ]
+patterns = [ 'ipp' ]
 
   [cups.scans.nmap]
   command = 'nmap -Pn -sV -p {port} --script="banner,(cups* or ssl*) and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" {address}'
@@ -35,7 +35,7 @@ patterns = [ '^finger' ]
   command = 'nmap -Pn -sV -p {port} --script="banner,finger" -oN "{result_file}.log" {address}'
 
 [ftp]
-patterns = [ '^ftp', '^ftp\-data' ]
+patterns = [ 'ftp', 'ftp\-data' ]
 
   [ftp.scans.nmap]
   command = 'nmap -Pn -v -sV -p {port} --script="banner,(ftp* or ssl*) and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" {address}'
@@ -71,13 +71,13 @@ patterns = [ 'http' ]
   command = 'whatweb --color=never --no-errors -a 3 -v {scheme}://{hostname}:{port} 2>&1 | tee "{result_file}.log"'
 
 [imap]
-patterns = [ '^imap' ]
+patterns = [ 'imap' ]
 
   [imap.scans.nmap]
   command = 'nmap -Pn -sV -p {port} --script="banner,(imap* or ssl*) and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" {address}'
 
 [isakmp]
-patterns = [ '^isakmp' ]
+patterns = [ 'isakmp' ]
 
   [isakmp.scans.ike]
   command = '"{PATH_TO_SCANNERS}/ike.sh" {address} | tee "{result_file}.log"'
@@ -90,19 +90,19 @@ patterns = [ '^kerberos', '^kpasswd' ]
   command = 'nmap -sT -sU -Pn -sV -p {port} --script="banner,krb5-enum-users" -oN "{result_file}.log" {address}'
 
 [ldap]
-patterns = [ '^ldap' ]
+patterns = [ 'ldap' ]
 
   [ldap.scans.nmap]
   command = 'nmap -Pn -sV -p {port} --script="banner,(ldap* or ssl*) and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" {address}'
 
 [mongodb]
-patterns = [ '^mongod' ]
+patterns = [ 'mongod' ]
 
   [mongodb.scans.nmap]
   command = 'nmap -Pn -sV -p {port} --script="banner,(mongodb* or ssl*) and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" {address}'
 
 [mysql]
-patterns = [ '^mysql' ]
+patterns = [ 'mysql' ]
 
   [mysql.scans.nmap]
   command = 'nmap -Pn -sV -p {port} --script="banner,(mysql* or ssl*) and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" {address}'
@@ -129,19 +129,19 @@ patterns = [ '^ntp' ]
   command = 'nmap -sT -sU -Pn -sV -p {port} --script="banner,ntp-info,ntp-monlist" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
 
 [oracle]
-patterns = [ '^oracle' ]
+patterns = [ 'oracle' ]
 
   [oracle.scans.nmap]
   command = 'nmap -Pn -sV -p {port} --script="banner,(oracle* or ssl*) and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" {address}'
 
 [pop3]
-patterns = [ '^pop3' ]
+patterns = [ 'pop3' ]
 
   [pop3.scans.nmap]
   command = 'nmap -Pn -sV -p {port} --script="banner,(pop3* or ssl*) and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" {address}'
 
 [rdp]
-patterns = [ '^rdp', '^ms\-wbt\-server', '^ms\-term\-serv' ]
+patterns = [ 'rdp', 'ms\-wbt\-server', 'ms\-term\-serv' ]
 
   [rdp.scans.nmap]
   command = 'nmap -Pn -sV -p {port} --script="banner,(rdp* or ssl*) and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" {address}'
@@ -174,7 +174,7 @@ patterns = [ '^asterisk', '^sip', '^ventrilo' ]
   command = 'svmap -p {port} {address} 2>&1 | tee "{result_file}.log"'
 
 [smb]
-patterns = [ '^smb', '^microsoft\-ds', '^netbios' ]
+patterns = [ 'smb', 'microsoft\-ds', 'netbios' ]
 
   [smb.scans.nmap]
   command = 'nmap -sT -sU -Pn -sV -p {port} --script="banner,(nbstat or smb* or ssl*) and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" {address}'
@@ -194,7 +194,7 @@ patterns = [ 'smtp' ]
   command = 'nmap -Pn -sV -p {port} --script="banner,(smtp* or ssl*) and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" {address}'
 
 [snmp]
-patterns = [ '^snmp' ]
+patterns = [ 'snmp' ]
 
   [snmp.scans.nmap]
   command = 'nmap -sT -sU -Pn -sV -p {port} --script="banner,(snmp* or ssl*) and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" {address}'
@@ -245,13 +245,13 @@ patterns = [ 'ftp', 'pop3', 'nntp', 'imap', 'ldap', 'smtp', 'rdp', 'ms-term-serv
   command = 'testssl --ip one --nodns min --mapping no-openssl --warnings off --connect-timeout 60 --openssl-timeout 60 --starttls {application_protocol} --logfile "{result_file}.log" --jsonfile "{result_file}.json" {address}:{port}'
 
 [vnc]
-patterns = [ '^vnc' ]
+patterns = [ 'vnc' ]
 
   [vnc.scans.nmap]
   command = 'nmap -Pn -sV -p {port} --script="banner,(vnc* or realvnc* or ssl*) and not (brute or broadcast or dos or external or fuzzer)" --script-args="unsafe=1" -oN "{result_file}.log" {address}'
 
 [xmpp]
-patterns = [ '^xmpp', '^jabber' ]
+patterns = [ 'xmpp', 'jabber' ]
 
   [xmpp.scans.nmap]
   command = 'nmap -Pn -sV -p {port} --script="banner,(xmpp* or ssl*) and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" {address}'
