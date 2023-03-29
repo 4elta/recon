@@ -36,8 +36,6 @@ BEGINFILE {
     hsts = "this header should not be present!"
   }
 
-  printf "\n## %s://%s:%s\n\n", schema, host, port
-
   service = schema "://" host ":" port
 
   state = "port"

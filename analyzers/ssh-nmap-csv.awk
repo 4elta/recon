@@ -22,7 +22,6 @@ BEGIN {
 /tcp open/ && /ssh/ {
   split($0, ports, "/")
   port = ports[1]
-  printf "\n## %s:%s\n\n", host, port
 
   service = host ":" port
 
