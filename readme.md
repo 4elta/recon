@@ -14,8 +14,8 @@ This allows for an automated and consistent assessment of specific services (i.e
 Install the required tools:
 
 ```sh
-git clone https://github.com/cddmp/enum4linux-ng.git; cd enum4linux-ng; sudo python3 setup.py install
-sudo apt install curl dnsutils feroxbuster ike-scan nikto nmap onesixtyone seclists smbclient snmp sslyze testssl.sh whatweb
+git clone https://github.com/cddmp/enum4linux-ng.git; cd enum4linux-ng; sudo python3 setup.py install && cd ..
+sudo apt install curl dnsutils feroxbuster ike-scan nikto nmap onesixtyone seclists smbclient snmp sslyze testssl.sh whatweb python3-toml python3-rich python3 defusedxml
 ```
 
 Install the tool suite:
@@ -24,7 +24,6 @@ Install the tool suite:
 cd /path/to/tools
 git clone https://github.com/4elta/recon.git
 cd recon
-pip3 install -r requirements.txt
 ```
 
 Be sure to have the scripts of the suite in your `PATH` variable; at least the `icke.sh` should be, as it is only referenced by name (in `config.toml`).
@@ -34,8 +33,8 @@ Also, make sure that the scripts have the *executable* flag set.
 chmod +x analyzers/*
 chmod +x icke.sh
 chmod +x recon.py
-ln -s $(realpath icke.sh) ~/bin/icke
-ln -s $(realpath recon.py) ~/bin/recon
+sudo ln -s $(realpath icke.sh) /usr/local/bin/icke
+sudo ln -s $(realpath recon.py) /usr/local/bin/recon
 ```
 
 ## usage

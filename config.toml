@@ -135,7 +135,7 @@ patterns = [ '^pop3' ]
   command = 'nmap -Pn -sV -p {port} --script="banner,(pop3* or ssl*) and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}" {address}'
 
 [rdp]
-patterns = [ '^rdp', '^ms\-wbt\-server', '^ms\-term\-serv' ]
+patterns = [ '^rdp', 'ms\-wbt\-server', 'ms\-term\-serv' ]
 
   [rdp.scans.nmap]
   command = 'nmap -Pn -sV -p {port} --script="banner,(rdp* or ssl*) and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}" {address}'
