@@ -88,3 +88,7 @@ BEGIN {
   printf "%s,weak %s: `%s`\n", service, state, $2
   next
 }
+
+ENDFILE {
+  state = ""
+}
