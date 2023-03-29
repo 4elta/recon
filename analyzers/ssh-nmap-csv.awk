@@ -4,7 +4,7 @@
 # invoke this program like this:
 # /path/to/this/file /path/to/recon/*/services/ssh*nmap.log
 
-BEGIN {
+BEGINFILE {
   auth_methods = "authentication method"
   kex_algorithms = "key exchange method"
   server_host_key_algorithms = "server host key algorithm"
@@ -87,8 +87,4 @@ BEGIN {
 (state == mac_algorithms) && ! ( /hmac-sha2-(256|512)(-etm)?/ || /umac-128(-etm)?/ ) {
   printf "%s,weak %s: `%s`\n", service, state, $2
   next
-}
-
-ENDFILE {
-  state = ""
 }
