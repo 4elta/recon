@@ -4,16 +4,11 @@
 
 import argparse
 import dns # https://github.com/rthalley/dnspython (sudo apt install python3-dnspython)
-import dns.dnssec
-import dns.flags
-import dns.message
-import dns.name
-import dns.query
 import dns.resolver
-import dns.reversename
 import ipaddress
 import json
 import pathlib
+import re
 import sys
 
 # domain which should not fall under the authority of the name server to be tested
@@ -123,6 +118,26 @@ def supports_ECS(domain, nameserver):
 
   return False
 
+def get_BIND_version(nameserver):
+  query = dns.message.make_query(
+    "version.bind",
+    rdtype = dns.rdatatype.TXT,
+    rdclass = dns.rdataclass.CH,
+  )
+
+  response = send_query(query, nameserver)
+
+  if response is None or response.rcode() != dns.rcode.NOERROR:
+    return
+
+  match = re.search(
+    r'version\.bind\.\s+\d+\s+CH\s+TXT\s+"(?P<version>[^"]+)"',
+    str(response.answer[0])
+  )
+
+  if match:
+    return match.group('version')
+
 def process(args):
   try:
     address = ipaddress.ip_address(args.address)
@@ -159,6 +174,9 @@ def process(args):
   ECS = supports_ECS(TEST_DOMAIN, address)
   print(f"ECS: {ECS}")
 
+  BIND_version = get_BIND_version(address)
+  print(f"BIND: {BIND_version}")
+
   if args.json:
     result = {
       'address': address,
@@ -170,6 +188,7 @@ def process(args):
       'recursive': recursive,
       'DNSSEC': DNSSEC,
       'ECS': ECS,
+      'BIND': BIND_version,
     }
 
     with open(args.json, 'w') as f:

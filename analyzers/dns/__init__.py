@@ -16,6 +16,7 @@ SERVICE_SCHEMA = {
   'recursive': None, # whether or not this name server is a recursive DNS
   'DNSSEC': None, # whether or not this name server supports DNSSEC
   'ECS': None, # whether of not this name server supports EDNS Client Subnet (ECS)
+  'BIND': None, # the version of the BIND software, if the name server uses BIND and the "version.bind" info could be retrieved
   'issues': [],
 }
 
@@ -75,4 +76,9 @@ class Analyzer:
         if not service['ECS'] and self.recommendations['ECS']:
           issues.append("does not support ECS: this might hinder load balancing")
 
+      if service['BIND'] is not None:
+        issues.append(f"BIND version: `{service['BIND']}`")
+        # https://kb.isc.org/docs/aa-00359
+
     return services
+
