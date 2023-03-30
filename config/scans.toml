@@ -79,6 +79,9 @@ patterns = [ 'isakmp' ]
   command = '"{PATH_TO_SCANNERS}/ike.sh" {address} | tee "{result_file}.log"'
   run_once = true
 
+  [isakmp.scans.nmap]
+  command = 'nmap -sU -Pn -sV -p {port} --script="banner,ike-version" -oN "{result_file}.log" {address}'
+
 [kerberos]
 patterns = [ '^kerberos', '^kpasswd' ]
 
