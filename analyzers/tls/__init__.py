@@ -203,7 +203,7 @@ class Analyzer:
       issues.append(f"protocol not supported: {deviation}")
 
   def analyze_certificate(self, is_private_host, certificate, recommendation, issues):
-    if is_private_host:
+    if not is_private_host:
       # analyze certificate subjects for private IP addresses
       for subject in certificate['subjects']:
         try:
