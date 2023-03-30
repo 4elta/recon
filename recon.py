@@ -92,8 +92,9 @@ class CommandLog:
     cls.lock = lock
     cls.delimiter = delimiter
 
-    with open(cls.path, 'w') as f:
-      csv.writer(f, delimiter=delimiter, quoting=csv.QUOTE_MINIMAL).writerow(header)
+    if not path.exists(): # do not overwrite the log
+      with open(cls.path, 'w') as f:
+        csv.writer(f, delimiter=delimiter, quoting=csv.QUOTE_MINIMAL).writerow(header)
 
   @classmethod
   async def add_entry(cls, entry):
