@@ -74,6 +74,9 @@ class Parser:
       service = copy.deepcopy(SERVICE_SCHEMA)
       self.services[identifier] = service
 
+      service['host'] = host
+      service['port'] = port
+
       for protocol_node in ssltest_node.iter('protocol'):
         if protocol_node.get('enabled') == '1':
           protocol = f"{protocol_node.get('type').upper()} {protocol_node.get('version')}"

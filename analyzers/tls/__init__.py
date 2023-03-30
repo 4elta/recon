@@ -1,5 +1,6 @@
 import datetime
 import importlib
+import ipaddress
 import json
 import pathlib
 import sys
@@ -42,6 +43,9 @@ CERTIFICATE_SCHEMA = {
 }
 
 SERVICE_SCHEMA = {
+  'host': None, # hostname or IP address
+  'port': None, # port number
+
   'application_protocol': None,
   # e.g. "HTTP", "FTP"
 
@@ -129,8 +133,15 @@ class Analyzer:
 
       # certificates
       if 'certificate' in self.recommendations:
+        try:
+          is_private_host = ipaddress.ip_address(service['host']).is_private
+        except ValueError:
+          # host is NOT a valid IP address
+          is_private_host = False
+
         for certificate in service['certificates']:
           self.analyze_certificate(
+            is_private_host,
             certificate,
             self.recommendations['certificate'],
             issues
@@ -191,7 +202,17 @@ class Analyzer:
     for deviation in list(set(recommendation).difference(protocol_versions)):
       issues.append(f"protocol not supported: {deviation}")
 
-  def analyze_certificate(self, certificate, recommendation, issues):
+  def analyze_certificate(self, is_private_host, certificate, recommendation, issues):
+    if is_private_host:
+      # analyze certificate subjects for private IP addresses
+      for subject in certificate['subjects']:
+        try:
+          if ipaddress.ip_address(subject).is_private:
+            issues.append(f"certificate contains private IP address: `{subject}`")
+        except ValueError:
+          # subject is NOT a valid IP address
+          continue
+
     validity = certificate['validity']
 
     not_before = datetime.datetime.fromisoformat(validity['not_before'])

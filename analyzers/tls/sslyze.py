@@ -184,6 +184,9 @@ class Parser:
       service = copy.deepcopy(SERVICE_SCHEMA)
       self.services[identifier] = service
 
+      service['host'] = host
+      service['port'] = port
+
       if server_scan_result['connectivity_status'] == 'ERROR':
         service['issues'].append("could not connect to target")
         continue

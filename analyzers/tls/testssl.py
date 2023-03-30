@@ -69,6 +69,8 @@ class Parser:
       service = copy.deepcopy(SERVICE_SCHEMA)
       self.services[identifier] = service
 
+      service['host'] = host
+      service['port'] = port
       service['application_protocol'] = application_protocol
 
       findings = list(
