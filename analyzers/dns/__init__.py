@@ -12,8 +12,9 @@ SERVICE_SCHEMA = {
   'port': None,
   'transport_protocol': None,
   'recursive': None, # whether or not this name server is a recursive DNS
-  'DNSSEC': None, # whether or not this name server supports DNSSEC
-  'ECS': None, # whether of not this name server supports EDNS Client Subnet (ECS)
+  'DNSSEC': None, # whether or not this name server validates DNSSEC
+  'ECS': None, # whether or not this name server supports EDNS Client Subnet (ECS)
+  'AXFR': None, # whether or not this name server permits AXFR; if it does, this key will hold the DNS zone
   'info': {}, # misc information (rDNS, domain, `bind.version`, `id.server`, etc)
   'issues': [],
 }
@@ -73,6 +74,9 @@ class Analyzer:
           # https://yacin.nadji.us/docs/pubs/dimva16_ecs.pdf
         if not service['ECS'] and self.recommendations['ECS']:
           issues.append("does not support ECS: this might hinder load balancing")
+
+      if service['AXFR']:
+        issues.append("permits AXFR: this might expose potentially sensitive information")
 
       for key, value in service['info'].items():
         issues.append(f"additional information: `{key}={value}`")

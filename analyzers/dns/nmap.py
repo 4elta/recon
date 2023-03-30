@@ -104,5 +104,9 @@ class Parser:
           if script_ID == 'dns-recursion':
             service['recursive'] = self.parse_recursion(script_node)
 
+          if script_ID == 'dns-zone-transfer':
+            service['issues'].append(f"Nmap script scan result not parsed: {script_ID}")
+            #TODO: parse results
+
   def parse_recursion(self, script_node):
     return 'Recursion appears to be enabled' in script_node.get('output')

@@ -5,6 +5,7 @@
 import argparse
 import dns # https://github.com/rthalley/dnspython (sudo apt install python3-dnspython)
 import dns.resolver
+import dns.zone
 import ipaddress
 import json
 import pathlib
@@ -31,7 +32,7 @@ def reverse_DNS_lookup(address):
       dns.reversename.from_address(address),
       rdtype = dns.rdatatype.PTR
     )
-  except dns.resolver.NoAnswer:
+  except:
     return
 
   return str(response[0])
@@ -68,7 +69,7 @@ def get_SOA(domain, nameserver):
 
   return domain
 
-def is_recursive(domain, nameserver):
+def test_recursive(domain, nameserver):
   # https://serverfault.com/a/1120946
 
   query = dns.message.make_query(
@@ -84,7 +85,7 @@ def is_recursive(domain, nameserver):
 
   return response.rcode() == dns.rcode.NOERROR
 
-def validates_DNSSEC(invalid_domain, nameserver):
+def test_DNSSEC_validation(invalid_domain, nameserver):
   query = dns.message.make_query(
     invalid_domain,
     rdtype = dns.rdatatype.A,
@@ -98,7 +99,7 @@ def validates_DNSSEC(invalid_domain, nameserver):
 
   return response.rcode() == dns.rcode.SERVFAIL
 
-def supports_ECS(domain, nameserver):
+def test_ECS_support(domain, nameserver):
   query = dns.message.make_query(
     domain,
     rdtype = dns.rdatatype.A,
@@ -146,7 +147,11 @@ def get_CH_TXT(name, nameserver, NSID=False):
       print(f"NSID: {nsid}")
       break
 
-  for item in response.answer[0]:
+  if len(response.answer) == 0:
+    return info
+
+  answer = response.answer[0]
+  for item in answer:
     if item.rdtype == dns.rdatatype.TXT and item.rdclass == dns.rdataclass.CH:
       info_bytes = b''.join(item.strings)
       info_string = info_bytes.decode()
@@ -174,6 +179,25 @@ def get_additional_info(address):
 
   return info
 
+def test_AXFR(domain, nameserver):
+  # https://github.com/rthalley/dnspython/blob/master/examples/xfr.py
+  try:
+    xfr = dns.query.xfr(
+      nameserver,
+      domain
+    )
+
+    zone = dns.zone.from_xfr(xfr)
+
+    print("AXFR:")
+    zone_info = []
+    for key in sorted(zone.nodes.keys()):
+      for info in zone[key].to_text(key).splitlines():
+        zone_info.append(info)
+        print(f"  {info}")
+  except:
+    return
+
 def process(args):
   try:
     address = ipaddress.ip_address(args.address)
@@ -195,16 +219,23 @@ def process(args):
   TRANSPORT_PROTOCOL = args.transport_protocol
   print(f"transport protocol: {TRANSPORT_PROTOCOL.upper()}")
 
-  recursive = is_recursive(TEST_DOMAIN, address)
-  print(f"recursive: {recursive}")
+  is_recursive = test_recursive(TEST_DOMAIN, address)
+  print(f"recursive: {is_recursive}")
 
-  DNSSEC = validates_DNSSEC(TEST_DOMAIN_VALIDATE_DNSSEC, address)
-  print(f"DNSSEC: {DNSSEC}")
+  validates_DNSSEC = test_DNSSEC_validation(TEST_DOMAIN_VALIDATE_DNSSEC, address)
+  print(f"DNSSEC: {validates_DNSSEC}")
 
-  ECS = supports_ECS(TEST_DOMAIN, address)
-  print(f"ECS: {ECS}")
+  supports_ECS = test_ECS_support(TEST_DOMAIN, address)
+  print(f"ECS: {supports_ECS}")
 
   info = get_additional_info(address)
+
+  if args.domain:
+    domain = args.domain
+  elif 'domain' in info:
+    domain = info['domain']
+
+  permits_AXFR = test_AXFR(domain, address)
 
   if args.json:
     result = {
@@ -212,9 +243,10 @@ def process(args):
       'public': public,
       'transport_protocol': TRANSPORT_PROTOCOL.upper(),
       'port': PORT,
-      'recursive': recursive,
-      'DNSSEC': DNSSEC,
-      'ECS': ECS,
+      'recursive': is_recursive,
+      'DNSSEC': validates_DNSSEC,
+      'ECS': supports_ECS,
+      'AXFR': permits_AXFR,
       'info': info,
     }
 
@@ -241,6 +273,11 @@ def main():
     help = f"the port number where the name server is listening for DNS queries (default: {PORT})",
     type = int,
     default = PORT
+  )
+
+  parser.add_argument(
+    '--domain',
+    help = "the domain for which the name server has authority; if not specified, it will be determined via rDNS and SOA"
   )
 
   parser.add_argument(
