@@ -99,12 +99,11 @@ def validates_DNSSEC(invalid_domain, nameserver):
   return response.rcode() == dns.rcode.SERVFAIL
 
 def supports_ECS(domain, nameserver):
-  option = dns.edns.ECSOption(ECS_ADDRESS, ECS_PREFIX)
   query = dns.message.make_query(
     domain,
     rdtype = dns.rdatatype.A,
     use_edns = 0,
-    options = [option]
+    options = [ dns.edns.ECSOption(ECS_ADDRESS, ECS_PREFIX) ]
   )
 
   response = send_query(query, nameserver)
@@ -118,25 +117,62 @@ def supports_ECS(domain, nameserver):
 
   return False
 
-def get_BIND_version(nameserver):
+def get_CH_TXT(name, nameserver, NSID=False):
+  info = {}
+
   query = dns.message.make_query(
-    "version.bind",
+    name,
     rdtype = dns.rdatatype.TXT,
-    rdclass = dns.rdataclass.CH,
+    rdclass = dns.rdataclass.CH
   )
+
+  if NSID:
+    # https://www.ietf.org/rfc/rfc5001.html#section-2.1
+    query.use_edns(
+      edns = 0,
+      options = [ dns.edns.GenericOption(dns.edns.OptionType.NSID, b"") ],
+    )
+    query.flags |= dns.flags.AD # add the 'additional' flag
 
   response = send_query(query, nameserver)
 
   if response is None or response.rcode() != dns.rcode.NOERROR:
-    return
+    return info
 
-  match = re.search(
-    r'version\.bind\.\s+\d+\s+CH\s+TXT\s+"(?P<version>[^"]+)"',
-    str(response.answer[0])
-  )
+  for opt in response.options:
+    if opt.otype == dns.edns.NSID:
+      nsid = opt.data.decode()
+      info['NSID'] = nsid
+      print(f"NSID: {nsid}")
+      break
 
-  if match:
-    return match.group('version')
+  for item in response.answer[0]:
+    if item.rdtype == dns.rdatatype.TXT and item.rdclass == dns.rdataclass.CH:
+      info_bytes = b''.join(item.strings)
+      info_string = info_bytes.decode()
+      info[name] = info_string
+      print(f"{name}: {info_string}")
+
+  return info
+
+def get_additional_info(address):
+  info = {}
+
+  hostname = reverse_DNS_lookup(address)
+  if hostname:
+    info['rDNS'] = hostname
+    print(f"rDNS: {hostname}")
+
+  domain = get_SOA(hostname, address)
+  if domain:
+    info['domain'] = domain
+    print(f"domain: {domain}")
+
+  info.update(get_CH_TXT('bind.version', address))
+
+  info.update(get_CH_TXT('id.server', address, True))
+
+  return info
 
 def process(args):
   try:
@@ -159,12 +195,6 @@ def process(args):
   TRANSPORT_PROTOCOL = args.transport_protocol
   print(f"transport protocol: {TRANSPORT_PROTOCOL.upper()}")
 
-  hostname = reverse_DNS_lookup(address)
-  print(f"rDNS: {hostname}")
-
-  domain = get_SOA(hostname, address)
-  print(f"domain: {domain}")
-
   recursive = is_recursive(TEST_DOMAIN, address)
   print(f"recursive: {recursive}")
 
@@ -174,8 +204,7 @@ def process(args):
   ECS = supports_ECS(TEST_DOMAIN, address)
   print(f"ECS: {ECS}")
 
-  BIND_version = get_BIND_version(address)
-  print(f"BIND: {BIND_version}")
+  info = get_additional_info(address)
 
   if args.json:
     result = {
@@ -183,12 +212,10 @@ def process(args):
       'public': public,
       'transport_protocol': TRANSPORT_PROTOCOL.upper(),
       'port': PORT,
-      'rDNS': hostname,
-      'domain': domain,
       'recursive': recursive,
       'DNSSEC': DNSSEC,
       'ECS': ECS,
-      'BIND': BIND_version,
+      'info': info,
     }
 
     with open(args.json, 'w') as f:

@@ -96,7 +96,7 @@ class Parser:
         service['address'] = address
         service['transport_protocol'] = transport_protocol
         service['port'] = port
-        service['rDNS'] = hostname
+        service['info']['rDNS'] = hostname
 
         for script_node in port_node.iter('script'):
           script_ID = script_node.get('id')
