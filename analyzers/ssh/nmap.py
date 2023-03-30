@@ -95,13 +95,17 @@ class Parser:
         for script_node in port_node.iter('script'):
           script_ID = script_node.get('id')
 
+          if script_ID == 'sshv1':
+            service['issues'].append(f"Nmap script scan result not parsed: {script_ID}")
+            #TODO: parse results
+
           if script_ID == 'ssh-hostkey':
             service['server_host_keys'] = self.parse_host_key(script_node)
 
-          elif script_ID == 'ssh-auth-methods':
+          if script_ID == 'ssh-auth-methods':
             service['client_authentication_methods'] = self.parse_table(script_node.find('table'))
 
-          elif script_ID == 'ssh2-enum-algos':
+          if script_ID == 'ssh2-enum-algos':
             for table_node in script_node.iter('table'):
               table_key = table_node.get('key')
 
@@ -117,7 +121,7 @@ class Parser:
               elif table_key == 'compression_algorithms':
                 service['compression_algorithms'] = self.parse_table(table_node)
 
-          elif script_ID == 'banner':
+          if script_ID == 'banner':
             service['banner'] = script_node.get('output')
 
   def parse_protocol_version(self, extrainfo):

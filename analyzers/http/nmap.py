@@ -86,10 +86,18 @@ class Parser:
         service['host'] = host
         service['port'] = port
 
-        self.parse_http_headers(
-          port_node.find("script[@id='http-headers']"),
-          service['response_headers']
-        )
+        for script_node in port_node.findall('script'):
+          script_ID = script_node.get('id')
+
+          if script_ID == 'http-headers':
+            self.parse_http_headers(
+              script_node,
+              service['response_headers']
+            )
+
+          if script_ID in ( 'http-git', 'http-internal-ip-disclosure', 'http-referer-checker', 'http-robots.txt', 'http-wordpress-users' ):
+            service['issues'].append(f"Nmap script scan result not parsed: {script_ID}")
+            #TODO: parse results
 
   def parse_http_headers(self, script_node, response_headers):
     # strip whitespace characters
