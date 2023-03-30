@@ -84,7 +84,9 @@ class Scan:
     self.run_once = run_once
 
 class Command:
-  def __init__(self, description, string, patterns):
+  def __init__(self, host, port, description, string, patterns):
+    self.host = host
+    self.port = port
     self.description = description
     self.string = string
     self.patterns = patterns
@@ -199,7 +201,7 @@ async def run_command(command: Command, target: Target):
 
     timestamp_completion = time.time()
 
-    await CommandLog.add_entry([timestamp_start, timestamp_completion, command.string, return_code])
+    await CommandLog.add_entry([timestamp_start, timestamp_completion, command.host, command.port, command.string, return_code])
     
     JOB_PROGRESS.remove_task(task_ID)
     #JOB_PROGRESS.console.print(f"[green]{command.description}: finished")
@@ -269,6 +271,8 @@ def queue_HTTP_service_scan(target: Target, service: Service, scan: Scan):
       continue # with another hostname 
     else:
       target.scans[scan_ID] = Command(
+        hostname,
+        port,
         description,
         format(scan.command),
         scan.patterns
@@ -323,6 +327,8 @@ def queue_generic_service_scan(target: Target, service: Service, scan: Scan):
       return # continue with another service of the target
 
   target.scans[scan_ID] = Command(
+    address,
+    port,
     description,
     format(scan.command),
     scan.patterns
@@ -496,7 +502,7 @@ async def process(args):
   CommandLog.init(
     pathlib.Path(base_directory, 'commands.csv'),
     asyncio.Lock(),
-    ['start time', 'completion time', 'command', 'return code'],
+    ['start time', 'completion time', 'host', 'port', 'command', 'return code'],
     args.delimiter
   )
 
