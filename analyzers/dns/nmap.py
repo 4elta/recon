@@ -12,9 +12,9 @@ from . import SERVICE_SCHEMA
 
 class Parser:
   '''
-  parse results of the Nmap NTP scan.
+  parse results of the Nmap DNS scan.
 
-  $ nmap -sU -Pn -sV -p {port} --script="banner,ntp-info,ntp-monlist" -oN "{result_file}.log" -oX "{result_file}.xml" {address}
+  $ nmap -sT -sU -Pn -sV -p {port} --script="banner,dns-cache-snoop,dns-nsec-enum,dns-recursion,dns-nsec3-enum,dns-zone-transfer" --script-args="dns-zone-transfer.domain={domain}" -oN "{result_file}.log" -oX "{result_file}.xml" {address}
   '''
 
   name = 'nmap'
@@ -77,6 +77,10 @@ class Parser:
         hostname_node = hostnames_node.find("hostname[@type='PTR']")
         if hostname_node is not None:
           hostname = hostname_node.get('name')
+        else:
+          hostname_node = hostnames_node.find("hostname[@type='user']")
+          if hostname_node is not None:
+            hostname = hostname_node.get('name')
 
       for port_node in host_node.iter('port'):
         if port_node.find('state').get('state') != 'open':
@@ -94,19 +98,34 @@ class Parser:
         self.services[identifier] = service
 
         service['address'] = address
-        service['transport_protocol'] = transport_protocol
         service['port'] = port
-        service['info']['rDNS'] = hostname
+        service['transport_protocol'] = transport_protocol
+
+        if hostname:
+          service['info']['rDNS'] = hostname
 
         for script_node in port_node.iter('script'):
           script_ID = script_node.get('id')
 
           if script_ID == 'dns-recursion':
-            service['recursive'] = self.parse_recursion(script_node)
+            service['recursive'] = 'Recursion appears to be enabled' in script_node.get('output')
+            continue
 
           if script_ID == 'dns-zone-transfer':
-            service['issues'].append(f"Nmap script scan result not parsed: {script_ID}")
-            #TODO: parse results
+            zone = []
+            for line in script_node.get('output').splitlines():
+              if line.strip():
+                zone.append(line.strip())
+            service['AXFR'] = zone
+            continue
 
-  def parse_recursion(self, script_node):
-    return 'Recursion appears to be enabled' in script_node.get('output')
+          if script_ID == 'fingerprint-strings':
+            for elem_node in script_node.iter('elem'):
+              elem_key = elem_node.get('key')
+              if elem_key.startswith('DNSVersionBindReq'):
+                service['info']['version.bind'] = elem_node.text.splitlines()[-1].strip()
+            continue
+
+          #service['issues'].append(f"Nmap script scan result not parsed: {script_ID}")
+          #TODO: parse results
+
