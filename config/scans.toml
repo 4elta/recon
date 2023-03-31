@@ -140,7 +140,7 @@ patterns = [ 'pop3' ]
 patterns = [ 'rdp', 'ms\-wbt\-server', 'ms\-term\-serv' ]
 
   [rdp.scans.nmap]
-  command = 'nmap -Pn -sV -p {port} --script="banner,(rdp* or ssl*) and not (brute or broadcast or dos or external or fuzzer)" -oX "{result_file}.xml" -oN "{result_file}.log" {address}'
+  command = 'nmap -sT -sU -Pn -sV -p {port} --script="banner,(rdp* or ssl*) and not (brute or broadcast or dos or external or fuzzer)" -oX "{result_file}.xml" -oN "{result_file}.log" {address}'
 
 [rmi]
 patterns = [ '^java\-rmi', '^rmiregistry' ]
