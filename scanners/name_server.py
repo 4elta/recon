@@ -195,6 +195,8 @@ def test_AXFR(domain, nameserver):
       for info in zone[key].to_text(key).splitlines():
         zone_info.append(info)
         print(f"  {info}")
+
+    return zone_info
   except:
     return
 
@@ -230,12 +232,16 @@ def process(args):
 
   info = get_additional_info(address)
 
+  domain = None
+
   if args.domain:
     domain = args.domain
   elif 'domain' in info:
     domain = info['domain']
 
-  permits_AXFR = test_AXFR(domain, address)
+  permits_AXFR = None
+  if domain:
+    permits_AXFR = test_AXFR(domain, address)
 
   if args.json:
     result = {
