@@ -26,7 +26,7 @@ class Analyzer:
 
     self.services = []
 
-    self.set_tool('name_server')
+    self.set_tool('nase')
 
   def set_tool(self, tool):
     module_path = pathlib.Path(

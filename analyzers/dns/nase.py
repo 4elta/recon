@@ -7,12 +7,12 @@ from . import SERVICE_SCHEMA
 
 class Parser:
   '''
-  parse results of the `name_server` scanner.
+  parse results of the `nase` scanner.
 
-  $ name_server --json "{result_file}.json" {address} 2>&1 | tee "{result_file}.log"
+  $ nase --json "{result_file}.json" {address} 2>&1 | tee "{result_file}.log"
   '''
 
-  name = 'name_server'
+  name = 'nase'
   file_type = 'json'
 
   def __init__(self):

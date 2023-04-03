@@ -21,8 +21,8 @@ patterns = [ '^distccd' ]
 [dns]
 patterns = [ '^domain' ]
 
-  [dns.scans.name_server]
-  command = '"{PATH_TO_SCANNERS}/name_server.py" --port {port} --transport_protocol {transport_protocol} --json "{result_file}.json" {address} 2>&1 | tee "{result_file}.log"'
+  [dns.scans.nase]
+  command = '"{PATH_TO_SCANNERS}/nase.py" --port {port} --transport_protocol {transport_protocol} --json "{result_file}.json" {address} 2>&1 | tee "{result_file}.log"'
 
 [finger]
 patterns = [ '^finger' ]

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# scans a name server (DNS) and lists its configuration
+# scans a NAme SErver (DNS) and lists its configuration
 
 import argparse
 import dns # https://github.com/rthalley/dnspython (sudo apt install python3-dnspython)
