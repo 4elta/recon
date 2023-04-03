@@ -1,5 +1,4 @@
 import copy
-import pathlib
 import re
 
 try:
@@ -8,28 +7,25 @@ try:
 except:
   sys.exit("this script requires the 'defusedxml' module.\nplease install it via 'pip3 install defusedxml'.")
 
+from .. import AbstractParser
 from . import SERVICE_SCHEMA
 
-class Parser:
+class Parser(AbstractParser):
   '''
   parse results of the Nmap SSH scan.
 
   $ nmap -Pn -sV -p {port} --script="banner,ssh2-enum-algos,ssh-hostkey,ssh-auth-methods" -oN "{result_file}.log" -oX "{result_file}.xml" {address}
   '''
 
-  name = 'nmap'
-  file_type = 'xml'
-
   def __init__(self):
-    self.services = {}
+    super(self.__class__, self).__init__()
 
-  def parse_files(self, files):
-    for path in files[self.file_type]:
-      self.parse_file(path)
-
-    return self.services
+    self.name = 'nmap'
+    self.file_type = 'xml'
 
   def parse_file(self, path):
+    super(self.__class__, self).parse_file(path)
+
     '''
     https://nmap.org/book/nmap-dtd.html
 
@@ -90,7 +86,7 @@ class Parser:
 
           service['description'] = " ".join(descriptions)
 
-          service['protocol_version'] = self.parse_protocol_version(service_node.get('extrainfo'))
+          service['protocol_version'] = self._parse_protocol_version(service_node.get('extrainfo'))
 
         for script_node in port_node.iter('script'):
           script_ID = script_node.get('id')
@@ -100,31 +96,31 @@ class Parser:
             #TODO: parse results
 
           if script_ID == 'ssh-hostkey':
-            service['server_host_keys'] = self.parse_host_key(script_node)
+            service['server_host_keys'] = self._parse_host_key(script_node)
 
           if script_ID == 'ssh-auth-methods':
-            service['client_authentication_methods'] = self.parse_table(script_node.find('table'))
+            service['client_authentication_methods'] = self._parse_table(script_node.find('table'))
 
           if script_ID == 'ssh2-enum-algos':
             for table_node in script_node.iter('table'):
               table_key = table_node.get('key')
 
               if table_key == 'kex_algorithms':
-                service['key_exchange_methods'] = self.parse_table(table_node)
+                service['key_exchange_methods'] = self._parse_table(table_node)
 
               elif table_key == 'encryption_algorithms':
-                service['encryption_algorithms'] = self.parse_table(table_node)
+                service['encryption_algorithms'] = self._parse_table(table_node)
 
               elif table_key == 'mac_algorithms':
-                service['MAC_algorithms'] = self.parse_table(table_node)
+                service['MAC_algorithms'] = self._parse_table(table_node)
 
               elif table_key == 'compression_algorithms':
-                service['compression_algorithms'] = self.parse_table(table_node)
+                service['compression_algorithms'] = self._parse_table(table_node)
 
           if script_ID == 'banner':
             service['banner'] = script_node.get('output')
 
-  def parse_protocol_version(self, extrainfo):
+  def _parse_protocol_version(self, extrainfo):
     if extrainfo:
       m = re.search(
         r'protocol (?P<protocol_version>\d+(\.\d+)?)',
@@ -133,7 +129,7 @@ class Parser:
 
       return m.group('protocol_version')
 
-  def parse_host_key(self, script_node):
+  def _parse_host_key(self, script_node):
     '''
     <script id="ssh-hostkey" output="...">
       <table>
@@ -163,7 +159,7 @@ class Parser:
 
     return keys
 
-  def parse_table(self, table_node):
+  def _parse_table(self, table_node):
     '''
     <table ...>
       <elem>{info}</elem>

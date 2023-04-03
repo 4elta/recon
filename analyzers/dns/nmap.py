@@ -1,5 +1,4 @@
 import copy
-import pathlib
 import re
 
 try:
@@ -8,28 +7,25 @@ try:
 except:
   sys.exit("this script requires the 'defusedxml' module.\nplease install it via 'pip3 install defusedxml'.")
 
+from .. import AbstractParser
 from . import SERVICE_SCHEMA
 
-class Parser:
+class Parser(AbstractParser):
   '''
   parse results of the Nmap DNS scan.
 
   $ nmap -sT -sU -Pn -sV -p {port} --script="banner,dns-cache-snoop,dns-nsec-enum,dns-recursion,dns-nsec3-enum,dns-zone-transfer" --script-args="dns-zone-transfer.domain={domain}" -oN "{result_file}.log" -oX "{result_file}.xml" {address}
   '''
 
-  name = 'nmap'
-  file_type = 'xml'
-
   def __init__(self):
-    self.services = {}
+    super(self.__class__, self).__init__()
 
-  def parse_files(self, files):
-    for path in files[self.file_type]:
-      self.parse_file(path)
-
-    return self.services
+    self.name = 'nmap'
+    self.file_type = 'xml'
 
   def parse_file(self, path):
+    super(self.__class__, self).parse_file(path)
+
     '''
     https://nmap.org/book/nmap-dtd.html
 

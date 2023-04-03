@@ -1,5 +1,4 @@
 import datetime
-import importlib
 import ipaddress
 import json
 import pathlib
@@ -18,6 +17,8 @@ vulnerabilities_specification_document = pathlib.Path(
 
 with open(vulnerabilities_specification_document, 'r') as f:
   VULNERABILITIES = toml.load(f)
+
+from .. import AbstractAnalyzer
 
 CERTIFICATE_SCHEMA = {
   'subjects': [],
@@ -79,42 +80,34 @@ SERVICE_SCHEMA = {
   'vulnerabilities': [],
 }
 
-class Analyzer:
+# path to the cipher suites specification document; downloaded from https://ciphersuite.info/api/cs/
+cipher_suites_specifications_document = pathlib.Path(
+  pathlib.Path(__file__).resolve().parent,
+  "cipher_suites.json"
+)
 
-  # downloaded from https://ciphersuite.info/api/cs/
-  cipher_suites_specifications_document = pathlib.Path(
-    pathlib.Path(__file__).resolve().parent,
-    "cipher_suites.json"
-  )
+# load cipher suites specifications
+CIPHER_SUITES_SPECIFICATIONS = {}
+with open(cipher_suites_specifications_document) as f:
+  for cs in json.load(f)['ciphersuites']:
+    for name in cs:
+      CIPHER_SUITES_SPECIFICATIONS[name] = cs[name]
+
+class Analyzer(AbstractAnalyzer):
 
   def __init__(self, recommendations):
-    self.recommendations = recommendations
+    super(self.__class__, self).__init__(recommendations)
 
-    self.services = []
-
-    # load cipher suites specifications
-    self.cipher_suites_specifications = {}
-    with open(Analyzer.cipher_suites_specifications_document, 'r') as f:
-      for cs in json.load(f)['ciphersuites']:
-        for name in cs:
-          self.cipher_suites_specifications[name] = cs[name]
-
+    self.name = 'tls'
     self.set_tool('testssl')
 
   def set_tool(self, tool):
-    module_path = pathlib.Path(
-      pathlib.Path(__file__).resolve().parent,
-      f'{tool}.py'
-    )
-
-    if not module_path.exists():
-      sys.exit(f"unknown tool '{tool}'")
-
-    self.tool = tool
-    module = importlib.import_module(f'{__name__}.{tool}')
-    self.parser = module.Parser(self.cipher_suites_specifications)
+    super(self.__class__, self).set_tool(tool)
+    self.parser.cipher_suites_specifications = CIPHER_SUITES_SPECIFICATIONS
 
   def analyze(self, files):
+    super(self.__class__, self).analyze(files)
+
     # parse result files
     services = self.parser.parse_files(files[self.tool])
     self.services = services
@@ -125,7 +118,7 @@ class Analyzer:
 
       # protocol versions
       if 'protocol_versions' in self.recommendations:
-        self.analyze_protocol_versions(
+        self._analyze_protocol_versions(
           service['protocol_versions'],
           self.recommendations['protocol_versions'],
           issues
@@ -140,7 +133,7 @@ class Analyzer:
           is_private_host = False
 
         for certificate in service['certificates']:
-          self.analyze_certificate(
+          self._analyze_certificate(
             is_private_host,
             certificate,
             self.recommendations['certificate'],
@@ -149,7 +142,7 @@ class Analyzer:
 
       # preference
       if 'preference' in self.recommendations:
-        self.analyze_preference(
+        self._analyze_preference(
           service['preference'],
           self.recommendations['preference'],
           issues
@@ -157,7 +150,7 @@ class Analyzer:
 
       # cipher suites
       if 'cipher_suites' in self.recommendations:
-        self.analyze_cipher_suites(
+        self._analyze_cipher_suites(
           service['cipher_suites'],
           self.recommendations['cipher_suites'],
           issues
@@ -165,7 +158,7 @@ class Analyzer:
 
       # key exchange
       if 'key_exchange' in self.recommendations:
-        self.analyze_key_exchange(
+        self._analyze_key_exchange(
           service['key_exchange'],
           self.recommendations['key_exchange'],
           issues
@@ -173,7 +166,7 @@ class Analyzer:
 
       # signature algorithms
       if 'signature_algorithms' in self.recommendations:
-        self.analyze_signature_algorithms(
+        self._analyze_signature_algorithms(
           service['signature_algorithms'],
           self.recommendations['signature_algorithms'],
           issues
@@ -181,7 +174,7 @@ class Analyzer:
 
       # extensions
       if 'extensions' in self.recommendations:
-        self.analyze_extensions(
+        self._analyze_extensions(
           service['extensions'],
           self.recommendations['extensions'],
           issues
@@ -195,14 +188,14 @@ class Analyzer:
 
     return services
 
-  def analyze_protocol_versions(self, protocol_versions, recommendation, issues):
+  def _analyze_protocol_versions(self, protocol_versions, recommendation, issues):
     for deviation in list(set(protocol_versions).difference(recommendation)):
       issues.append(f"protocol supported: {deviation}")
 
     for deviation in list(set(recommendation).difference(protocol_versions)):
       issues.append(f"protocol not supported: {deviation}")
 
-  def analyze_certificate(self, is_private_host, certificate, recommendation, issues):
+  def _analyze_certificate(self, is_private_host, certificate, recommendation, issues):
     if not is_private_host:
       # analyze certificate subjects for private IP addresses
       for subject in certificate['subjects']:
@@ -242,15 +235,15 @@ class Analyzer:
     if sig_alg and sig_alg not in recommendation['signature_algorithms']:
       issues.append(f"server's certificate: signature algorithm `{sig_alg}`")
 
-  def analyze_preference(self, preference, recommendation, issues):
+  def _analyze_preference(self, preference, recommendation, issues):
     if not preference == recommendation:
       issues.append(f"cipher preference: {preference}")
 
-  def analyze_cipher_suites(self, cipher_suites, recommendation, issues):
+  def _analyze_cipher_suites(self, cipher_suites, recommendation, issues):
     for deviation in list(set(cipher_suites).difference(recommendation)):
       issues.append(f"cipher suite supported: `{deviation}`")
 
-  def analyze_key_exchange(self, key_exchange, recommendation, issues):
+  def _analyze_key_exchange(self, key_exchange, recommendation, issues):
     for kex_method, kex_bits in key_exchange['methods'].items():
       if kex_method not in recommendation['methods']:
         issue = f"key exchange: {kex_method}"
@@ -266,14 +259,14 @@ class Analyzer:
     for deviation in list(set(key_exchange['groups']).difference(recommendation['groups'])):
       issues.append(f"key exchange: group `{deviation}`")
 
-  def analyze_signature_algorithms(self, signature_algorithms, recommendation, issues):
+  def _analyze_signature_algorithms(self, signature_algorithms, recommendation, issues):
     for deviation in list(set(signature_algorithms).difference(recommendation)):
       if deviation == '*':
         issues.append("server accepts any signature algorithm")
       else:
         issues.append(f"signature algorithm: `{deviation}`")
 
-  def analyze_extensions(self, extensions, recommendation, issues):
+  def _analyze_extensions(self, extensions, recommendation, issues):
     if 'yes' in recommendation:
       for deviation in list(set(recommendation['yes']).difference(extensions)):
         issues.append(f"extension not supported: `{deviation}`")

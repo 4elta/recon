@@ -1,8 +1,8 @@
 import copy
 import json
-import pathlib
 import re
 
+from .. import AbstractParser
 from . import CERTIFICATE_SCHEMA, SERVICE_SCHEMA
 
 PROTOCOL_VERSIONS = {
@@ -14,7 +14,7 @@ PROTOCOL_VERSIONS = {
   'TLS1_3': 'TLS 1.3'
 }
 
-class Parser:
+class Parser(AbstractParser):
   '''
   parse results of the "testssl.sh" tool.
 
@@ -28,20 +28,14 @@ class Parser:
     {hostname}:{port}
   '''
 
-  name = 'testssl'
-  file_type = 'json'
+  def __init__(self):
+    super(self.__class__, self).__init__()
 
-  def __init__(self, cipher_suites_specifications):
-    self.services = {}
-    self.cipher_suites_specifications = cipher_suites_specifications
-
-  def parse_files(self, files):
-    for path in files[self.file_type]:
-      self.parse_file(path)
-
-    return self.services
+    self.name = 'testssl'
+    self.file_type = 'json'
 
   def parse_file(self, path):
+    super(self.__class__, self).parse_file(path)
 
     with open(path, 'r') as f:
       results = json.load(f)
@@ -92,7 +86,7 @@ class Parser:
 
         # certificate public key
         if f['id'] == 'cert_keySize':
-          self.parse_public_key(
+          self._parse_public_key(
             f['finding'],
             certificate['public_key']
           )
@@ -100,7 +94,7 @@ class Parser:
 
         # certificate signature algorithms
         if f['id'] == 'cert_signatureAlgorithm':
-          self.parse_signature_algorithm(
+          self._parse_signature_algorithm(
             f['finding'],
             certificate['signature_algorithm']
           )
@@ -109,14 +103,14 @@ class Parser:
         # certificate subjects
 
         if f['id'] == 'cert_commonName':
-          self.parse_common_name(
+          self._parse_common_name(
             f['finding'],
             certificate['subjects']
           )
           continue
 
         if f['id'] == 'cert_subjectAltName':
-          self.parse_subject_alt_names(
+          self._parse_subject_alt_names(
             f['finding'],
             certificate['subjects']
           )
@@ -125,16 +119,16 @@ class Parser:
         # certificate validity
 
         if f['id'] == 'cert_notBefore':
-          certificate['validity']['not_before'] = self.parse_validity(f['finding'])
+          certificate['validity']['not_before'] = self._parse_validity(f['finding'])
           continue
 
         if f['id'] == 'cert_notAfter':
-          certificate['validity']['not_after'] = self.parse_validity(f['finding'])
+          certificate['validity']['not_after'] = self._parse_validity(f['finding'])
           continue
 
         # groups (elliptic curve groups, finite field DH groups)
         if f['id'] == 'PFS_ECDHE_curves':
-          self.parse_groups(
+          self._parse_groups(
             f['finding'],
             service['key_exchange']['groups']
           )
@@ -147,11 +141,11 @@ class Parser:
         #   a. use the client's preference of ciphers
         #   b. use its own preference
         if f['id'] == 'cipher_order':
-          service['preference'] = self.parse_preference(f['finding'])
+          service['preference'] = self._parse_preference(f['finding'])
           continue
 
         if f['id'].startswith('cipher_x'):
-          self.parse_cipher_suite(
+          self._parse_cipher_suite(
             f['finding'],
             service['cipher_suites'],
             service['key_exchange']
@@ -161,7 +155,7 @@ class Parser:
         # TLS extensions
         # https://www.iana.org/assignments/tls-extensiontype-values/tls-extensiontype-values.xhtml
         if f['id'] == 'TLS_extensions':
-          self.parse_extensions(
+          self._parse_extensions(
             f['finding'],
             service['extensions']
           )
@@ -175,7 +169,7 @@ class Parser:
           continue
 
         if f['id'] == 'HSTS_time':
-          service['misc']['HSTS'] = self.parse_HSTS_time(f['finding'])
+          service['misc']['HSTS'] = self._parse_HSTS_time(f['finding'])
           continue
 
         # vulnerabilities
@@ -250,15 +244,11 @@ class Parser:
 
         if f['id'] == 'cert_chain_of_trust':
           if f['severity'] not in ('OK', 'INFO'):
-            issue = f"certificate not trusted: {self.parse_chain_of_trust(f['finding'])}"
+            issue = f"certificate not trusted: {self._parse_chain_of_trust(f['finding'])}"
             service['issues'].append(issue)
           continue
 
-  def parse_protocol_version(self, description, protocol_versions):
-    if description.startswith('offered'):
-      protocol_versions.append(PROTOCOL_VERSIONS[f['id']])
-
-  def parse_public_key(self, description, public_key):
+  def _parse_public_key(self, description, public_key):
     key_type, key_bits, _ = description.split(' ')
 
     if key_type == 'EC':
@@ -269,7 +259,7 @@ class Parser:
     public_key['type'] = key_type
     public_key['bits'] = key_bits
 
-  def parse_signature_algorithm(self, description, signature_algorithm):
+  def _parse_signature_algorithm(self, description, signature_algorithm):
     # SHA256 with RSA
     # SHA256 with ECDSA
     sig = description.split(' ')
@@ -281,34 +271,34 @@ class Parser:
       # https://www.rfc-editor.org/rfc/rfc5480.html#appendix-A
       signature_algorithm = f'{sig[2].lower()}-with-{sig[0].upper()}'
 
-  def parse_common_name(self, description, subjects):
+  def _parse_common_name(self, description, subjects):
     subject = description.strip()
     if subject not in subjects:
       subjects.append(subject)
 
-  def parse_subject_alt_names(self, description, subjects):
+  def _parse_subject_alt_names(self, description, subjects):
     for subject in description.split(' '):
       subject = description.strip()
       if subject not in subjects:
         subjects.append(subject)
 
-  def parse_validity(self, description):
+  def _parse_validity(self, description):
     return f"{description}:00"
 
-  def parse_groups(self, description, groups):
+  def _parse_groups(self, description, groups):
     for group in description.split(' '):
       if group == 'X25519':
         group = 'x25519'
 
       groups.append(group)
 
-  def parse_preference(self, description):
+  def _parse_preference(self, description):
     if description.startswith('server'):
       return 'server'
     elif description.startswith('client'):
       return 'client'
 
-  def parse_cipher_suite(self, description, cipher_suites, key_exchange):
+  def _parse_cipher_suite(self, description, cipher_suites, key_exchange):
     #         cipher suite                                      kex
     # xc02c   TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384           ECDH 253   AESGCM      256
     # x9f     TLS_DHE_RSA_WITH_AES_256_GCM_SHA384               DH 512     AESGCM      256
@@ -333,7 +323,7 @@ class Parser:
     elif kex[1] and kex_methods[kex[0]] and kex[1] < kex_methods[kex[0]]:
       kex_methods[kex[0]] = kex[1]
 
-  def parse_extensions(self, description, extensions):
+  def _parse_extensions(self, description, extensions):
     m = re.findall(
       r"'([^/]+)/#\d+'",
       description
@@ -344,7 +334,7 @@ class Parser:
       if extension not in extensions:
         extensions.append(extension)
 
-  def parse_HSTS_time(self, description):
+  def _parse_HSTS_time(self, description):
     m = re.search(
       r'\(=(?P<time>\d+) seconds\)',
       description
@@ -355,7 +345,7 @@ class Parser:
 
     return None
 
-  def parse_chain_of_trust(self, description):
+  def _parse_chain_of_trust(self, description):
     m = re.search(
       r'\((?P<reason>[^)]+)\)',
       description

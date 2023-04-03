@@ -1,7 +1,5 @@
 import copy
 import datetime
-import json
-import pathlib
 import re
 import sys
 
@@ -11,29 +9,26 @@ try:
 except:
   sys.exit("this script requires the 'defusedxml' module.\nplease install it via 'pip3 install defusedxml'.")
 
+from .. import AbstractParser
 from . import CERTIFICATE_SCHEMA, SERVICE_SCHEMA
 
-class Parser:
+class Parser(AbstractParser):
   '''
   parse results of the "sslscan" tool.
 
   $ sslscan --show-certificate --ocsp --show-sigs --xml="{result_file}.xml" {hostname}:{port}
   '''
 
-  name = 'sslscan'
-  file_type = 'xml'
+  def __init__(self):
+    super(self.__class__, self).__init__()
 
-  def __init__(self, cipher_suites_specifications):
-    self.services = {}
-    self.cipher_suites_specifications = cipher_suites_specifications
-
-  def parse_files(self, files):
-    for path in files[self.file_type]:
-      self.parse_file(path)
-
-    return self.services
+    self.name = 'sslscan'
+    self.file_type = 'xml'
+    self.cipher_suites_specifications = {}
 
   def parse_file(self, path):
+    super(self.__class__, self).parse_file(path)
+
     '''
     <document>
       <ssltest host="{host}" port="{port}">
@@ -106,37 +101,37 @@ class Parser:
       # cipher suites
 
       for cipher_node in ssltest_node.iter('cipher'):
-        self.parse_cipher_node(
+        self._parse_cipher_node(
           cipher_node,
           service['cipher_suites'],
           service['key_exchange']
         )
 
       for group_node in ssltest_node.iter('group'):
-        self.parse_group_node(
+        self._parse_group_node(
           group_node,
           service['key_exchange']
         )
 
       for connection_signature_algorithm_node in ssltest_node.iter('connection-signature-algorithm'):
-        self.parse_connection_signature_algorithm_node(
+        self._parse_connection_signature_algorithm_node(
           connection_signature_algorithm_node,
           service['signature_algorithms']
         )
 
       for certificate_node in ssltest_node.iter('certificate'):
         if certificate_node.get('type') == 'short':
-          self.parse_certificate_node(
+          self._parse_certificate_node(
             certificate_node,
             service
           )
 
       for certificate in service['certificates']:
-        if not self.evaluate_certificate_trust(certificate, host):
+        if not self._evaluate_certificate_trust(certificate, host):
           service['issues'].append("certificate not trusted: certificate does not match supplied URI")
           break
 
-  def parse_cipher_node(self, node, cipher_suites, key_exchange):
+  def _parse_cipher_node(self, node, cipher_suites, key_exchange):
     cipher_suite = node.get('cipher') # most often OpenSSL name
 
     cipher_suite_ID = node.get('id')[2:]
@@ -164,12 +159,12 @@ class Parser:
     elif kex[1] and kex_methods[kex[0]] and kex[1] < kex_methods[kex[0]]:
       kex_methods[kex[0]] = kex[1]
 
-  def parse_group_node(self, node, key_exchange):
+  def _parse_group_node(self, node, key_exchange):
     name = node.get('name').split(' ')[0]
     if name not in key_exchange['groups']:
       key_exchange['groups'].append(name)
 
-  def parse_connection_signature_algorithm_node(self, node, signature_algorithms):
+  def _parse_connection_signature_algorithm_node(self, node, signature_algorithms):
     name = node.get('name')
     if name == 'ANY':
       name = '*'
@@ -177,7 +172,7 @@ class Parser:
     if name not in signature_algorithms:
       signature_algorithms.append(name)
 
-  def parse_certificate_pk_node(self, node, public_key):
+  def _parse_certificate_pk_node(self, node, public_key):
     public_key['bits'] = int(node.get('bits'))
 
     pk_type = node.get('type')
@@ -188,7 +183,7 @@ class Parser:
 
     public_key['type'] = pk_type
 
-  def parse_certificate_subject_node(self, node, subjects):
+  def _parse_certificate_subject_node(self, node, subjects):
     subjects.append(node.text)
 
   def parse_certificate_altnames_node(self, node, subjects):
@@ -197,11 +192,11 @@ class Parser:
       if subject not in subjects:
         subjects.append(subject)
 
-  def parse_certificate_self_signed_node(self, node, issues):
+  def _parse_certificate_self_signed_node(self, node, issues):
     if node.text == 'true':
       issues.append("certificte not trusted: self signed")
 
-  def parse_certificate_validity(self, node):
+  def _parse_certificate_validity(self, node):
     # Feb  2 23:00:24 2023 GMT
 
     date_time = datetime.datetime.strptime(
@@ -211,22 +206,22 @@ class Parser:
 
     return date_time.isoformat(sep=' ')
 
-  def parse_certificate_expired_node(self, node, issues):
+  def _parse_certificate_expired_node(self, node, issues):
     if node.text == 'true':
       issues.append("certificate not trusted: expired")
 
-  def parse_certificate_node(self, node, service):
+  def _parse_certificate_node(self, node, service):
     certificate = copy.deepcopy(CERTIFICATE_SCHEMA)
     service['certificates'].append(certificate)
 
     certificate['signature_algorithm'] = node.find('signature-algorithm').text
 
-    self.parse_certificate_pk_node(
+    self._parse_certificate_pk_node(
       node.find('pk'),
       certificate['public_key']
     )
 
-    self.parse_certificate_subject_node(
+    self._parse_certificate_subject_node(
       node.find('subject'),
       certificate['subjects']
     )
@@ -236,20 +231,20 @@ class Parser:
       certificate['subjects']
     )
 
-    self.parse_certificate_self_signed_node(
+    self._parse_certificate_self_signed_node(
       node.find('self-signed'),
       service['issues']
     )
 
-    certificate['validity']['not_before'] = self.parse_certificate_validity(node.find('not-valid-before'))
-    certificate['validity']['not_after'] = self.parse_certificate_validity(node.find('not-valid-after'))
+    certificate['validity']['not_before'] = self._parse_certificate_validity(node.find('not-valid-before'))
+    certificate['validity']['not_after'] = self._parse_certificate_validity(node.find('not-valid-after'))
 
-    self.parse_certificate_expired_node(
+    self._parse_certificate_expired_node(
       node.find('expired'),
       service['issues']
     )
 
-  def evaluate_certificate_trust(self, certificate, host):
+  def _evaluate_certificate_trust(self, certificate, host):
     for subject in certificate['subjects']:
       #  wildcard certificate
       #                               cheap trick to test whether the host is a DNS hostname (or at least an IPv4 address)

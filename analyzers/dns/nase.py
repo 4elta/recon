@@ -1,30 +1,25 @@
 import copy
 import json
-import pathlib
-import re
 
+from .. import AbstractParser
 from . import SERVICE_SCHEMA
 
-class Parser:
+class Parser(AbstractParser):
   '''
   parse results of the `nase` scanner.
 
   $ nase --json "{result_file}.json" {address} 2>&1 | tee "{result_file}.log"
   '''
 
-  name = 'nase'
-  file_type = 'json'
-
   def __init__(self):
-    self.services = {}
+    super(self.__class__, self).__init__()
 
-  def parse_files(self, files):
-    for path in files[self.file_type]:
-      self.parse_file(path)
-
-    return self.services
+    self.name = 'nase'
+    self.file_type = 'json'
 
   def parse_file(self, path):
+    super(self.__class__, self).parse_file(path)
+
     with open(path) as f:
       result = json.load(f)
 

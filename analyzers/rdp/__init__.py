@@ -1,10 +1,8 @@
-import datetime
-import importlib
 import ipaddress
 import json
-import pathlib
 import re
-import sys
+
+from .. import AbstractAnalyzer
 
 SERVICE_SCHEMA = {
   'address': None,
@@ -40,29 +38,17 @@ SERVICE_SCHEMA = {
   'issues': [],
 }
 
-class Analyzer:
+class Analyzer(AbstractAnalyzer):
 
   def __init__(self, recommendations):
-    self.recommendations = recommendations
+    super(self.__class__, self).__init__(recommendations)
 
-    self.services = []
-
+    self.name = 'rdp'
     self.set_tool('nmap')
 
-  def set_tool(self, tool):
-    module_path = pathlib.Path(
-      pathlib.Path(__file__).resolve().parent,
-      f'{tool}.py'
-    )
-
-    if not module_path.exists():
-      sys.exit(f"unknown tool '{tool}'")
-
-    self.tool = tool
-    module = importlib.import_module(f'{__name__}.{tool}')
-    self.parser = module.Parser()
-
   def analyze(self, files):
+    super(self.__class__, self).analyze(files)
+
     # parse result files
     services = self.parser.parse_files(files[self.tool])
     self.services = services
@@ -83,7 +69,7 @@ class Analyzer:
           issues.append("public RDP server")
 
       if 'protocols' in self.recommendations:
-        self.analyze_protocols(
+        self._analyze_protocols(
           service['protocols'],
           self.recommendations['protocols'],
           issues
@@ -99,7 +85,7 @@ class Analyzer:
 
     return services
 
-  def analyze_protocols(self, protocols, recommendation, issues):
+  def _analyze_protocols(self, protocols, recommendation, issues):
     for deviation in list(set(protocols).difference(recommendation)):
       issues.append(f"protocol supported: `{deviation}`")
 

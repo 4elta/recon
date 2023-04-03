@@ -1,9 +1,7 @@
-import datetime
-import importlib
 import json
-import pathlib
 import re
-import sys
+
+from .. import AbstractAnalyzer
 
 SERVICE_SCHEMA = {
   'versions': [],
@@ -26,30 +24,17 @@ SERVICE_SCHEMA = {
   'issues': [],
 }
 
-class Analyzer:
+class Analyzer(AbstractAnalyzer):
 
   def __init__(self, recommendations):
-    self.recommendations = recommendations
-    self.mandatory_directives = []
+    super(self.__class__, self).__init__(recommendations)
 
-    self.services = []
-
+    self.name = 'isakmp'
     self.set_tool('ike')
 
-  def set_tool(self, tool):
-    module_path = pathlib.Path(
-      pathlib.Path(__file__).resolve().parent,
-      f'{tool}.py'
-    )
-
-    if not module_path.exists():
-      sys.exit(f"unknown tool '{tool}'")
-
-    self.tool = tool
-    module = importlib.import_module(f'{__name__}.{tool}')
-    self.parser = module.Parser()
-
   def analyze(self, files):
+    super(self.__class__, self).analyze(files)
+
     # parse result files
     services = self.parser.parse_files(files[self.tool])
     self.services = services
@@ -60,7 +45,7 @@ class Analyzer:
       issues = service['issues']
 
       if 'versions' in self.recommendations:
-        self.analyze_list(
+        self._analyze_list(
           service['versions'],
           self.recommendations['versions'],
           issues,
@@ -69,14 +54,14 @@ class Analyzer:
         )
 
       if 'IKEv1' in self.recommendations:
-        self.analyze_IKEv1(
+        self._analyze_IKEv1(
           service['IKEv1'],
           self.recommendations['IKEv1'],
           issues
         )
 
       if 'IKEv2' in self.recommendations:
-        self.analyze_IKEv2(
+        self._analyze_IKEv2(
           service['IKEv2'],
           self.recommendations['IKEv2'],
           issues
@@ -84,9 +69,9 @@ class Analyzer:
 
     return services
 
-  def analyze_IKEv1(self, service, recommendation, issues):
+  def _analyze_IKEv1(self, service, recommendation, issues):
     if 'encryption_algorithms' in recommendation:
-      self.analyze_list(
+      self._analyze_list(
         service['encryption_algorithms'],
         recommendation['encryption_algorithms'],
         issues,
@@ -94,7 +79,7 @@ class Analyzer:
       )
 
     if 'hash_algorithms' in recommendation:
-      self.analyze_list(
+      self._analyze_list(
         service['hash_algorithms'],
         recommendation['hash_algorithms'],
         issues,
@@ -102,7 +87,7 @@ class Analyzer:
       )
 
     if 'authentication_methods' in recommendation:
-      self.analyze_list(
+      self._analyze_list(
         service['authentication_methods'],
         recommendation['authentication_methods'],
         issues,
@@ -110,7 +95,7 @@ class Analyzer:
       )
 
     if 'groups' in recommendation:
-      self.analyze_list(
+      self._analyze_list(
         service['groups'],
         recommendation['groups'],
         issues,
@@ -123,9 +108,9 @@ class Analyzer:
       else:
         issues.append(f"IKEv1 Aggressive Mode not supported")
 
-  def analyze_IKEv2(self, service, recommendation, issues):
+  def _analyze_IKEv2(self, service, recommendation, issues):
     if 'encryption_algorithms' in recommendation:
-      self.analyze_list(
+      self._analyze_list(
         service['encryption_algorithms'],
         recommendation['encryption_algorithms'],
         issues,
@@ -133,7 +118,7 @@ class Analyzer:
       )
 
     if 'pseudorandom_functions' in recommendation:
-      self.analyze_list(
+      self._analyze_list(
         service['pseudorandom_functions'],
         recommendation['pseudorandom_functions'],
         issues,
@@ -141,7 +126,7 @@ class Analyzer:
       )
 
     if 'integrity_algorithms' in recommendation:
-      self.analyze_list(
+      self._analyze_list(
         service['integrity_algorithms'],
         recommendation['integrity_algorithms'],
         issues,
@@ -149,7 +134,7 @@ class Analyzer:
       )
 
     if 'key_exchange_methods' in recommendation:
-      self.analyze_list(
+      self._analyze_list(
         service['key_exchange_methods'],
         recommendation['key_exchange_methods'],
         issues,
@@ -157,14 +142,14 @@ class Analyzer:
       )
 
     if 'authentication_methods' in recommendation:
-      self.analyze_list(
+      self._analyze_list(
         service['authentication_methods'],
         recommendation['authentication_methods'],
         issues,
         'IKEv2 authentication method'
       )
 
-  def analyze_list(self, supported, recommendation, issues, name, must_support=False):
+  def _analyze_list(self, supported, recommendation, issues, name, must_support=False):
 
     for deviation in list(set(supported).difference(recommendation)):
       issues.append(f"{name} supported: `{deviation}`")

@@ -1,5 +1,4 @@
 import copy
-import pathlib
 import re
 
 try:
@@ -8,28 +7,25 @@ try:
 except:
   sys.exit("this script requires the 'defusedxml' module.\nplease install it via 'pip3 install defusedxml'.")
 
+from .. import AbstractParser
 from . import SERVICE_SCHEMA
 
-class Parser:
+class Parser(AbstractParser):
   '''
   parse results of the Nmap NTP scan.
 
   $ nmap -sU -Pn -sV -p {port} --script="banner,ntp-info,ntp-monlist" -oN "{result_file}.log" -oX "{result_file}.xml" {address}
   '''
 
-  name = 'nmap'
-  file_type = 'xml'
-
   def __init__(self):
-    self.services = {}
+    super(self.__class__, self).__init__()
 
-  def parse_files(self, files):
-    for path in files[self.file_type]:
-      self.parse_file(path)
-
-    return self.services
+    self.name = 'nmap'
+    self.file_type = 'xml'
 
   def parse_file(self, path):
+    super(self.__class__, self).parse_file(path)
+
     '''
     https://nmap.org/book/nmap-dtd.html
 
@@ -69,18 +65,18 @@ class Parser:
         service['transport_protocol'] = transport_protocol
         service['port'] = port
 
-        service['version'] = self.parse_version(port_node.find('service'))
+        service['version'] = self._parse_version(port_node.find('service'))
 
         for script_node in port_node.iter('script'):
           script_ID = script_node.get('id')
 
           if script_ID == 'ntp-monlist':
-            service['monlist'] = self.parse_monlist(script_node)
+            service['monlist'] = self._parse_monlist(script_node)
 
           if script_ID == 'ntp-info':
-            service['info'] = self.parse_info(script_node)
+            service['info'] = self._parse_info(script_node)
 
-  def parse_version(self, service_node):
+  def _parse_version(self, service_node):
     version = service_node.get('version')
     if version:
       m = re.search(
@@ -90,11 +86,11 @@ class Parser:
 
       return m.group('version')
 
-  def parse_monlist(self, monlist_node):
+  def _parse_monlist(self, monlist_node):
     # TODO: properly parse this as soon as we have access to an XML result
     return [ 'TODO' ]
 
-  def parse_info(self, info_node):
+  def _parse_info(self, info_node):
     info = []
 
     for elem_node in info_node.iter('elem'):

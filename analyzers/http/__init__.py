@@ -1,9 +1,7 @@
-import datetime
-import importlib
 import json
-import pathlib
 import re
-import sys
+
+from .. import AbstractAnalyzer
 
 SERVICE_SCHEMA = {
   'scheme': None,
@@ -14,29 +12,17 @@ SERVICE_SCHEMA = {
   'issues': [],
 }
 
-class Analyzer:
+class Analyzer(AbstractAnalyzer):
 
   def __init__(self, recommendations):
-    self.recommendations = recommendations
+    super(self.__class__, self).__init__(recommendations)
 
-    self.services = []
-
+    self.name = 'http'
     self.set_tool('nmap')
 
-  def set_tool(self, tool):
-    module_path = pathlib.Path(
-      pathlib.Path(__file__).resolve().parent,
-      f'{tool}.py'
-    )
-
-    if not module_path.exists():
-      sys.exit(f"unknown tool '{tool}'")
-
-    self.tool = tool
-    module = importlib.import_module(f'{__name__}.{tool}')
-    self.parser = module.Parser()
-
   def analyze(self, files):
+    super(self.__class__, self).analyze(files)
+
     # parse result files
     services = self.parser.parse_files(files[self.tool])
     self.services = services
@@ -85,7 +71,7 @@ class Analyzer:
       for header_name, header_values in service['response_headers'].items():
         if header_name in self.recommendations['header']:
           for header_value in header_values:
-            self.run_check(
+            self._run_check(
               [ 'header', header_name ],
               header_value,
               issues
@@ -117,7 +103,7 @@ class Analyzer:
 
     return services
 
-  def run_check(self, breadcrumbs, value, issues):
+  def _run_check(self, breadcrumbs, value, issues):
     names = []
     recommendation = self.recommendations
 
@@ -142,13 +128,13 @@ class Analyzer:
 
     if match and 'on_match' in recommendation:
       on_match = recommendation['on_match']
-      self.handle_event(on_match, names, m, breadcrumbs, value, issues)
+      self._handle_event(on_match, names, m, breadcrumbs, value, issues)
 
     if not match and 'on_mismatch' in recommendation:
       on_mismatch = recommendation['on_mismatch']
-      self.handle_event(on_mismatch, names, None, breadcrumbs, value, issues)
+      self._handle_event(on_mismatch, names, None, breadcrumbs, value, issues)
 
-  def handle_event(self, event_handler, names, match, breadcrumbs, value, issues):
+  def _handle_event(self, event_handler, names, match, breadcrumbs, value, issues):
     if 'issue' in event_handler:
       issues.append(f"{' '.join(names)} {event_handler['issue']}")
       return
@@ -158,7 +144,7 @@ class Analyzer:
         if match and n in match.groupdict():
           value = match.group(n)
 
-        self.run_check(
+        self._run_check(
           [*breadcrumbs, n],
           value,
           issues

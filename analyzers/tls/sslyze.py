@@ -1,8 +1,8 @@
 import copy
 import json
-import pathlib
 import re
 
+from .. import AbstractParser
 from . import CERTIFICATE_SCHEMA, SERVICE_SCHEMA
 
 PROTOCOL_VERSIONS = {
@@ -14,27 +14,22 @@ PROTOCOL_VERSIONS = {
   'TLS_1_3': 'TLS 1.3'
 }
 
-class Parser:
+class Parser(AbstractParser):
   '''
   parse results of the "sslyze" tool.
 
   $  sslyze --json_out "{result_file}.json" {hostname}:{port}
   '''
 
-  name = 'sslyze'
-  file_type = 'json'
+  def __init__(self):
+    super(self.__class__, self).__init__()
 
-  def __init__(self, cipher_suites_specifications):
-    self.services = {}
-    self.cipher_suites_specifications = cipher_suites_specifications
-
-  def parse_files(self, files):
-    for path in files[self.file_type]:
-      self.parse_file(path)
-
-    return self.services
+    self.name = 'sslyze'
+    self.file_type = 'json'
 
   def parse_file(self, path):
+    super(self.__class__, self).parse_file(path)
+
     '''
     # https://github.com/nabla-c0d3/sslyze/blob/release/json_output_schema.json
 
@@ -192,21 +187,21 @@ class Parser:
         continue
 
       if 'scan_result' in server_scan_result and server_scan_result['scan_result']:
-        self.parse_scan_result(
+        self._parse_scan_result(
           server_scan_result['scan_result'],
           service
         )
 
 
-  def parse_scan_result(self, scan_result, service):
+  def _parse_scan_result(self, scan_result, service):
 
-    self.parse_certificate_info(
+    self._parse_certificate_info(
       scan_result['certificate_info'],
       service
     )
 
     for protocol in ('ssl_2_0', 'ssl_3_0', 'tls_1_0', 'tls_1_1', 'tls_1_2', 'tls_1_3'):
-      self.parse_protocol(
+      self._parse_protocol(
         scan_result[f'{protocol}_cipher_suites'],
         service
       )
@@ -216,35 +211,35 @@ class Parser:
 
     # TLS 1.3 Early Data
     # https://www.rfc-editor.org/rfc/rfc8446#section-2.3
-    if self.parse_generic_scan_result(scan_result['tls_1_3_early_data'], 'supports_early_data'):
+    if self._parse_generic_scan_result(scan_result['tls_1_3_early_data'], 'supports_early_data'):
       service['misc']['0_RTT'] = 'supported'
 
-    if self.parse_generic_scan_result(scan_result['tls_fallback_scsv'], 'supports_fallback_scsv'):
+    if self._parse_generic_scan_result(scan_result['tls_fallback_scsv'], 'supports_fallback_scsv'):
       service['misc']['fallback_SCSV'] = 'supported'
 
-    if self.parse_generic_scan_result(scan_result['tls_compression'], 'supports_compression'):
+    if self._parse_generic_scan_result(scan_result['tls_compression'], 'supports_compression'):
       service['vulnerabilities'].append('CRIME')
 
-    if self.parse_generic_scan_result(scan_result['openssl_ccs_injection'], 'is_vulnerable_to_ccs_injection'):
+    if self._parse_generic_scan_result(scan_result['openssl_ccs_injection'], 'is_vulnerable_to_ccs_injection'):
       service['vulnerabilities'].append('OpenSSL_CCS_injection')
 
-    if self.parse_generic_scan_result(scan_result['heartbleed'], 'is_vulnerable_to_heartbleed'):
+    if self._parse_generic_scan_result(scan_result['heartbleed'], 'is_vulnerable_to_heartbleed'):
       service['vulnerabilities'].append('Heartbleed')
 
-    if not self.parse_generic_scan_result(scan_result['robot'], 'robot_result').startswith('NOT_VULNERABLE'):
+    if not self._parse_generic_scan_result(scan_result['robot'], 'robot_result').startswith('NOT_VULNERABLE'):
       service['vulnerabilities'].append('ROBOT')
 
-    self.parse_session_renegotiation_result(
+    self._parse_session_renegotiation_result(
       scan_result['session_renegotiation'],
       service
     )
 
-    self.parse_elliptic_curves(
+    self._parse_elliptic_curves(
       scan_result['elliptic_curves'],
       service
     )
 
-  def parse_certificate_info(self, certificate_info, service):
+  def _parse_certificate_info(self, certificate_info, service):
     if not certificate_info['status'] == 'COMPLETED' or 'result' not in certificate_info:
       service['issues'].append('could not parse certificate information')
       return
@@ -306,7 +301,7 @@ class Parser:
       if not certificate_deployment['verified_chain_has_legacy_symantec_anchor']:
         service['issues'].append(f"certificate chain contains a legacy Symantec certificate")
 
-  def parse_protocol(self, cipher_suites, service):
+  def _parse_protocol(self, cipher_suites, service):
     if not cipher_suites['status'] == 'COMPLETED' or 'result' not in cipher_suites:
       return
 
@@ -345,13 +340,13 @@ class Parser:
         if group not in service['key_exchange']['groups']:
           service['key_exchange']['groups'].append(group)
 
-  def parse_generic_scan_result(self, result, result_key):
+  def _parse_generic_scan_result(self, result, result_key):
     if not result['status'] == 'COMPLETED' or 'result' not in result:
       return None
 
     return result['result'][result_key]
 
-  def parse_session_renegotiation_result(self, result, service):
+  def _parse_session_renegotiation_result(self, result, service):
     if not result['status'] == 'COMPLETED' or 'result' not in result:
       return
 
@@ -360,7 +355,7 @@ class Parser:
     if result['is_vulnerable_to_client_renegotiation_dos']:
       service['vulnerabilities'].append('client_initiated_renegotiation_DoS')
 
-  def parse_elliptic_curves(self, result, service):
+  def _parse_elliptic_curves(self, result, service):
     if not result['status'] == 'COMPLETED' or 'result' not in result:
       return
 

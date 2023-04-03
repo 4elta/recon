@@ -1,8 +1,7 @@
-import datetime
-import importlib
 import json
-import pathlib
 import sys
+
+from .. import AbstractAnalyzer
 
 SERVICE_SCHEMA = {
   'address': None,
@@ -25,29 +24,17 @@ SERVER_HOST_KEY_SCHEMA = {
   'size': None
 }
 
-class Analyzer:
+class Analyzer(AbstractAnalyzer):
 
   def __init__(self, recommendations):
-    self.recommendations = recommendations
+    super(self.__class__, self).__init__(recommendations)
 
-    self.services = []
-
+    self.name = 'ssh'
     self.set_tool('nmap')
 
-  def set_tool(self, tool):
-    module_path = pathlib.Path(
-      pathlib.Path(__file__).resolve().parent,
-      f'{tool}.py'
-    )
-
-    if not module_path.exists():
-      sys.exit(f"unknown tool '{tool}'")
-
-    self.tool = tool
-    module = importlib.import_module(f'{__name__}.{tool}')
-    self.parser = module.Parser()
-
   def analyze(self, files):
+    super(self.__class__, self).analyze(files)
+
     # parse result files
     services = self.parser.parse_files(files[self.tool])
     self.services = services

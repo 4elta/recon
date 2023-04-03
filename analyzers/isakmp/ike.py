@@ -1,29 +1,25 @@
 import copy
-import pathlib
 import re
 
+from .. import AbstractParser
 from . import SERVICE_SCHEMA
 
-class Parser:
+class Parser(AbstractParser):
   '''
   parse results of the `ike` scanner.
 
   $ ike ${address}
   '''
 
-  name = 'ike'
-  file_type = 'log'
-
   def __init__(self):
-    self.services = {}
+    super(self.__class__, self).__init__()
 
-  def parse_files(self, files):
-    for path in files[self.file_type]:
-      self.parse_file(path)
-
-    return self.services
+    self.name = 'ike'
+    self.file_type = 'log'
 
   def parse_file(self, path):
+    super(self.__class__, self).parse_file(path)
+
     '''
     # ike-scan --sport 0 --trans='7/256,2,4,14' 192.168.42.116
     192.168.42.116	Main Mode Handshake returned HDR=(CKY-R=2232fde4d285ceb8) SA=(Enc=AES KeyLength=256 Hash=SHA1 Group=14:modp2048 Auth=PSK LifeType=Seconds LifeDuration=28800) VID=09002689dfd6b712 (XAUTH) VID=afcad71368a1f1c96b8696fc77570100 (Dead Peer Detection v1.0)

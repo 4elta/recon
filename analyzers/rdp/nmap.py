@@ -1,5 +1,4 @@
 import copy
-import pathlib
 import re
 
 try:
@@ -8,6 +7,7 @@ try:
 except:
   sys.exit("this script requires the 'defusedxml' module.\nplease install it via 'pip3 install defusedxml'.")
 
+from .. import AbstractParser
 from . import SERVICE_SCHEMA
 
 ENCRYPTION_LEVELS = {
@@ -17,26 +17,22 @@ ENCRYPTION_LEVELS = {
   'FIPS Compliant': 'ENCRYPTION_LEVEL_FIPS',
 }
 
-class Parser:
+class Parser(AbstractParser):
   '''
   parse results of the Nmap RDP scan.
 
   $ nmap -sT -sU -Pn -sV -p {port} --script="banner,(rdp* or ssl*) and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" -oX "{result_file}.xml" {address}
   '''
 
-  name = 'nmap'
-  file_type = 'xml'
-
   def __init__(self):
-    self.services = {}
+    super(self.__class__, self).__init__()
 
-  def parse_files(self, files):
-    for path in files[self.file_type]:
-      self.parse_file(path)
-
-    return self.services
+    self.name = 'nmap'
+    self.file_type = 'xml'
 
   def parse_file(self, path):
+    super(self.__class__, self).parse_file(path)
+
     '''
     https://nmap.org/book/nmap-dtd.html
 
@@ -95,13 +91,13 @@ class Parser:
           script_ID = script_node.get('id')
 
           if script_ID == 'rdp-enum-encryption':
-            self.parse_rdp_enum_encryption(script_node, service)
+            self._parse_rdp_enum_encryption(script_node, service)
 
           if script_ID in ( 'rdp-ntlm-info', 'rdp-vuln-ms12-020' ):
             #TODO: implement this
             issues.append(f"Nmap script scan result not parsed: {script_ID}")
 
-  def parse_rdp_enum_encryption(self, script_node, service):
+  def _parse_rdp_enum_encryption(self, script_node, service):
     script_output = script_node.get('output')
 
     patterns_PROTOCOL = {
