@@ -21,7 +21,7 @@ class Parser:
   '''
   parse results of the Nmap RDP scan.
 
-  $ nmap -sT -sU -Pn -sV -p {port} --script="banner,rdp-enum-encryption" -oN "{result_file}.log" -oX "{result_file}.xml" {address}
+  $ nmap -sT -sU -Pn -sV -p {port} --script="banner,(rdp* or ssl*) and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" -oX "{result_file}.xml" {address}
   '''
 
   name = 'nmap'
@@ -96,6 +96,10 @@ class Parser:
 
           if script_ID == 'rdp-enum-encryption':
             self.parse_rdp_enum_encryption(script_node, service)
+
+          if script_ID in ( 'rdp-ntlm-info', 'rdp-vuln-ms12-020' ):
+            #TODO: implement this
+            issues.append(f"Nmap script scan result not parsed: {script_ID}")
 
   def parse_rdp_enum_encryption(self, script_node, service):
     script_output = script_node.get('output')
