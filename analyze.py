@@ -47,7 +47,7 @@ def save_CSV(services, path):
 
 def process(args):
   if not args.input.exists():
-    sys.exit(f"the specified directory '{base_dir}' does not exist!")
+    sys.exit(f"the specified directory '{args.input}' does not exist!")
 
   if args.recommendations:
     recommendations_file = args.recommendations
@@ -66,9 +66,6 @@ def process(args):
 
   with open(recommendations_file, 'r') as f:
     recommendations = toml.load(f)
-
-  if not args.input.exists():
-    sys.exit(f"directory '{args.input}' does not exist")
 
   files = get_files(args.input, args.service)
   #print(json.dumps(files, indent=2))
