@@ -10,6 +10,13 @@ except:
 
 from . import SERVICE_SCHEMA
 
+ENCRYPTION_LEVELS = {
+  'Low': 'ENCRYPTION_LEVEL_LOW',
+  'Client Compatible': 'ENCRYPTION_LEVEL_CLIENT',
+  'High': 'ENCRYPTION_LEVEL_HIGH',
+  'FIPS Compliant': 'ENCRYPTION_LEVEL_FIPS',
+}
+
 class Parser:
   '''
   parse results of the Nmap RDP scan.
@@ -43,10 +50,8 @@ class Parser:
         <ports>
           <port protocol="tcp" portid="3389">
             <state state="open" .../>
-            <service name="MS-wbt-server" .../>
-            <script id="rdp-enum-encryption" output="...">
-              ...
-            </script>
+            <service name="ms-wbt-server" product="xrdp" method="probed" conf="10">...</service>
+            <script id="rdp-enum-encryption" output="..." />
           </port>
           <port protocol="udp" portid="3389">
           ...
@@ -90,5 +95,31 @@ class Parser:
           script_ID = script_node.get('id')
 
           if script_ID == 'rdp-enum-encryption':
-            #TODO: parse results
+            self.parse_rdp_enum_encryption(script_node, service)
 
+  def parse_rdp_enum_encryption(self, script_node, service):
+    script_output = script_node.get('output')
+
+    patterns_PROTOCOL = {
+      'PROTOCOL_RDP': 'Native RDP: SUCCESS',
+      'PROTOCOL_SSL': 'SSL: SUCCESS',
+      'PROTOCOL_HYBRID': 'CredSSP (NLA): SUCCESS',
+      'PROTOCOL_RDSTLS': 'RDSTLS: SUCCESS',
+      'PROTOCOL_HYBRID_EX': 'CredSSP with Early User Auth: SUCCESS',
+      #'PROTOCOL_RDSAAD': ,
+    }
+
+    for key, pattern in patterns_PROTOCOL.items():
+      if pattern in script_output:
+        service['protocols'].append(key)
+
+    regex_ENCRYPTION_LEVEL = re.compile(r'RDP Encryption level: (Low|Client Compatible|High|FIPS Compliant)')
+    m = regex_ENCRYPTION_LEVEL.search(script_output)
+    if not m:
+      service['encryption_level'] = 'ENCRYPTION_LEVEL_NONE'
+    if m:
+      service['encryption_level'] = ENCRYPTION_LEVELS[m.group(1)]
+
+    pattern_NLA = 'CredSSP (NLA): SUCCESS'
+    if pattern_NLA in script_output:
+      service['NLA'] = True

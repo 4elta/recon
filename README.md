@@ -83,7 +83,7 @@ $ analyze -h
 usage: analyze [-h] [-t TOOL] [-r RECOMMENDATIONS] [-i INPUT] [--json JSON] [--csv CSV] {dns,http,isakmp,ntp,ssh,tls}
 
 positional arguments:
-  {dns,http,isakmp,ntp,ssh,tls}
+  {dns,http,isakmp,ntp,rdp,ssh,tls}
                         specify the service that should be analyzed
 
 optional arguments:
@@ -103,6 +103,7 @@ The following analyzers (and parsers) are currently implemented:
 * HTTP response headers (`nmap`)
 * ISAKMP/IKE configuration (`ike`)
 * NTP configuration (`nmap`)
+* RDP configuration (`nmap`)
 * SSH configuration (`nmap`)
 * TLS configuration (`testssl`, `sslscan` or `sslyze`)
 

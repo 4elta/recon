@@ -115,7 +115,7 @@ def main():
 
   parser.add_argument(
     'service',
-    choices = ['dns', 'http', 'isakmp', 'ntp', 'ssh', 'tls', ],
+    choices = ['dns', 'http', 'isakmp', 'ntp', 'rdp', 'ssh', 'tls', ],
     help = "specify the service that should be analyzed"
   )
 
