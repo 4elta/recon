@@ -44,22 +44,22 @@ class AbstractAnalyzer:
     self.recommendations = recommendations
     self.services = []
 
-  def set_tool(self, tool):
+  def set_parser(self, parser_name):
     '''
-    filter the results (based on the tool) that are to be analyzed.
+    set the parser that will be used to parse the results.
     '''
 
     module_path = pathlib.Path(
       pathlib.Path(__file__).resolve().parent,
       self.name,
-      f'{tool}.py'
+      f'{parser_name}.py'
     )
 
     if not module_path.exists():
-      sys.exit(f"unknown tool '{tool}'")
+      sys.exit(f"unknown parser '{parser_name}'")
 
-    self.tool = tool
-    module = importlib.import_module(f'{__name__}.{self.name}.{tool}')
+    self.parser_name = parser_name
+    module = importlib.import_module(f'{__name__}.{self.name}.{parser_name}')
     self.parser = module.Parser()
 
   def analyze(self, files):
@@ -68,5 +68,5 @@ class AbstractAnalyzer:
     this method has to be extended by each concrete Analyzer class
     '''
 
-    if self.tool not in files:
+    if self.parser_name not in files:
       return

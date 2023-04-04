@@ -43,13 +43,13 @@ class Analyzer(AbstractAnalyzer):
   def __init__(self, name, recommendations):
     super().__init__(name, recommendations)
 
-    self.set_tool('nmap')
+    self.set_parser('nmap')
 
   def analyze(self, files):
     super().analyze(files)
 
     # parse result files
-    services = self.parser.parse_files(files[self.tool])
+    services = self.parser.parse_files(files[self.parser_name])
     self.services = services
 
     # analyze services based on recommendations

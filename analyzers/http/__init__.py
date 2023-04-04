@@ -17,13 +17,13 @@ class Analyzer(AbstractAnalyzer):
   def __init__(self, name, recommendations):
     super().__init__(name, recommendations)
 
-    self.set_tool('nmap')
+    self.set_parser('nmap')
 
   def analyze(self, files):
     super().analyze(files)
 
     # parse result files
-    services = self.parser.parse_files(files[self.tool])
+    services = self.parser.parse_files(files[self.parser_name])
     self.services = services
 
     # analyze services based on recommendations
@@ -95,9 +95,9 @@ class Analyzer(AbstractAnalyzer):
       the recommendations config file (for these tools) contains a list of IDs we are interested in.
       '''
 
-      if self.tool in self.recommendations and self.tool in service:
-        for issue_ID, issue in service[self.tool].items():
-          if issue_ID in self.recommendations[self.tool]:
+      if self.parser_name in self.recommendations and self.parser_name in service:
+        for issue_ID, issue in service[self.parser_name].items():
+          if issue_ID in self.recommendations[self.parser_name]:
             issues.append(issue)
 
     return services

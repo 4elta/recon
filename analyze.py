@@ -76,7 +76,7 @@ def process(args):
   analyzer = module.Analyzer(args.service, recommendations)
 
   if args.tool:
-    analyzer.set_tool(args.tool)
+    analyzer.set_parser(args.tool)
 
   services = analyzer.analyze(files)
 
