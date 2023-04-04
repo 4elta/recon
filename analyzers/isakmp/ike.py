@@ -12,13 +12,13 @@ class Parser(AbstractParser):
   '''
 
   def __init__(self):
-    super(self.__class__, self).__init__()
+    super().__init__()
 
     self.name = 'ike'
     self.file_type = 'log'
 
   def parse_file(self, path):
-    super(self.__class__, self).parse_file(path)
+    super().parse_file(path)
 
     '''
     # ike-scan --sport 0 --trans='7/256,2,4,14' 192.168.42.116

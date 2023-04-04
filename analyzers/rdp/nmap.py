@@ -25,13 +25,13 @@ class Parser(AbstractParser):
   '''
 
   def __init__(self):
-    super(self.__class__, self).__init__()
+    super().__init__()
 
     self.name = 'nmap'
     self.file_type = 'xml'
 
   def parse_file(self, path):
-    super(self.__class__, self).parse_file(path)
+    super().parse_file(path)
 
     '''
     https://nmap.org/book/nmap-dtd.html

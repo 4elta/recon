@@ -29,13 +29,13 @@ class Parser(AbstractParser):
   '''
 
   def __init__(self):
-    super(self.__class__, self).__init__()
+    super().__init__()
 
     self.name = 'testssl'
     self.file_type = 'json'
 
   def parse_file(self, path):
-    super(self.__class__, self).parse_file(path)
+    super().parse_file(path)
 
     with open(path, 'r') as f:
       results = json.load(f)

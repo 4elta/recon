@@ -20,14 +20,14 @@ class Parser(AbstractParser):
   '''
 
   def __init__(self):
-    super(self.__class__, self).__init__()
+    super().__init__()
 
     self.name = 'sslscan'
     self.file_type = 'xml'
     self.cipher_suites_specifications = {}
 
   def parse_file(self, path):
-    super(self.__class__, self).parse_file(path)
+    super().parse_file(path)
 
     '''
     <document>

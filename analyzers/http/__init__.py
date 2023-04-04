@@ -15,13 +15,13 @@ SERVICE_SCHEMA = {
 class Analyzer(AbstractAnalyzer):
 
   def __init__(self, recommendations):
-    super(self.__class__, self).__init__(recommendations)
+    super().__init__(recommendations)
 
     self.name = 'http'
     self.set_tool('nmap')
 
   def analyze(self, files):
-    super(self.__class__, self).analyze(files)
+    super().analyze(files)
 
     # parse result files
     services = self.parser.parse_files(files[self.tool])
