@@ -26,10 +26,9 @@ SERVER_HOST_KEY_SCHEMA = {
 
 class Analyzer(AbstractAnalyzer):
 
-  def __init__(self, recommendations):
-    super().__init__(recommendations)
+  def __init__(self, name, recommendations):
+    super().__init__(name, recommendations)
 
-    self.name = 'ssh'
     self.set_tool('nmap')
 
   def analyze(self, files):

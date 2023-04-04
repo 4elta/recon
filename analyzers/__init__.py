@@ -7,7 +7,7 @@ class AbstractParser:
   def __init__(self):
     '''
     initialize the parser.
-    this method has to be extended by each concret Parser class.
+    this method has to be extended by each concrete Parser class.
     in particular, the `name` and `file_type` variables have to be set:
 
     self.name = 'name'
@@ -28,21 +28,19 @@ class AbstractParser:
   def parse_file(self, path):
     '''
     parse a specific file.
-    this method has to be implemented by each concret Parser class.
+    this method has to be implemented by each concrete Parser class.
     '''
     pass
 
 class AbstractAnalyzer:
 
-  def __init__(self, recommendations):
+  def __init__(self, name, recommendations):
     '''
     initialize the analyzer.
-    this method has to be extended by each concret Analyzer class.
-    in particular, the `name` has to be set:
-
-    self.name = 'name'
+    this method may need to be extended by each concrete Analyzer class.
     '''
 
+    self.name = name
     self.recommendations = recommendations
     self.services = []
 
@@ -67,7 +65,7 @@ class AbstractAnalyzer:
   def analyze(self, files):
     '''
     analyze services based on some recommendations.
-    this method has to be extended by each concret Analyzer class
+    this method has to be extended by each concrete Analyzer class
     '''
 
     if self.tool not in files:

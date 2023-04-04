@@ -73,7 +73,7 @@ def process(args):
   services = {}
 
   module = importlib.import_module(f'analyzers.{args.service}')
-  analyzer = module.Analyzer(recommendations)
+  analyzer = module.Analyzer(args.service, recommendations)
 
   if args.tool:
     analyzer.set_tool(args.tool)

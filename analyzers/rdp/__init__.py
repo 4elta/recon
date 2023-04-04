@@ -40,10 +40,9 @@ SERVICE_SCHEMA = {
 
 class Analyzer(AbstractAnalyzer):
 
-  def __init__(self, recommendations):
-    super().__init__(recommendations)
+  def __init__(self, name, recommendations):
+    super().__init__(name, recommendations)
 
-    self.name = 'rdp'
     self.set_tool('nmap')
 
   def analyze(self, files):
