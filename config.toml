@@ -116,6 +116,12 @@ patterns = [ '^nfs' ]
   [nfs.scans.showmount]
   command = 'showmount -e {address} 2>&1 | tee "{result_file}"'
 
+[ntp]
+patterns = [ '^ntp' ]
+
+  [ntp.scans.nmap]
+  command = 'nmap -Pn -sU -sV -p {port} --script="banner,ntp-info,ntp-monlist" -oN "{result_file}" {address}'
+
 [nntp]
 patterns = [ '^nntp' ]
 
