@@ -1,3 +1,4 @@
+import ipaddress
 import json
 import sys
 
@@ -5,6 +6,7 @@ from .. import AbstractAnalyzer
 
 SERVICE_SCHEMA = {
   'address': None,
+  'public': None,
   'port': None,
   'transport_protocol': None,
   'banner': None,
@@ -42,6 +44,16 @@ class Analyzer(AbstractAnalyzer):
 
     for identifier, service in services.items():
       issues = service['issues']
+
+      try:
+        if ipaddress.ip_address(service['address']).is_global:
+          service['public'] = True
+      except ValueError:
+        pass
+
+      if service['public']:
+        if 'public' in self.recommendations and not self.recommendations['public']:
+          issues.append("public SSH server")
 
       if service['protocol_version'] and service['protocol_version'] not in self.recommendations['protocol_versions']:
         issues.append(f"protocol supported: {service['protocol_version']}")

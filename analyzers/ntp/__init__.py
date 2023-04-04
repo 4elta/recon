@@ -1,3 +1,4 @@
+import ipaddress
 import json
 import packaging.version
 import re
@@ -6,6 +7,7 @@ from .. import AbstractAnalyzer
 
 SERVICE_SCHEMA = {
   'address': None,
+  'public': None,
   'transport_protocol': None,
   'port': None,
   'version': None, # e.g. "4.2.8p15"
@@ -32,6 +34,16 @@ class Analyzer(AbstractAnalyzer):
 
     for identifier, service in services.items():
       issues = service['issues']
+
+      try:
+        if ipaddress.ip_address(service['address']).is_global:
+          service['public'] = True
+      except ValueError:
+        pass
+
+      if service['public']:
+        if 'public' in self.recommendations and not self.recommendations['public']:
+          issues.append("public NTP server")
 
       if 'version' in self.recommendations:
         self.analyze_version(
