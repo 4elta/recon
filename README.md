@@ -80,10 +80,10 @@ Analyze and summarize the results of specific tools previously run by the scanne
 
 ```text
 $ analyze -h
-usage: analyze [-h] [-t TOOL] [-r RECOMMENDATIONS] [-i INPUT] [--json JSON] [--csv CSV] {dns,http,isakmp,ntp,ssh,tls}
+usage: analyze [-h] [-t TOOL] [-r RECOMMENDATIONS] [-i INPUT] [--json JSON] [--csv CSV] {dns,ftp,http,isakmp,ntp,rdp,ssh,tls}
 
 positional arguments:
-  {dns,http,isakmp,ntp,rdp,ssh,tls}
+  {dns,ftp,http,isakmp,ntp,rdp,ssh,tls}
                         specify the service that should be analyzed
 
 optional arguments:
@@ -99,6 +99,7 @@ optional arguments:
 
 The following analyzers (and parsers) are currently implemented:
 * DNS configuration (`nase`, `nmap`)
+* FTP configuration (`nmap`)
 * HTTP response headers (`nmap`)
 * ISAKMP/IKE configuration (`ike`)
 * NTP configuration (`nmap`)
