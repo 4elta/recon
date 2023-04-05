@@ -7,6 +7,7 @@ from .. import AbstractAnalyzer
 SERVICE_SCHEMA = {
   'address': None,
   'port': None,
+  'transport_protocol': None,
 
   'public': None,
 
