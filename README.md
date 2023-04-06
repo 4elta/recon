@@ -24,6 +24,7 @@ Install the tool suite:
 cd /path/to/tools
 git clone https://github.com/4elta/recon.git
 cd recon
+git checkout new-analysis-system
 ```
 
 Make sure that the scripts have the *executable* flag set:
