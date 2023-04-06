@@ -44,6 +44,14 @@ sudo ln --symbolic $(realpath scan.py) /usr/local/bin/scan
 
 ## usage
 
+1. run your "standard" Nmap port and service scans; just make sure to include `-sV --version-all` and `-oX services.xml`
+2. run the scanner on the results of the Nmap service scan; be aware that this (like the Nmap scan itself) will send requests to the target system(s)
+3. run the analyzer on the results of the scanner; no network traffic will be generated during this step
+
+You can customize the configuration for the scanner (i.e. what tools to run, etc.) by modifying the provided one (i.e. [`config/scans.toml`](config/scans.toml)), or you can specify your own with the `--config` argument.
+Similarly, you can modify the recommendations based on what the analyzers will evaluate certain services.
+Make sure to have a look at the [architecture documentation](documentation/architecture.md) and/or study the provided configuration files.
+
 ### scanner
 
 Schedule and execute various tools based on the findings of the Nmap service scan:
@@ -75,7 +83,7 @@ optional arguments:
   --ignore_uid          ignore the warning about incorrect UID.
 ```
 
-### analysis
+### analyzer
 
 Analyze and summarize the results of specific tools previously run by the scanner:
 
