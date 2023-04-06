@@ -9,6 +9,12 @@ Instead of manually running various tools (e.g. [sslyze](https://github.com/nabl
 In addition to that, the suite also provides tools to analyze and summarize the results of some scans (e.g. HTTP security headers, TLS/SSH/IKE configuration, etc.).
 This allows for an automated and consistent assessment of specific services (i.e. no longer are testers forced to analyze TLS/SSH configurations by hand).
 
+## improved analysis system
+
+If you want to see and test out the upcoming new version of the recon tool suite, go check out the [`new-analysis-system` branch](https://github.com/4elta/recon/tree/new-analysis-system).
+Be warned that it may contain bugs.
+We would love to hear your feedback ... including bug reports.
+
 ## installation
 
 Install the required tools:
