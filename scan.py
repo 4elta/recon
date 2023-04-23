@@ -134,7 +134,8 @@ def format(*args, frame_index=1, **kvargs):
   vals.update(kvargs)
 
   # add the variables from the general service group
-  vals.update(SERVICES_CONFIG['*'])
+  if '*' in SERVICES_CONFIG:
+    vals.update(SERVICES_CONFIG['*'])
 
   return string.Formatter().vformat(' '.join(args), args, vals)
 
