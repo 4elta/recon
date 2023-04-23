@@ -133,6 +133,9 @@ def format(*args, frame_index=1, **kvargs):
   vals.update(frame.f_locals)
   vals.update(kvargs)
 
+  # add the variables from the general service group
+  vals.update(SERVICES_CONFIG['*'])
+
   return string.Formatter().vformat(' '.join(args), args, vals)
 
 def create_summary(target: Target):
@@ -212,6 +215,9 @@ def find_suitable_scans(application_protocol):
   
   # iterate over each service scan configuration
   for service_name, service_config in SERVICES_CONFIG.items():
+    if service_name == '*': # ignore the general service group
+      continue
+
     service_patterns = service_config['patterns'] if 'patterns' in service_config else ['.+']
 
     # iterate over each scan of a specific service config
