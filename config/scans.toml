@@ -1,5 +1,5 @@
 # the variables defined in this group can be used in `command` declarations.
-# e.g. command = 'echo "hello {username} from {domain}! your password is {password} > {result_file}.log"'
+# e.g. command = 'echo "hello {username} from {domain}! your password is {password}" > "{result_file}.log"'
 ['*']
 domain = "example.com"
 username = "user"
