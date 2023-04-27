@@ -72,7 +72,7 @@ patterns = [ 'http' ]
   command = '#gobuster dir --url {scheme}://{hostname}:{port}/ --wordlist /usr/share/seclists/Discovery/Web-Content/common.txt --no-progress --no-tls-validation --expanded --extensions "txt,html,php,asp,aspx,jsp" 2>&1 | tee "{result_file}.log"'
 
   [http.scans.whatweb]
-  command = 'whatweb --color=never --no-errors -a 3 -v {scheme}://{hostname}:{port} 2>&1 | tee "{result_file}.log"'
+  command = 'whatweb --color=never --no-errors -a 3 -v --log-json="{result_file}.json" {scheme}://{hostname}:{port} 2>&1 | tee "{result_file}.log"'
 
 [imap]
 patterns = [ 'imap' ]
