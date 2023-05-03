@@ -261,7 +261,7 @@ def queue_HTTP_service_scan(target: Target, service: Service, scan: Scan):
 
   # we have to run the scan for each hostname associated with the target
   for hostname in hostnames:
-    result_file = pathlib.Path(results_directory, f'{scan.service},{application_protocol},{port},{hostname},{scan.name}')
+    result_file = pathlib.Path(results_directory, f'{scan.service},{transport_protocol},{port},{hostname},{scan.name}')
     
     # run scan only if result file does not yet exist or "overwrite_results" flag is set
     if result_file.exists() and not OVERWRITE:
