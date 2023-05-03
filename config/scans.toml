@@ -85,7 +85,6 @@ patterns = [ 'isakmp' ]
 
   [isakmp.scans.ike]
   command = '"{PATH_TO_SCANNERS}/ike.sh" {address} | tee "{result_file}.log"'
-  run_once = true
 
   [isakmp.scans.nmap]
   command = 'nmap -sU -Pn -sV -p {port} --script="banner,ike-version" -oN "{result_file}.log" {address}'
@@ -161,11 +160,9 @@ patterns = [ '^msrpc', '^rpcbind', '^erpc' ]
 
   [rpc.scans.nmap]
   command = 'nmap -Pn -sV -p {port} --script="banner,msrpc-enum,rpc-grind,rpcinfo" -oN "{result_file}.log" {address}'
-  run_once = true
 
   [rpc.scans.rpcinfo]
   command = 'rpcinfo {address} 2>&1 | tee "{result_file}.log"'
-  run_once = true
   patterns = [ 'nfs' ]
 
 [sip]
@@ -205,11 +202,9 @@ patterns = [ 'snmp' ]
 
   [snmp.scans.onesixtyone]
   command = '#onesixtyone -c /usr/share/seclists/Discovery/SNMP/common-snmp-community-strings-onesixtyone.txt -dd {address} 2>&1 | tee "{result_file}.log"'
-  run_once = true
 
   [snmp.scans.snmpwalk]
   command = '#declare -a OIDs=(1.3.6.1.2.1.25.1.6.0 1.3.6.1.2.1.25.4.2.1.2 1.3.6.1.2.1.25.4.2.1.4 1.3.6.1.2.1.25.2.3.1.4 1.3.6.1.2.1.25.6.3.1.2 1.3.6.1.4.1.77.1.2.25 1.3.6.1.2.1.6.13.1.3); for OID in "${{OIDs[@]}}"; do snmpwalk -c public -v 1 {address} $OID 2>&1 | tee --append "{result_file}.log"; echo "scanned OID $OID"; done; snmpwalk -c public -v 1 {address} 2>&1 | tee --append "{result_file}.log"'
-  run_once = true
   patterns = [ '^scanned OID (\d+.)*\d+' ]
 
 [ssh]
