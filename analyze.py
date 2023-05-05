@@ -70,8 +70,6 @@ def process(args):
   files = get_files(args.input, args.service)
   #print(json.dumps(files, indent=2))
 
-  services = {}
-
   module = importlib.import_module(f'analyzers.{args.service}')
   analyzer = module.Analyzer(args.service, recommendations)
 

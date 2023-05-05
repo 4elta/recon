@@ -69,4 +69,4 @@ class AbstractAnalyzer:
     '''
 
     if self.parser_name not in files:
-      return
+      sys.exit("\nnothing to analyze")
