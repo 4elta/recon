@@ -70,6 +70,9 @@ def process(args):
   files = get_files(args.input, args.service)
   #print(json.dumps(files, indent=2))
 
+  if not files:
+      sys.exit(f"there are no files to analyze for {args.service} in {args.input}")
+
   services = {}
 
   module = importlib.import_module(f'analyzers.{args.service}')
