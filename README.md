@@ -36,7 +36,7 @@ chmod +x scanners/*
 ```
 
 Add (symbolic links to) the scripts to `/usr/local/bin`.
-Please make sure, that the names for `analyze` and `scan` don't [conflict](issues/31) with any binaries already installed.
+Please make sure, that the names for `analyze` and `scan` don't [conflict](https://github.com/4elta/recon/issues/31) with any binaries already installed.
 
 ```shell
 sudo ln --symbolic $(realpath analyze.py) /usr/local/bin/analyze
