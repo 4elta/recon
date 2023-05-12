@@ -11,33 +11,14 @@ This allows for an automated and consistent assessment of specific services (i.e
 
 ## installation
 
-Install the required tools:
-
-* via `apt`:
+Install the dependencies:
 
 ```shell
 sudo apt install \
-  curl \
   python3-defusedxml \
-  python3-dnspython \
-  dnsutils \
-  feroxbuster \
-  ike-scan \
-  nikto \
-  nmap \
-  onesixtyone \
   python3-rich \
-  seclists \
-  smbclient \
-  snmp \
-  sslyze \
-  testssl.sh \
-  python3-toml \
-  whatweb
+  python3-toml
 ```
-
-* via [`pipx`](https://github.com/pypa/pipx):
-  * [enum4linux-ng](https://github.com/cddmp/enum4linux-ng)
 
 Install the tool suite:
 
@@ -63,6 +44,31 @@ Please make sure, that the names for `analyze` and `scan` don't [conflict](https
 sudo ln --symbolic $(realpath analyze.py) /usr/local/bin/analyze
 sudo ln --symbolic $(realpath scan.py) /usr/local/bin/scan
 ```
+
+### additional tools
+
+Based on the scans you are going to run (see [`config/scans.toml`](config/scans.toml)), you might have to install additional tools:
+
+* via `apt`:
+
+```shell
+sudo apt install \
+  curl \
+  python3-dnspython \
+  dnsutils \
+  ike-scan \
+  nikto \
+  nmap \
+  onesixtyone \
+  seclists \
+  smbclient \
+  snmp \
+  testssl.sh \
+  whatweb
+```
+
+* via [`pipx`](https://github.com/pypa/pipx):
+  * [enum4linux-ng](https://github.com/cddmp/enum4linux-ng)
 
 ## usage
 
