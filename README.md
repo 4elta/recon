@@ -13,10 +13,31 @@ This allows for an automated and consistent assessment of specific services (i.e
 
 Install the required tools:
 
+* via `apt`:
+
 ```shell
-git clone https://github.com/cddmp/enum4linux-ng.git && (cd enum4linux-ng; sudo python3 setup.py install)
-sudo apt install curl dnsutils feroxbuster ike-scan nikto nmap onesixtyone seclists smbclient snmp sslyze testssl.sh whatweb python3-toml python3-rich python3-defusedxml python3-dnspython
+sudo apt install \
+  curl \
+  python3-defusedxml \
+  python3-dnspython \
+  dnsutils \
+  feroxbuster \
+  ike-scan \
+  nikto \
+  nmap \
+  onesixtyone \
+  python3-rich \
+  seclists \
+  smbclient \
+  snmp \
+  sslyze \
+  testssl.sh \
+  python3-toml \
+  whatweb
 ```
+
+* via [`pipx`](https://github.com/pypa/pipx):
+  * [enum4linux-ng](https://github.com/cddmp/enum4linux-ng)
 
 Install the tool suite:
 
