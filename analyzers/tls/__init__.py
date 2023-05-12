@@ -195,6 +195,10 @@ class Analyzer(AbstractAnalyzer):
       issues.append(f"protocol not supported: {deviation}")
 
   def _analyze_certificate(self, is_private_host, certificate, recommendation, issues):
+    if certificate == CERTIFICATE_SCHEMA:
+      issues.append("could not read server certificate")
+      return
+
     if not is_private_host:
       # analyze certificate subjects for private IP addresses
       for subject in certificate['subjects']:
@@ -239,6 +243,10 @@ class Analyzer(AbstractAnalyzer):
       issues.append(f"cipher preference: {preference}")
 
   def _analyze_cipher_suites(self, cipher_suites, recommendation, issues):
+    if len(cipher_suites) == 0:
+      issues.append("server does not appear to support any cipher suites")
+      return
+
     for deviation in list(set(cipher_suites).difference(recommendation)):
       issues.append(f"cipher suite supported: `{deviation}`")
 

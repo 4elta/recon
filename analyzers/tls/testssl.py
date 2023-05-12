@@ -40,6 +40,10 @@ class Parser(AbstractParser):
     with open(path, 'r') as f:
       results = json.load(f)
 
+    for f in filter(lambda x: x['id'] == 'optimal_proto', results):
+      if "doesn't seem to be a TLS/SSL enabled server" in f['finding']:
+        return
+
     for s in filter(lambda x: x['id'] == 'service', results):
       host = s['ip'].split('/')[0]
       '''
