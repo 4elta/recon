@@ -57,7 +57,6 @@ sudo apt install \
   python3-dnspython \
   dnsutils \
   ike-scan \
-  nikto \
   nmap \
   onesixtyone \
   seclists \
@@ -66,6 +65,9 @@ sudo apt install \
   testssl.sh \
   whatweb
 ```
+
+* via git:
+ * [nikto](https://github.com/sullo/nikto)
 
 * via [`pipx`](https://github.com/pypa/pipx):
   * [enum4linux-ng](https://github.com/cddmp/enum4linux-ng)
