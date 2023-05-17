@@ -11,7 +11,7 @@ SERVICE_SCHEMA = {
     'hash_algorithms': [], # https://www.iana.org/assignments/ipsec-registry/ipsec-registry.xhtml#ipsec-registry-6
     'authentication_methods': [], # https://www.iana.org/assignments/ipsec-registry/ipsec-registry.xhtml#ipsec-registry-8
     'groups': [], # https://www.iana.org/assignments/ipsec-registry/ipsec-registry.xhtml#ipsec-registry-12
-    'aggressive': None
+    'aggressive': False
   },
   'IKEv2': {
     'encryption_algorithms': [], # https://www.iana.org/assignments/ikev2-parameters/ikev2-parameters.xhtml#ikev2-parameters-5
