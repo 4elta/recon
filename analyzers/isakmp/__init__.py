@@ -101,11 +101,11 @@ class Analyzer(AbstractAnalyzer):
         'IKEv1 group'
       )
 
-    if 'aggressive' in recommendation and not service['aggressive'] == recommendation['aggressive']:
-      if service['aggressive']:
-        issues.append(f"IKEv1 Aggressive Mode supported")
-      else:
+    if 'aggressive' in recommendation and service['aggressive'] != recommendation['aggressive']:
+      if recommendation['aggressive']:
         issues.append(f"IKEv1 Aggressive Mode not supported")
+      else:
+        issues.append(f"IKEv1 Aggressive Mode supported")
 
   def _analyze_IKEv2(self, service, recommendation, issues):
     if 'encryption_algorithms' in recommendation:
