@@ -1,6 +1,5 @@
 import ipaddress
 import json
-import packaging.version
 import re
 
 from .. import AbstractAnalyzer
@@ -71,8 +70,7 @@ class Analyzer(AbstractAnalyzer):
     if version == recommendation:
       return
 
-    v = packaging.version.parse(version)
-    r = packaging.version.parse(recommendation)
+    if version is None:
+      return
 
-    if v < r:
-      issues.append(f"outdated version: {version} < {recommendation}")
+    issues.append(f"used version: `{version}` (recommended version: `{recommendation}`)")
