@@ -97,7 +97,7 @@ on_mismatch = { issue = "syntax error" }
 [header.x-xss-protection]
 # https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-XSS-Protection
 name = "`x-xss-protection` header:"
-regex = "0|(?:1; mode=block)"
+regex = "0|(?: 1; mode=block)"
 on_mismatch = { issue = "this setting introduces vulnerabilities due to XSS filtering" }
 
 [header.referrer-policy]
