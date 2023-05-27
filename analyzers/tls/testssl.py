@@ -1,6 +1,7 @@
 import copy
 import json
 import re
+import sys
 
 from .. import AbstractParser
 from . import CERTIFICATE_SCHEMA, SERVICE_SCHEMA
@@ -38,7 +39,10 @@ class Parser(AbstractParser):
     super().parse_file(path)
 
     with open(path, 'r') as f:
-      results = json.load(f)
+      try:
+        results = json.load(f)
+      except Exception as e:
+        sys.exit(f"error parsing file '{path}'\n\n{e}")
 
     for f in filter(lambda x: x['id'] == 'optimal_proto', results):
       if "doesn't seem to be a TLS/SSL enabled server" in f['finding']:
