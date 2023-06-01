@@ -73,7 +73,7 @@ class Parser(AbstractParser):
         service['transport_protocol'] = transport_protocol
 
         service_node = port_node.find('service')
-        if service_node:
+        if service_node is not None:
           descriptions = []
 
           product = service_node.get('product')
@@ -99,7 +99,10 @@ class Parser(AbstractParser):
             service['server_host_keys'] = self._parse_host_key(script_node)
 
           if script_ID == 'ssh-auth-methods':
-            service['client_authentication_methods'] = self._parse_table(script_node.find('table'))
+            if "ERROR:" in script_node.get("output"):
+              service['issues'].append("could not establish authentication methods")
+            else:
+              service['client_authentication_methods'] = self._parse_table(script_node.find('table'))
 
           if script_ID == 'ssh2-enum-algos':
             for table_node in script_node.iter('table'):
@@ -121,13 +124,12 @@ class Parser(AbstractParser):
             service['banner'] = script_node.get('output')
 
   def _parse_protocol_version(self, extrainfo):
-    if extrainfo:
-      m = re.search(
-        r'protocol (?P<protocol_version>\d+(\.\d+)?)',
-        extrainfo
-      )
+    m = re.search(
+      r'protocol (?P<protocol_version>\d+(\.\d+)?)',
+      extrainfo
+    )
 
-      return m.group('protocol_version')
+    return m.group('protocol_version')
 
   def _parse_host_key(self, script_node):
     '''
