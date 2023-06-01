@@ -14,6 +14,10 @@ PROTOCOL_VERSIONS = {
   'TLS_1_3': 'TLS 1.3'
 }
 
+PUBLIC_KEY_ALGORITHMS = {
+  '_RSAPublicKey': 'RSA',
+}
+
 class Parser(AbstractParser):
   '''
   parse results of the "sslyze" tool.
@@ -50,6 +54,9 @@ class Parser(AbstractParser):
                 "signature_hash_algorithm": {
                   "name": "ecdsa-with-SHA256",
                   "digest_size": 256
+                },
+                "signature_algorithm_oid": {
+                  "name": "sha256WithRSAEncryption"
                 },
                 "public_key": {
                   "algorithm": "RSA|ECDSA",
@@ -173,7 +180,7 @@ class Parser(AbstractParser):
 
       status = server_scan_result['scan_status']
       if not status == 'COMPLETED':
-        print(status)
+        print(f"\nconnection error: `{identifier}`")
         continue
 
       service = copy.deepcopy(SERVICE_SCHEMA)
@@ -255,28 +262,29 @@ class Parser(AbstractParser):
       validity['not_before'] = leaf_certificate['not_valid_before']
       validity['not_after'] = leaf_certificate['not_valid_after']
 
-      subject_alt_names = certificate_deployment['subject_alternative_name']
+      if 'subject_alternative_name' in certificate_deployment:
+        subject_alt_names = certificate_deployment['subject_alternative_name']
 
-      for subject_alt_name in subject_alt_names['dns']:
-        if subject_alt_name not in certificate['subjects']:
-          certificate['subjects'].append(subject_alt_name)
-
-      if 'ip_addresses' in subject_alt_names:
-        for subject_alt_name in subject_alt_names['ip_addresses']:
+        for subject_alt_name in subject_alt_names['dns']:
           if subject_alt_name not in certificate['subjects']:
             certificate['subjects'].append(subject_alt_name)
+
+        if 'ip_addresses' in subject_alt_names:
+          for subject_alt_name in subject_alt_names['ip_addresses']:
+            if subject_alt_name not in certificate['subjects']:
+              certificate['subjects'].append(subject_alt_name)
 
       if 'subject' in leaf_certificate:
         subject = leaf_certificate['subject']['rfc4514_string']
         if subject not in certificate['subjects']:
           certificate['subjects'].append(subject)
 
-      certificate['signature_algorithm'] = leaf_certificate['signature_hash_algorithm']['name']
+      certificate['signature_algorithm'] = leaf_certificate['signature_algorithm_oid']['name']
 
       pub_key = leaf_certificate['public_key']
       public_key = certificate['public_key']
 
-      public_key['type'] = pub_key['algorithm']
+      public_key['type'] = PUBLIC_KEY_ALGORITHMS[pub_key['algorithm']]
 
       if 'key_size' in pub_key:
         public_key['bits'] = pub_key['key_size']
