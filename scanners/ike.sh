@@ -66,6 +66,7 @@ if [ -z "$1" ]; then
 fi
 
 target="$1"
+dport="${2:-500}"
 
 # IKEv1
 
@@ -73,25 +74,48 @@ for encryption_algorithm in "${ENCRYPTION_ALGORITHMS[@]}"; do
   for hash_algorithm in ${HASH_ALGORITHMS[@]}; do
     for authentication_method in ${AUTHENTICATION_METHODS[@]}; do
       for dh_group in ${DH_GROUPS[@]}; do
-        printf "\nike-scan --sport=%d --trans='%s,%s,%s,%s' %s\n" ${SOURCE_PORT} ${encryption_algorithm} ${hash_algorithm} ${authentication_method} ${dh_group} ${target}
-        result=$(
-          ike-scan \
-            --sport=${SOURCE_PORT} \
-            --trans="${encryption_algorithm},${hash_algorithm},${authentication_method},${dh_group}" \
-            ${target} \
-          | grep 'Handshake returned'
-        )
+        if [ "$dport" -eq "4500" ]; then
+          printf "\nike-scan --nat-t --trans='%s,%s,%s,%s' %s\n" ${encryption_algorithm} ${hash_algorithm} ${authentication_method} ${dh_group} ${target}
+          result=$(
+            ike-scan \
+              --nat-t \
+              --trans="${encryption_algorithm},${hash_algorithm},${authentication_method},${dh_group}" \
+              ${target} \
+            | grep 'Handshake returned'
+          )
 
-        if [ ! -z "$result" ]; then
-          echo "$result"
-          printf "\nike-scan --sport=%d --trans='%s,%s,%s,%s' --aggressive --dhgroup='%s' --id=test %s\n" ${SOURCE_PORT} ${encryption_algorithm} ${hash_algorithm} ${authentication_method} ${dh_group} ${dh_group} ${target}
+          if [ ! -z "$result" ]; then
+            echo "$result"
+            printf "\nike-scan --nat-t --trans='%s,%s,%s,%s' --aggressive --dhgroup='%s' --id=test %s\n" ${encryption_algorithm} ${hash_algorithm} ${authentication_method} ${dh_group} ${dh_group} ${target}
 
-          ike-scan \
-            --sport=${SOURCE_PORT} \
-            --trans="${encryption_algorithm},${hash_algorithm},${authentication_method},${dh_group}" \
-            --aggressive --dhgroup=${dh_group} --id=test \
-            ${target} \
-          | grep 'Handshake returned'
+            ike-scan \
+              --nat-t \
+              --trans="${encryption_algorithm},${hash_algorithm},${authentication_method},${dh_group}" \
+              --aggressive --dhgroup=${dh_group} --id=test \
+              ${target} \
+            | grep 'Handshake returned'
+          fi
+        else
+          printf "\nike-scan --dport=%d --trans='%s,%s,%s,%s' %s\n" ${dport} ${encryption_algorithm} ${hash_algorithm} ${authentication_method} ${dh_group} ${target}
+          result=$(
+            ike-scan \
+              --dport=${dport} \
+              --trans="${encryption_algorithm},${hash_algorithm},${authentication_method},${dh_group}" \
+              ${target} \
+            | grep 'Handshake returned'
+          )
+
+          if [ ! -z "$result" ]; then
+            echo "$result"
+            printf "\nike-scan --dport=%d --trans='%s,%s,%s,%s' --aggressive --dhgroup='%s' --id=test %s\n" ${dport} ${encryption_algorithm} ${hash_algorithm} ${authentication_method} ${dh_group} ${dh_group} ${target}
+
+            ike-scan \
+              --dport=${dport} \
+              --trans="${encryption_algorithm},${hash_algorithm},${authentication_method},${dh_group}" \
+              --aggressive --dhgroup=${dh_group} --id=test \
+              ${target} \
+            | grep 'Handshake returned'
+          fi
         fi
       done
     done
@@ -103,5 +127,10 @@ done
 # this delay seems to be necessary, as otherwise the last scan would not succeed
 sleep 5
 
-printf "\nike-scan --sport=%d --ikev2 %s\n" ${SOURCE_PORT} ${target}
-ike-scan --sport=${SOURCE_PORT} --ikev2 ${target} | grep 'Handshake returned'
+if [ "$dport" -eq "4500" ]; then
+  printf "\nike-scan --nat-t --ikev2 %s\n" ${target}
+  ike-scan --nat-t --ikev2 ${target} | grep 'Handshake returned'
+else
+  printf "\nike-scan --dport=%d --ikev2 %s\n" ${dport} ${target}
+  ike-scan --dport=${dport} --ikev2 ${target} | grep 'Handshake returned'
+fi
