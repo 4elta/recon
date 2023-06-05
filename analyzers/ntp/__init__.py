@@ -7,10 +7,8 @@ from .. import AbstractAnalyzer
 SERVICE_SCHEMA = {
   'address': None,
   'public': None,
-  'transport_protocol': None,
   'port': None,
   'version': None, # e.g. "4.2.8p15"
-  'monlist': [],
   'info': [],
   'issues': [],
 }
@@ -20,7 +18,7 @@ class Analyzer(AbstractAnalyzer):
   def __init__(self, name, recommendations):
     super().__init__(name, recommendations)
 
-    self.set_parser('nmap')
+    self.set_parser('ntp')
 
   def analyze(self, files):
     super().analyze(files)
@@ -51,19 +49,10 @@ class Analyzer(AbstractAnalyzer):
           issues
         )
 
-      if len(service['monlist']):
-        issues.append("could be abused for traffic amplification attacks (CVE-2013-5211)")
-        # https://nvd.nist.gov/vuln/detail/CVE-2013-5211
-
-      for info in service['monlist']:
-        issues.append(f"received data: `{info}`")
-
-      if len(service['info']):
-        issues.append("vulnerable to information disclosure and could be abused for traffic amplification attacks")
-
+      '''
       for info in service['info']:
         issues.append(f"received data: `{info}`")
-
+      '''
     return services
 
   def analyze_version(self, version, recommendation, issues):
