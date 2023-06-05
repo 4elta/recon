@@ -132,7 +132,7 @@ patterns = [ '^ntp' ]
   command = 'nmap -sT -sU -Pn -sV -p {port} --script="banner,ntp-info,ntp-monlist" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
 
   [ntp.scans.ntp]
-  command = '"{PATH_TO_SCANNERS}/ntp.py" --port {port} "{result_file}.json" {address} 2>&1 | tee "{result_file}.log"'
+  command = '"{PATH_TO_SCANNERS}/ntp.py" --port {port} --json "{result_file}.json" {address} 2>&1 | tee "{result_file}.log"'
 
 [oracle]
 patterns = [ 'oracle' ]
