@@ -122,7 +122,7 @@ def parse_monlist(monlist):
           +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
        0  |avgint |lstint | restr | count |
           +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-      16  |r.addr |l.addr | flags | P |M|V|
+      16  |  RA   |  LA   | flags | P |M|V|
           +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
       32  | IPv6  |       |  remote ...   |
           +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
