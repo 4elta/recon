@@ -340,7 +340,7 @@ def main():
 
   parser.add_argument(
     '--port',
-    help = f"the port number where the name server is listening for DNS queries (default: {PORT})",
+    help = f"the port number where the NTP server is listening for queries (default: {PORT})",
     type = int,
     default = PORT
   )
