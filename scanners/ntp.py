@@ -131,9 +131,9 @@ def parse_monlist(monlist):
       64  |... addr (IPv6)|
           +-+-+-+-+-+-+-+-+
 
+  avgint: average interval in seconds between packets from this address
   lstint: interval in seconds between the receipt of the most recent packet from this address
     and the completion of the retrieval of the MRU list
-  avgint: average interval in seconds between packets from this address
   restr: restriction flags associated with this address
   count: packets received from this address
   RA: remote address (IPv4)
@@ -141,26 +141,18 @@ def parse_monlist(monlist):
   P: port
   M: mode
   V: version
+  IPv6: flag to indicate that IPv6 addresses are used
 
   """
 
-  ipv6 = (monlist[32] == b'\x01')
-
-  if not ipv6:
-    remote_address = '.'.join([str(b) for b in monlist[16 : 16 + 4]])
-    local_address = '.'.join([str(b) for b in monlist[20 : 20 + 4]])
+  if monlist[32] == b'\x01':
+    remote_address = ipaddress.IPv6Address(monlist[40 : 40 + 16])
+    local_address = ipaddress.IPv6Address(monlist[56 : 56 + 16])
   else:
-    addr = []
-    for i in range(40, 55, 2):
-      a = int.from_bytes(monlist[i : i + 1], byteorder='big')
-    remote_address = ':'.join(addr)
+    remote_address = ipaddress.IPv4Address(monlist[16 : 16 + 4])
+    local_address = ipaddress.IPv4Address(monlist[20 : 20 + 4])
 
-    addr = []
-    for i in range(56, 71, 2):
-      a = int.from_bytes(monlist[i : i + 1], byteorder='big')
-    local_address = ':'.join(addr)
-
-  return f"remote address: {remote_address}, local address: {local_address}"
+  return f"remote address: {str(remote_address)}, local address: {str(local_address)}"
 
 def mode_7_response(response):
   """
