@@ -219,7 +219,7 @@ def process(args):
       udp_socket.settimeout(TIMEOUT)
 
       opcode = 2 # read variables
-      print(f"\nsending Mode 6 ({opcode}) request ...")
+      print(f"\nsending Mode 6 (opcode {opcode}) request ...")
       request = mode_6_request(opcode)
 
       udp_socket.sendto(
