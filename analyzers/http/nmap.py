@@ -55,6 +55,9 @@ class Parser(AbstractParser):
 
       ports_node = host_node.find('ports')
 
+      if ports_node is None:
+        continue
+
       for port_node in ports_node.iter('port'):
         if not port_node.find('state').get('state') == 'open':
           continue
