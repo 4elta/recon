@@ -141,7 +141,7 @@ The following analyzers (and parsers) are currently implemented:
 * FTP configuration (`nmap`)
 * HTTP response headers (`nmap`)
 * ISAKMP/IKE configuration (`ike`)
-* NTP configuration (`nmap`)
+* NTP configuration (`ntp`, `nmap`)
 * RDP configuration (`nmap`)
 * SSH configuration (`nmap`)
 * TLS configuration (`testssl`, `sslscan` or `sslyze`)
