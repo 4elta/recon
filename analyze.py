@@ -67,6 +67,8 @@ def process(args):
   with open(recommendations_file, 'r') as f:
     recommendations = toml.load(f)
 
+  print(f"\nVulnerabilities and/or deviations from the recommended settings (`{recommendations_file}`):")
+
   files = get_files(args.input, args.service)
   #print(json.dumps(files, indent=2))
 
@@ -87,8 +89,6 @@ def process(args):
     affected_assets.append(f"{asset}")
 
     print(f"\n## {asset}\n")
-
-    print(f"Vulnerabilities and/or deviations from the recommended settings (`{recommendations_file.name}`):\n")
 
     for issue in service['issues']:
       print(f"* {issue}")
