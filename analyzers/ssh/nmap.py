@@ -99,8 +99,12 @@ class Parser(AbstractParser):
             service['server_host_keys'] = self._parse_host_key(script_node)
 
           if script_ID == 'ssh-auth-methods':
-            if "ERROR:" in script_node.get("output"):
+            script_output = script_node.get("output")
+            if "ERROR:" in script_output:
               service['issues'].append("could not establish authentication methods")
+            elif 'none_auth' in script_output:
+              # https://www.rfc-editor.org/rfc/rfc4252#section-5.2
+              service['client_authentication_methods'] = [ 'none' ]
             else:
               service['client_authentication_methods'] = self._parse_table(script_node.find('table'))
 
