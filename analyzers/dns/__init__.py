@@ -53,7 +53,7 @@ class Analyzer(AbstractAnalyzer):
             issues.append("supports recursive DNS: this could be abused for traffic amplification attacks")
             # https://www.cloudflare.com/learning/dns/what-is-recursive-dns/
 
-      if 'DNSSEC' in self.recommendations:
+      if 'DNSSEC' in self.recommendations and service['DNSSEC'] is not None:
         if self.recommendations['DNSSEC'] and not service['DNSSEC']:
           issues.append("does not validate DNSSEC: this could lead to DNS cache poisoning")
 
