@@ -93,7 +93,10 @@ class Parser(AbstractParser):
           if script_ID == 'rdp-enum-encryption':
             self._parse_rdp_enum_encryption(script_node, service)
 
-          if script_ID in ( 'rdp-ntlm-info', 'rdp-vuln-ms12-020' ):
+          if script_ID == 'rdp-ntlm-info':
+            self._parse_rdp_ntlm_info(script_node, service)
+
+          if script_ID in ( 'rdp-vuln-ms12-020' ):
             #TODO: implement this
             service['issues'].append(f"Nmap script scan result not parsed: {script_ID}")
 
@@ -123,3 +126,13 @@ class Parser(AbstractParser):
     pattern_NLA = 'CredSSP (NLA): SUCCESS'
     if pattern_NLA in script_output:
       service['NLA'] = True
+
+  def _parse_rdp_ntlm_info(self, script_node, service):
+    ntlm_info = {}
+
+    for elem_node in script_node.iter('elem'):
+      key = elem_node.get('key')
+      value = elem_node.text
+      ntlm_info[key] = value
+
+    service['NTLM_info'] = ntlm_info
