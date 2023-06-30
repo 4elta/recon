@@ -144,7 +144,7 @@ The following analyzers (and parsers) are currently implemented:
 * NTP configuration (`ntp`, `nmap`)
 * RDP configuration (`nmap`)
 * SSH configuration (`nmap`)
-* TLS configuration (`testssl`, `sslscan` or `sslyze`)
+* TLS configuration (`testssl`, `sslscan`, `sslyze`, or `nmap`)
 
 The analyzer prints its results in Markdown, in the format expected by the [report generator](https://github.com/4elta/report-generator).
 If you need the analysis in a markup format other than Markdown, just [pipe](https://en.wikipedia.org/wiki/Pipeline_(Unix)) the output of the analyzer to [`pandoc`](https://pandoc.org/) and you are good to go.
