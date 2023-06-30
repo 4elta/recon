@@ -186,7 +186,7 @@ class Parser(AbstractParser):
   def _parse_certificate_subject_node(self, node, subjects):
     subjects.append(node.text)
 
-  def parse_certificate_altnames_node(self, node, subjects):
+  def _parse_certificate_altnames_node(self, node, subjects):
     for altname in node.text.split(', '):
       subject = altname.split(':')[1]
       if subject not in subjects:
@@ -226,7 +226,7 @@ class Parser(AbstractParser):
       certificate['subjects']
     )
 
-    self.parse_certificate_altnames_node(
+    self._parse_certificate_altnames_node(
       node.find('altnames'),
       certificate['subjects']
     )
