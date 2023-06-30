@@ -286,7 +286,7 @@ class Parser(AbstractParser):
 
   def _parse_subject_alt_names(self, description, subjects):
     for subject in description.split(' '):
-      subject = description.strip()
+      subject = subject.strip()
       if subject not in subjects:
         subjects.append(subject)
 
