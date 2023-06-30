@@ -298,9 +298,11 @@ class Parser(AbstractParser):
       if not certificate_deployment['received_chain_has_valid_order']:
         service['issues'].append(f"certificate not trusted: invalid certificate chain order")
 
-      if not certificate_deployment['path_validation_results']['was_validation_successful']:
-        # TODO: add certificate_deployment['path_validation_results']['openssl_error_string']?
-        service['issues'].append(f"certificate not trusted: path validation failed")
+      for path_validation_result in certificate_deployment['path_validation_results']:
+        if not path_validation_result['was_validation_successful']:
+          # TODO: add certificate_deployment['path_validation_results']['openssl_error_string']?
+          service['issues'].append("certificate not trusted: path validation failed")
+          break
 
       if not certificate_deployment['verified_chain_has_sha1_signature']:
         service['issues'].append(f"signature based on SHA-1 found within the certificate chain")
