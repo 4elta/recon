@@ -101,6 +101,8 @@ class Parser(AbstractParser):
             service['issues'].append(f"Nmap script scan result not parsed: {script_ID}")
 
   def _parse_rdp_enum_encryption(self, script_node, service):
+    # https://nmap.org/nsedoc/scripts/rdp-enum-encryption.html
+
     script_output = script_node.get('output')
 
     patterns_PROTOCOL = {
@@ -128,11 +130,17 @@ class Parser(AbstractParser):
       service['NLA'] = True
 
   def _parse_rdp_ntlm_info(self, script_node, service):
+    # https://nmap.org/nsedoc/scripts/rdp-ntlm-info.html
+
     ntlm_info = {}
 
     for elem_node in script_node.iter('elem'):
       key = elem_node.get('key')
       value = elem_node.text
       ntlm_info[key] = value
+
+      if key in ('DNS_Computer_Name', 'Product_Version'):
+        service['issues'].append(f"disclosure of potentially sensitive information: `{key}: {value}`")
+        # "Sending an incomplete CredSSP (NTLM) authentication request with null credentials will cause the remote service to respond with a NTLMSSP message disclosing information to include NetBIOS, DNS, and OS build version."
 
     service['NTLM_info'] = ntlm_info
