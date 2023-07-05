@@ -91,7 +91,7 @@ patterns = [ 'imap(s|(4-ssl))?' ]
 patterns = [ 'isakmp' ]
 
   [isakmp.scans.ike]
-  command = '"{PATH_TO_SCANNERS}/ike.sh" {address} {port} | tee "{result_file}.log"'
+  command = '"{PATH_TO_SCANNERS}/ike.py" {address} --port {port} | tee "{result_file}.log"'
 
   [isakmp.scans.nmap]
   command = 'nmap -sU -Pn -sV -p {port} --script="banner,ike-version" -oN "{result_file}.log" {address}'
