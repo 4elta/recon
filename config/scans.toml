@@ -237,6 +237,7 @@ patterns = [
   'domain-s', # DNS over TLS/DTLS/QUIC (853/tcp)
   'ftps', # FTP over TLS (990)
   'imaps|(4-ssl)', # IMAP over TLS (993/585)
+  'ircs(-u)?', # IRC over TLS (994/6697)
   'ldaps', # LDAP over TLS (636)
   'snews', # NNTP over TLS (563)
   'pop3s', # POP3 over TLS (995)
@@ -263,6 +264,7 @@ patterns = [
   '^ssl\|', '^tls\|',
   'apani1', # Cassandra supports TLS: https://cassandra.apache.org/doc/4.1/cassandra/configuration/cass_yaml_file.html#server_encryption_options
   'ipp', # CUPS supports TLS: https://www.cups.org/doc/encryption.html
+  'ircu?$', # IRC supports STARTTLS: https://ircv3.net/specs/deprecated/tls
   'ftp(-data)?', # FTP supports STARTTLS: https://datatracker.ietf.org/doc/html/rfc4217
   'imap', # IMAP supports STARTTLS: https://datatracker.ietf.org/doc/html/rfc2595
   'ldap', # LDAP supports STARTTLS: https://datatracker.ietf.org/doc/html/rfc2830
@@ -281,13 +283,13 @@ patterns = [
   command = 'nmap -sT -sU -Pn -sV -p {port} --script="banner,ssl* and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
 
   [tls_misc.scans.sslscan]
-  command = '#echo "ftp imap irc ldap pop3 smtp mysql xmpp" | grep --quiet "{application_protocol}" && sslscan --show-certificate --show-sigs --starttls-{application_protocol} --xml="{result_file}.xml" {address}:{port} 2>&1 | tee "{result_file}.log"'
+  command = '#echo "ftp imap irc ldap pop3 smtp mysql xmpp" | grep --quiet "{application_protocol}" && sslscan --show-certificate --show-sigs --starttls-$(echo {application_protocol} | sed -E "s:irc.*:irc:") --xml="{result_file}.xml" {address}:{port} 2>&1 | tee "{result_file}.log"'
 
   [tls_misc.scans.sslyze]
   command = '#echo "smtp, xmpp, xmpp_server, pop3, imap, ftp, ldap, ms-wbt-server, postgres" | grep --quiet "{application_protocol}" && sslyze --starttls $(echo {application_protocol} | sed "s:ms-wbt-server:rdp:") --json_out "{result_file}.json" {address}:{port} 2>&1 | tee "{result_file}.log"'
 
   [tls_misc.scans.testssl]
-  command = 'echo "ftp, smtp, pop3, imap, xmpp, telnet, ldap, irc, lmtp, nntp, postgres, mysql" | grep --quiet "{application_protocol}" && testssl --ip one --nodns min --mapping no-openssl --warnings off --connect-timeout 60 --openssl-timeout 60 --starttls {application_protocol} --logfile "{result_file}.log" --jsonfile "{result_file}.json" {address}:{port}'
+  command = 'echo "ftp, smtp, pop3, imap, xmpp, telnet, ldap, irc, lmtp, nntp, postgres, mysql" | grep --quiet "{application_protocol}" && testssl --ip one --nodns min --mapping no-openssl --warnings off --connect-timeout 60 --openssl-timeout 60 --starttls $(echo {application_protocol} | sed -E "s:irc.*:irc:") --logfile "{result_file}.log" --jsonfile "{result_file}.json" {address}:{port}'
 
 [vnc]
 patterns = [ 'vnc' ]
