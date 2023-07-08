@@ -1,0 +1,9 @@
+# flag name servers that are public
+public = false
+
+# flag name servers that do NOT validate DNSSEC
+DNSSEC = true
+
+# flag (recursive) name servers that support ECS
+# https://yacin.nadji.us/docs/pubs/dimva16_ecs.pdf
+ECS = false

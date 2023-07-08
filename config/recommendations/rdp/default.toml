@@ -1,0 +1,15 @@
+# flag RDP servers that are publicly accessible
+public = false
+
+# flag RDP servers that do not support the following protocols
+protocols = [
+  'PROTOCOL_HYBRID', # Enhanced RDP Security + CredSSP
+  'PROTOCOL_HYBRID_EX', # Enhanced RDP Security + CredSSP with Early User Authorization
+]
+
+# flag RDP servers that do not support the following encryption level
+encryption_level = 'ENCRYPTION_LEVEL_NONE'
+# when using "Enhanced RDP Security", the encryption level is "none"
+
+# flag RDP servers that do not support NLA
+NLA = true

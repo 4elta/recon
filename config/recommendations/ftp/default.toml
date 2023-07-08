@@ -1,0 +1,8 @@
+# flag FTP servers that are publicly accessible
+public = false
+
+# flag FTP servers that are not supporting FTPS
+FTPS = true
+
+# flag FTP servers that allow anonymous access
+anonymous = false

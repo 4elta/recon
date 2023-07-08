@@ -5,6 +5,7 @@
 import argparse
 import asyncio
 import csv
+import os
 import pathlib
 import random
 import re
@@ -48,6 +49,14 @@ JOB_PROGRESS = Progress(
   SpinnerColumn(),
   "[progress.description]{task.description}",
   transient = True,
+)
+
+# default timeout (in seconds) after which a command will be cancelled
+MAX_TIME = 60*60
+
+PATH_TO_SCANNERS = pathlib.Path(
+  pathlib.Path(__file__).resolve().parent,
+  "scanners"
 )
 
 class Service:
@@ -124,6 +133,10 @@ def format(*args, frame_index=1, **kvargs):
   vals.update(frame.f_locals)
   vals.update(kvargs)
 
+  # add the variables from the general service group
+  if '*' in SERVICES_CONFIG:
+    vals.update(SERVICES_CONFIG['*'])
+
   return string.Formatter().vformat(' '.join(args), args, vals)
 
 def create_summary(target: Target):
@@ -137,22 +150,20 @@ def create_summary(target: Target):
 
       f.write(f"* {service.port} ({service.transport_protocol}): `{description}`\n")
 
-  services_file = pathlib.Path(target.directory, 'services.tex')
-  with open(services_file, 'w') as f:
-    f.write(r"\begin{center}" + "\n")
-    f.write(r"\rowcolors{1}{white}{light-gray}" + "\n")
-    f.write(r"\begin{tabular}{r c p{.75\linewidth}}" + "\n")
-    f.write(r"\textbf{port} & \textbf{protocol} & \textbf{service} \\" + "\n")
+async def read_command_results(process, command):
+  # parse STDOUT
+  while True:
+    line = await process.stdout.readline()
+    if line:
+      line = str(line.rstrip(), 'utf8', 'ignore')
+      log(line)
 
-    for service in target.services:
-      description = service.application_protocol
-      if service.description:
-        description = service.description
-
-      f.writelines(f"{service.port} & {service.transport_protocol} & {description} " + r"\\" + "\n")
-
-    f.writelines(r"\end{tabular}" + "\n")
-    f.writelines(r"\end{center}" + "\n")
+      for pattern in command.patterns:
+        match = re.search(pattern, line)
+        if match:
+          JOB_PROGRESS.console.print(f"{command.description}: \"{line.strip()}\"")
+    else:
+      return
 
 async def run_command(command: Command, target: Target):
 
@@ -174,29 +185,23 @@ async def run_command(command: Command, target: Target):
         executable = '/bin/bash'
       )
 
-      # parse STDOUT
-      while True:
-        line = await process.stdout.readline()
-        if line:
-          line = str(line.rstrip(), 'utf8', 'ignore')
-          log(line)
+      try:
+        # wait for the task (i.e. read command results) to finish within the specified timeout (in seconds)
+        # https://docs.python.org/3/library/asyncio-task.html#asyncio.wait_for
+        await asyncio.wait_for(read_command_results(process, command), timeout=MAX_TIME)
 
-          for pattern in command.patterns:
-            match = re.search(pattern, line)
-            if match:
-              JOB_PROGRESS.console.print(f"{command.description}: \"{line.strip()}\"")
-        else:
-          break
+        return_code = process.returncode
 
-      # wait for the process to finish
-      await process.wait()
+        if return_code is None:
+          return_code = 0
 
-      return_code = process.returncode
-      
-      if process.returncode != 0:
-        error_msg = await process.stderr.read()
-        error_msg = error_msg.decode().strip()
-        OVERALL_PROGRESS.console.print(f"[red]{command.description}: {error_msg}")
+        if return_code not in (0, 'timeout'):
+          error_msg = await process.stderr.read()
+          error_msg = error_msg.decode().strip()
+          OVERALL_PROGRESS.console.print(f"[red]{command.description}: {error_msg}")
+      except asyncio.exceptions.TimeoutError:
+        OVERALL_PROGRESS.console.print(f"[red]{command.description}: timeout!")
+        return_code = "timeout"
 
     timestamp_completion = time.time()
 
@@ -211,6 +216,9 @@ def find_suitable_scans(application_protocol):
   
   # iterate over each service scan configuration
   for service_name, service_config in SERVICES_CONFIG.items():
+    if service_name == '*': # ignore the general service group
+      continue
+
     service_patterns = service_config['patterns'] if 'patterns' in service_config else ['.+']
 
     # iterate over each scan of a specific service config
@@ -249,9 +257,11 @@ def queue_HTTP_service_scan(target: Target, service: Service, scan: Scan):
   if application_protocol.startswith('ssl|') or application_protocol.startswith('tls|'):
     scheme = 'https'
 
+  application_protocol = 'http'
+
   # we have to run the scan for each hostname associated with the target
   for hostname in hostnames:
-    result_file = pathlib.Path(results_directory, f"{scan.service}-{port}-{hostname}-{scan.name}.log")
+    result_file = pathlib.Path(results_directory, f'{scan.service},{transport_protocol},{port},{hostname},{scan.name}')
     
     # run scan only if result file does not yet exist or "overwrite_results" flag is set
     if result_file.exists() and not OVERWRITE:
@@ -284,9 +294,13 @@ def queue_generic_service_scan(target: Target, service: Service, scan: Scan):
   application_protocol = service.application_protocol
   address = target.address
 
+  if '|' in application_protocol:
+    # e.g. "ssl|smtp" or "tls|smtp"
+    _, application_protocol = application_protocol.split('|')
+
   # does this service belong to a group that should only be scanned once (e.g. SMB)?
   if scan.run_once:
-    result_file = pathlib.Path(results_directory, f'{scan.service}-{scan.name}.log')
+    result_file = pathlib.Path(results_directory, f'{scan.service},{scan.name}')
 
     # run scan only if result file does not yet exist or "overwrite_results" flag is set
     if result_file.exists() and not OVERWRITE:
@@ -303,7 +317,7 @@ def queue_generic_service_scan(target: Target, service: Service, scan: Scan):
       return # continue with another service of the target
 
   else: # service does not belong to a group that should only be scanned once
-    result_file = pathlib.Path(results_directory, f'{scan.service}-{transport_protocol}-{port}-{scan.name}.log')
+    result_file = pathlib.Path(results_directory, f'{scan.service},{transport_protocol},{port},{scan.name}')
 
     # run scan only if result file does not yet exist or "overwrite_results" flag is set
     if result_file.exists() and not OVERWRITE:
@@ -462,6 +476,12 @@ async def process(args):
   global OVERWRITE
   OVERWRITE = args.overwrite_results
 
+  global MAX_TIME
+  MAX_TIME = args.max_time
+
+  if not os.geteuid() == 0 and not args.ignore_uid:
+    sys.exit('depending on what commands/tools this script executes it might have to be run by the root user (i.e. with "sudo").\nyou could try and ignore this warning by using the `--ignore_uid` flag.')
+
   # limit the number of concurrently scanned targets
   concurrent_targets = asyncio.Semaphore(args.concurrent_targets)
 
@@ -470,7 +490,11 @@ async def process(args):
     if not config_file_path.exists():
       sys.exit(f"the specified configuration file '{config_file_path}' does not exist!")
   else:
-    config_file_path = pathlib.Path(pathlib.Path(__file__).resolve().parent, "config.toml")
+    config_file_path = pathlib.Path(
+      pathlib.Path(__file__).resolve().parent,
+      "config",
+      "scans.toml"
+    )
     if not config_file_path.exists():
       sys.exit(f"the default configuration file '{config_file_path}' does not exist!")
 
@@ -496,6 +520,15 @@ async def process(args):
   # parse Nmap result file of the service scan (XML)
   targets = parse_result_file(base_directory, args.input)
   log(f"parsed {len(targets)} targets")
+
+  # create CSV file that lists all found services
+  with open(pathlib.Path(base_directory, 'services.csv'), 'w') as f:
+    csv.writer(f, delimiter=args.delimiter, quoting=csv.QUOTE_MINIMAL).writerow(['host', 'transport_protocol', 'port', 'service'])
+
+    for address, target in targets.items():
+      for service in target.services:
+        row = [address, service.transport_protocol, service.port, service.application_protocol]
+        csv.writer(f, delimiter=args.delimiter, quoting=csv.QUOTE_MINIMAL).writerow(row)
 
   global OVERALL_TASK
   OVERALL_TASK = OVERALL_PROGRESS.add_task("overall progress:", total=len(targets))
@@ -528,13 +561,15 @@ def main():
 
   parser.add_argument('-i', '--input', type=pathlib.Path, default='services.xml', help="the result file of the Nmap service scan (default: 'services.xml')")
   parser.add_argument('-o', '--output', type=pathlib.Path, default='./recon', help="where the results are stored (default: './recon')")
-  parser.add_argument('-c', '--config', type=pathlib.Path, help="path to the scan configuration file (default: '/path/to/recon-suite/config.toml')")
+  parser.add_argument('-c', '--config', type=pathlib.Path, help="path to the scan configuration file (default: '/path/to/recon/config/scans.toml')")
   parser.add_argument('-t', '--concurrent_targets', type=int, default=3, help="how many targets should be scanned concurrently (default: 3)")
   parser.add_argument('-s', '--concurrent_scans', type=int, default=2, help="how many scans should be running concurrently on a single target (default: 2)")
+  parser.add_argument('-m', '--max_time', type=int, default=MAX_TIME, help=f"maximum time in seconds each scan is allowed to take (default: {MAX_TIME})")
   parser.add_argument('-v', '--verbose', action='store_true', help="show additional info including all output of all scans")
   parser.add_argument('-n', '--dry_run', action='store_true', help="do not run any command; just create/update the 'commands.csv' file")
   parser.add_argument('-y', '--overwrite_results', action='store_true', help="overwrite existing result files")
-  parser.add_argument('-d', '--delimiter', default=',', help="character used to delimit columns in the 'commands.csv' file (default: ',')")
+  parser.add_argument('-d', '--delimiter', default=',', help="character used to delimit columns in the 'commands.csv' and 'services.csv' files (default: ',')")
+  parser.add_argument('--ignore_uid', action='store_true', help="ignore the warning about incorrect UID.")
 
   try:
     asyncio.run(
