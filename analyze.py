@@ -14,6 +14,61 @@ try:
 except:
   sys.exit("this script requires the 'toml' module.\nplease install it via 'pip3 install toml'.")
 
+SUPPORTED_SERVICES = ['dns', 'ftp', 'http', 'isakmp', 'ntp', 'rdp', 'ssh', 'tls', ]
+
+def analyze_service(service, files, tool=None, recommendations_file=None, json=None, csv=None):
+  if recommendations_file:
+    if not recommendations_file.exists():
+      sys.exit(f"the recommendations file '{recommendations_file}' does not exist!")
+  else:
+    recommendations_file = pathlib.Path(
+      pathlib.Path(__file__).resolve().parent,
+      "config",
+      "recommendations",
+      service,
+      "default.toml"
+    )
+    if not recommendations_file.exists():
+      sys.exit(f"the default recommendations file '{recommendations_file}' does not exist!")
+
+  with open(recommendations_file, 'r') as f:
+    recommendations = toml.load(f)
+
+  print(f"\nVulnerabilities and/or deviations from the recommended settings (`{recommendations_file}`):")
+
+  module = importlib.import_module(f'analyzers.{service}')
+  analyzer = module.Analyzer(service, recommendations)
+
+  if tool:
+    analyzer.set_parser(tool)
+
+  services = analyzer.analyze(files)
+
+  affected_assets = []
+
+  for asset, service in services.items():
+    if not len(service['issues']):
+      continue
+
+    affected_assets.append(f"{asset}")
+
+    print(f"\n## {asset}\n")
+
+    for issue in service['issues']:
+      print(f"* {issue}")
+
+  print(f"\n# affected assets\n")
+
+  for asset in affected_assets:
+    print(f"* `{asset}`")
+
+  if json:
+    with open(json, 'w') as f:
+      json.dump(services, f, indent=2)
+
+  if csv:
+    save_CSV(services, csv)
+
 def get_files(directory, service):
   files = {}
 
@@ -49,69 +104,37 @@ def process(args):
   if not args.input.exists():
     sys.exit(f"the specified directory '{args.input}' does not exist!")
 
-  if args.recommendations:
-    recommendations_file = args.recommendations
-    if not recommendations_file.exists():
-      sys.exit(f"the recommendations file '{recommendations_file}' does not exist!")
+  if args.service == '?':
+    services = {}
+    for service in SUPPORTED_SERVICES:
+      files = get_files(args.input, service)
+      if len(files):
+        services[service] = files.keys()
+
+    print("scan results relating to the following services are available for analysis.")
+    print("the name of the scanner is shown in parenthesis.\n")
+
+    for service, tools in services.items():
+      print(f"* {service} ({', '.join(tools)})")
   else:
-    recommendations_file = pathlib.Path(
-      pathlib.Path(__file__).resolve().parent,
-      "config",
-      "recommendations",
+    files = get_files(args.input, args.service)
+
+    analyze_service(
       args.service,
-      "default.toml"
+      files,
+      tool = args.tool,
+      recommendations_file = args.recommendations,
+      json = args.json,
+      csv = args.csv
     )
-    if not recommendations_file.exists():
-      sys.exit(f"the default recommendations file '{recommendations_file}' does not exist!")
-
-  with open(recommendations_file, 'r') as f:
-    recommendations = toml.load(f)
-
-  print(f"\nVulnerabilities and/or deviations from the recommended settings (`{recommendations_file}`):")
-
-  files = get_files(args.input, args.service)
-  #print(json.dumps(files, indent=2))
-
-  module = importlib.import_module(f'analyzers.{args.service}')
-  analyzer = module.Analyzer(args.service, recommendations)
-
-  if args.tool:
-    analyzer.set_parser(args.tool)
-
-  services = analyzer.analyze(files)
-
-  affected_assets = []
-
-  for asset, service in services.items():
-    if not len(service['issues']):
-      continue
-
-    affected_assets.append(f"{asset}")
-
-    print(f"\n## {asset}\n")
-
-    for issue in service['issues']:
-      print(f"* {issue}")
-
-  print(f"\n# affected assets\n")
-
-  for asset in affected_assets:
-    print(f"* `{asset}`")
-
-  if args.json:
-    with open(args.json, 'w') as f:
-      json.dump(services, f, indent=2)
-
-  if args.csv:
-    save_CSV(services, args.csv)
 
 def main():
   parser = argparse.ArgumentParser()
 
   parser.add_argument(
     'service',
-    choices = ['dns', 'ftp', 'http', 'isakmp', 'ntp', 'rdp', 'ssh', 'tls', ],
-    help = "specify the service that should be analyzed"
+    choices = ['?'] + SUPPORTED_SERVICES,
+    help = "specify the service that should be analyzed. use '?' to list services available for analysis."
   )
 
   parser.add_argument(
