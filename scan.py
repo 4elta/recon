@@ -228,6 +228,7 @@ def find_suitable_scans(application_protocol):
 
       for service_pattern in service_patterns:
         if re.search(service_pattern, application_protocol):
+          log(f"application protocol '{application_protocol}' matched '{service_name}' pattern '{service_pattern}'; command '{scan_name}'")
           scans.append(
             Scan(
               service_name,
