@@ -446,8 +446,7 @@ def parse_result_file(base_directory, result_file):
       else:
         application_protocol = service.get('name')
 
-        # Nmap does not identify HTTPS as '<service name="https" ...>'.
-        # it uses 'name="http"' plus 'tunnel="ssl"'.
+        # sometimes, Nmap identifies HTTPS as `name="http" ... tunnel="ssl"` instead of `name="https"`.
         # we prepend the tunnel info to the application protocol:
         # '<tunnel>|<application protocol>'
         if service.get('tunnel'):

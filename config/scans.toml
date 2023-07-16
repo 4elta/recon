@@ -233,7 +233,7 @@ patterns = [ '^telnet' ]
 
 [tls] # services (or service versions) that use TLS by default (i.e. not opportunistic).
 patterns = [
-  # Nmap does not identify HTTPS as 'https'; it uses 'http' plus 'tunnel="ssl"'.
+  # sometimes, Nmap identifies HTTPS as 'http' tunneled through `ssl`.
   # the scanner prepends the tunnel info to the application protocol: '<tunnel>|<application protocol>'
   '^ssl\|', '^tls\|',
   'https', # HTTP over TLS (443/tcp)
