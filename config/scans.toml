@@ -233,6 +233,9 @@ patterns = [ '^telnet' ]
 
 [tls] # services (or service versions) that use TLS by default (i.e. not opportunistic).
 patterns = [
+  # Nmap does not identify HTTPS as 'https'; it uses 'http' plus 'tunnel="ssl"'.
+  # the scanner prepends the tunnel info to the application protocol: '<tunnel>|<application protocol>'
+  '^ssl\|', '^tls\|',
   'https', # HTTP over TLS (443/tcp)
   'domain-s', # DNS over TLS/DTLS/QUIC (853/tcp)
   'ftps', # FTP over TLS (990)
@@ -261,7 +264,6 @@ patterns = [
 
 [tls_misc] # services that support opportunistic TLS (e.g. STARTTLS) or use TLS in some other form
 patterns = [
-  '^ssl\|', '^tls\|',
   'apani1', # Cassandra supports TLS: https://cassandra.apache.org/doc/4.1/cassandra/configuration/cass_yaml_file.html#server_encryption_options
   'ipp', # CUPS supports TLS: https://www.cups.org/doc/encryption.html
   'ircu?$', # IRC supports STARTTLS: https://ircv3.net/specs/deprecated/tls

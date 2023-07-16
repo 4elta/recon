@@ -60,9 +60,9 @@ PATH_TO_SCANNERS = pathlib.Path(
 )
 
 class Service:
-  def __init__(self, port, transport_protocol, application_protocol, description):
-    self.port = int(port)
+  def __init__(self, transport_protocol, port, application_protocol, description):
     self.transport_protocol = transport_protocol
+    self.port = int(port)
     self.application_protocol = application_protocol
     self.description = description
 
@@ -421,7 +421,7 @@ def parse_result_file(base_directory, result_file):
       target = targets[address]
 
     try:
-      hostname = host.findall("hostnames/hostname[@type='user']")[0].get('name')
+      hostname = host.find("./hostnames/hostname[@type='user']").get('name')
       if hostname not in target.hostnames:
         target.hostnames.append(hostname)
     except:
@@ -429,10 +429,7 @@ def parse_result_file(base_directory, result_file):
 
     log(f"{address} ({','.join(target.hostnames)})")
 
-    for port in host.iter('port'):
-      if port.find('state').get('state') != 'open':
-        continue
-
+    for port in host.findall('./ports/port/state[@state="open"]/..'):
       transport_protocol = port.get('protocol')
       port_ID = port.get('portid')
 
@@ -448,7 +445,13 @@ def parse_result_file(base_directory, result_file):
         description = 'unknown'
       else:
         application_protocol = service.get('name')
+
+        # Nmap does not identify HTTPS as '<service name="https" ...>'.
+        # it uses 'name="http"' plus 'tunnel="ssl"'.
+        # we prepend the tunnel info to the application protocol:
+        # '<tunnel>|<application protocol>'
         if service.get('tunnel'):
+          log(f"application protocol '{application_protocol}' is tunneled through '{service.get('tunnel')}'")
           application_protocol = service.get('tunnel') + '|' + application_protocol
 
         descriptions = []
@@ -461,7 +464,15 @@ def parse_result_file(base_directory, result_file):
 
         description = " ".join(descriptions)
 
-      target.services.append(Service(port_ID, transport_protocol, application_protocol, description))
+      target.services.append(
+        Service(
+          transport_protocol,
+          port_ID,
+          application_protocol,
+          description
+        )
+      )
+
       log(f"{transport_protocol}, {port_ID}: {application_protocol}: {description}")
 
   return targets
