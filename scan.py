@@ -241,6 +241,18 @@ def find_suitable_scans(application_protocol):
 
   return scans
 
+def result_file_exists(results_directory, file_name):
+  result_files = 0
+  for result_file in results_directory.glob(f'{file_name}.*'):
+    if OVERWRITE:
+      result_file.unlink()
+    else:
+      result_files += 1
+
+  if result_files > 0 and not OVERWRITE:
+    log(f"'{results_directory}/{file_name}.*' exists and we must not overwrite them.")
+    return True
+
 def queue_HTTP_service_scan(target: Target, service: Service, scan: Scan):
 
   results_directory = pathlib.Path(target.directory, 'services')
@@ -262,12 +274,12 @@ def queue_HTTP_service_scan(target: Target, service: Service, scan: Scan):
 
   # we have to run the scan for each hostname associated with the target
   for hostname in hostnames:
-    result_file = pathlib.Path(results_directory, f'{scan.service},{transport_protocol},{port},{hostname},{scan.name}')
-    
+    file_name = f'{scan.service},{transport_protocol},{port},{hostname},{scan.name}'
+    result_file = pathlib.Path(results_directory, file_name)
+
     # run scan only if result file does not yet exist or "overwrite_results" flag is set
-    if result_file.exists() and not OVERWRITE:
-      log(f"result file '{result_file}' already exists and we must not overwrite it.")
-      continue # with another service of the target
+    if result_file_exists(results_directory, file_name):
+      continue # with another hostname
 
     description = f"{address}: {scan.service}: {port}: {hostname}: {scan.name}"
     log(description)
@@ -301,11 +313,11 @@ def queue_generic_service_scan(target: Target, service: Service, scan: Scan):
 
   # does this service belong to a group that should only be scanned once (e.g. SMB)?
   if scan.run_once:
-    result_file = pathlib.Path(results_directory, f'{scan.service},{scan.name}')
+    file_name = f'{scan.service},{scan.name}'
+    result_file = pathlib.Path(results_directory, file_name)
 
     # run scan only if result file does not yet exist or "overwrite_results" flag is set
-    if result_file.exists() and not OVERWRITE:
-      log(f"result file '{result_file}' already exists and we must not overwrite it.")
+    if result_file_exists(results_directory, file_name):
       return # continue with another service of the target
 
     description = f"{address}: {scan.service}: {scan.name}"
@@ -318,11 +330,11 @@ def queue_generic_service_scan(target: Target, service: Service, scan: Scan):
       return # continue with another service of the target
 
   else: # service does not belong to a group that should only be scanned once
-    result_file = pathlib.Path(results_directory, f'{scan.service},{transport_protocol},{port},{scan.name}')
+    file_name = f'{scan.service},{transport_protocol},{port},{scan.name}'
+    result_file = pathlib.Path(results_directory, file_name)
 
     # run scan only if result file does not yet exist or "overwrite_results" flag is set
-    if result_file.exists() and not OVERWRITE:
-      log(f"result file '{result_file}' already exists and we must not overwrite it.")
+    if result_file_exists(results_directory, file_name):
       return # continue with another service of the target
 
     description = f"{address}: {scan.service}: {transport_protocol}/{port}: {scan.name}"
