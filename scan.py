@@ -393,12 +393,7 @@ async def scan_target(target: Target, semaphore: asyncio.Semaphore):
     JOB_PROGRESS.console.print(f"[bold green]{target.address}: finished")
     OVERALL_PROGRESS.update(OVERALL_TASK, advance=1)
 
-def parse_result_file(base_directory, result_file):
-  targets = {}
-
-  # a service is uniquely identified by the tuple (host, transport protocol, port number)
-  unique_services = []
-
+def parse_result_file(base_directory, result_file, targets, unique_services):
   # https://nmap.org/book/nmap-dtd.html
   # nmaprun
   #   host
@@ -435,7 +430,10 @@ def parse_result_file(base_directory, result_file):
       port_ID = port.get('portid')
 
       service_tuple = (address, transport_protocol, port_ID)
+      log(f"service {service_tuple}")
+
       if service_tuple in unique_services:
+        log("service already parsed")
         continue
 
       unique_services.append(service_tuple)
@@ -473,7 +471,19 @@ def parse_result_file(base_directory, result_file):
         )
       )
 
-      log(f"{transport_protocol}, {port_ID}: {application_protocol}: {description}")
+      log(f"{transport_protocol}/{port_ID}: {application_protocol}: {description}")
+
+  return targets
+
+def parse_result_files(base_directory, result_files):
+  targets = {}
+
+  # a service is uniquely identified by the tuple (host, transport protocol, port number)
+  unique_services = []
+
+  for result_file in result_files:
+    log(f"parsing '{result_file}' ...")
+    parse_result_file(base_directory, result_file, targets, unique_services)
 
   return targets
 
@@ -524,12 +534,13 @@ async def process(args):
     args.delimiter
   )
 
-  input_file = args.input.resolve()
-  if not input_file.exists():
-    sys.exit(f"input file '{input_file}' does not exist!")
+  for input_path in args.input:
+    input_file = input_path.resolve()
+    if not input_file.exists():
+      sys.exit(f"input file '{input_file}' does not exist!")
 
-  # parse Nmap result file of the service scan (XML)
-  targets = parse_result_file(base_directory, args.input)
+  # parse Nmap result file(s), i.e. service.xml
+  targets = parse_result_files(base_directory, args.input)
   log(f"parsed {len(targets)} targets")
 
   # create CSV file that lists all found services
@@ -570,7 +581,7 @@ async def process(args):
 def main():
   parser = argparse.ArgumentParser()
 
-  parser.add_argument('-i', '--input', type=pathlib.Path, default='services.xml', help="the result file of the Nmap service scan (default: 'services.xml')")
+  parser.add_argument('-i', '--input', type=pathlib.Path, nargs='+', default='services.xml', help="the result file(s) of the Nmap service scan (default: 'services.xml')")
   parser.add_argument('-o', '--output', type=pathlib.Path, default='./recon', help="where the results are stored (default: './recon')")
   parser.add_argument('-c', '--config', type=pathlib.Path, help="path to the scan configuration file (default: '/path/to/recon/config/scans.toml')")
   parser.add_argument('-t', '--concurrent_targets', type=int, default=3, help="how many targets should be scanned concurrently (default: 3)")

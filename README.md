@@ -87,12 +87,12 @@ Schedule and execute various tools based on the findings of the Nmap service sca
 
 ```text
 $ scan -h
-usage: scan [-h] [-i INPUT] [-o OUTPUT] [-c CONFIG] [-t CONCURRENT_TARGETS] [-s CONCURRENT_SCANS] [-m MAX_TIME] [-v] [-n] [-y] [-d DELIMITER] [--ignore_uid]
+usage: scan [-h] [-i INPUT [INPUT ...]] [-o OUTPUT] [-c CONFIG] [-t CONCURRENT_TARGETS] [-s CONCURRENT_SCANS] [-m MAX_TIME] [-v] [-n] [-y] [-d DELIMITER] [--ignore_uid]
 
 optional arguments:
   -h, --help            show this help message and exit
-  -i INPUT, --input INPUT
-                        the result file of the Nmap service scan (default: 'services.xml')
+  -i INPUT [INPUT ...], --input INPUT [INPUT ...]
+                        the result file(s) of the Nmap service scan (default: 'services.xml')
   -o OUTPUT, --output OUTPUT
                         where the results are stored (default: './recon')
   -c CONFIG, --config CONFIG
