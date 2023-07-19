@@ -5,6 +5,7 @@
 import argparse
 import asyncio
 import csv
+import json
 import os
 import pathlib
 import random
@@ -50,6 +51,9 @@ JOB_PROGRESS = Progress(
   "[progress.description]{task.description}",
   transient = True,
 )
+
+# <host>:<protocol>:<port>:<service>
+RESCAN_PATTERN = re.compile(r'(?P<host>[^:]+):(?P<protocol>(tcp|udp|\*)):(?P<port>(\d+)|\*):(?P<service>.+)')
 
 # default timeout (in seconds) after which a command will be cancelled
 MAX_TIME = 60*60
@@ -405,7 +409,7 @@ async def scan_target(target: Target, semaphore: asyncio.Semaphore):
     JOB_PROGRESS.console.print(f"[bold green]{target.address}: finished")
     OVERALL_PROGRESS.update(OVERALL_TASK, advance=1)
 
-def parse_result_file(base_directory, result_file, targets, unique_services):
+def parse_result_file(base_directory, result_file, targets, unique_services, rescan_filters):
   # https://nmap.org/book/nmap-dtd.html
   # nmaprun
   #   host
@@ -474,20 +478,39 @@ def parse_result_file(base_directory, result_file, targets, unique_services):
 
         description = " ".join(descriptions)
 
-      target.services.append(
-        Service(
-          transport_protocol,
-          port_ID,
-          application_protocol,
-          description
-        )
-      )
+      add_target = (len(rescan_filters) == 0)
+      for rescan_filter in rescan_filters:
+        if not (rescan_filter['host'] == '*' or rescan_filter['host'] == address):
+          continue
 
-      log(f"{transport_protocol}/{port_ID}: {application_protocol}: {description}")
+        if not (rescan_filter['protocol'] == '*' or rescan_filter['protocol'] == transport_protocol):
+          continue
+
+        if not (rescan_filter['port'] == '*' or rescan_filter['protocol'] == port_ID):
+          continue
+
+        if not (rescan_filter['service'] == '*' or rescan_filter['service'] == application_protocol):
+          continue
+
+        log(f"rescan filter '{json.dumps(rescan_filter)}' matches!")
+        add_target = True
+        break
+
+      if add_target:
+        target.services.append(
+          Service(
+            transport_protocol,
+            port_ID,
+            application_protocol,
+            description
+          )
+        )
+
+        log(f"{transport_protocol}/{port_ID}: {application_protocol}: {description}")
 
   return targets
 
-def parse_result_files(base_directory, result_files):
+def parse_result_files(base_directory, result_files, rescan_filters):
   targets = {}
 
   # a service is uniquely identified by the tuple (host, transport protocol, port number)
@@ -495,7 +518,7 @@ def parse_result_files(base_directory, result_files):
 
   for result_file in result_files:
     log(f"parsing '{result_file}' ...")
-    parse_result_file(base_directory, result_file, targets, unique_services)
+    parse_result_file(base_directory, result_file, targets, unique_services, rescan_filters)
 
   return targets
 
@@ -551,8 +574,27 @@ async def process(args):
     if not input_file.exists():
       sys.exit(f"input file '{input_file}' does not exist!")
 
+  rescan_filters = []
+  for rescan in args.rescan:
+    m = RESCAN_PATTERN.fullmatch(rescan)
+    if not m:
+      sys.exit(f"rescan filter '{rescan}' does not match '{RESCAN_PATTERN.pattern}'")
+
+    rescan_filter = {
+      'host': m.group('host'),
+      'protocol': m.group('protocol'),
+      'port': m.group('port'),
+      'service': m.group('service')
+    }
+
+    log(f"parsed rescan filter: {json.dumps(rescan_filter)}")
+    rescan_filters.append(rescan_filter)
+
+  if len(rescan_filters):
+    OVERWRITE = True
+
   # parse Nmap result file(s), i.e. service.xml
-  targets = parse_result_files(base_directory, args.input)
+  targets = parse_result_files(base_directory, args.input, rescan_filters)
   log(f"parsed {len(targets)} targets")
 
   # create CSV file that lists all found services
@@ -595,6 +637,7 @@ def main():
 
   parser.add_argument(
     '-i', '--input',
+    metavar = 'path',
     help = "the result file(s) of the Nmap service scan (default: 'services.xml')",
     type = pathlib.Path,
     nargs = '+',
@@ -603,6 +646,7 @@ def main():
 
   parser.add_argument(
     '-o', '--output',
+    metavar = 'path',
     help = "where the results are stored (default: './recon')",
     type = pathlib.Path,
     default = './recon'
@@ -610,12 +654,14 @@ def main():
 
   parser.add_argument(
     '-c', '--config',
+    metavar = 'path',
     help = "path to the scan configuration file (default: '/path/to/recon/config/scans.toml')",
     type = pathlib.Path
   )
 
   parser.add_argument(
     '-t', '--concurrent_targets',
+    metavar = 'number',
     help = "how many targets should be scanned concurrently (default: 3)",
     type = int,
     default = 3
@@ -623,6 +669,7 @@ def main():
 
   parser.add_argument(
     '-s', '--concurrent_scans',
+    metavar = 'number',
     help = "how many scans should be running concurrently on a single target (default: 2)",
     type = int,
     default = 2
@@ -630,6 +677,7 @@ def main():
 
   parser.add_argument(
     '-m', '--max_time',
+    metavar = 'seconds',
     help = f"maximum time in seconds each scan is allowed to take (default: {MAX_TIME})",
     type = int,
     default = MAX_TIME
@@ -648,6 +696,13 @@ def main():
   )
 
   parser.add_argument(
+    '-r', '--rescan',
+    metavar = '<host>:<protocol>:<port>:<service>',
+    help = "re-scan certain hosts/protocols/ports/services and overwrite existing result files;\nyou can use '*' if you cannot or don't want to specify a host/protocol/port/service part",
+    nargs = '+'
+  )
+
+  parser.add_argument(
     '-y', '--overwrite_results',
     help = "overwrite existing result files",
     action = 'store_true'
@@ -655,6 +710,7 @@ def main():
 
   parser.add_argument(
     '-d', '--delimiter',
+    metavar = 'character',
     help = "character used to delimit columns in the 'commands.csv' and 'services.csv' files (default: ',')",
     default = ','
   )
