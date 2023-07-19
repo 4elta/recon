@@ -87,27 +87,29 @@ Schedule and execute various tools based on the findings of the Nmap service sca
 
 ```text
 $ scan -h
-usage: scan [-h] [-i INPUT [INPUT ...]] [-o OUTPUT] [-c CONFIG] [-t CONCURRENT_TARGETS] [-s CONCURRENT_SCANS] [-m MAX_TIME] [-v] [-n] [-y] [-d DELIMITER] [--ignore_uid]
+usage: scan [-h] [-i path [path ...]] [-o path] [-c path] [-t number] [-s number] [-m seconds] [-v] [-n] [-r <host>:<protocol>:<port>:<service> [<host>:<protocol>:<port>:<service> ...]] [-y] [-d character] [--ignore_uid]
 
 optional arguments:
   -h, --help            show this help message and exit
-  -i INPUT [INPUT ...], --input INPUT [INPUT ...]
+  -i path [path ...], --input path [path ...]
                         the result file(s) of the Nmap service scan (default: 'services.xml')
-  -o OUTPUT, --output OUTPUT
+  -o path, --output path
                         where the results are stored (default: './recon')
-  -c CONFIG, --config CONFIG
+  -c path, --config path
                         path to the scan configuration file (default: '/path/to/recon/config/scans.toml')
-  -t CONCURRENT_TARGETS, --concurrent_targets CONCURRENT_TARGETS
+  -t number, --concurrent_targets number
                         how many targets should be scanned concurrently (default: 3)
-  -s CONCURRENT_SCANS, --concurrent_scans CONCURRENT_SCANS
+  -s number, --concurrent_scans number
                         how many scans should be running concurrently on a single target (default: 2)
-  -m MAX_TIME, --max_time MAX_TIME
+  -m seconds, --max_time seconds
                         maximum time in seconds each scan is allowed to take (default: 3600)
   -v, --verbose         show additional info including all output of all scans
   -n, --dry_run         do not run any command; just create/update the 'commands.csv' file
+  -r <host>:<protocol>:<port>:<service> [<host>:<protocol>:<port>:<service> ...], --rescan <host>:<protocol>:<port>:<service> [<host>:<protocol>:<port>:<service> ...]
+                        re-scan certain hosts/protocols/ports/services and overwrite existing result files; you can use '*' if you cannot or don't want to specify a host/protocol/port/service part
   -y, --overwrite_results
                         overwrite existing result files
-  -d DELIMITER, --delimiter DELIMITER
+  -d character, --delimiter character
                         character used to delimit columns in the 'commands.csv' and 'services.csv' files (default: ',')
   --ignore_uid          ignore the warning about incorrect UID.
 ```
