@@ -34,8 +34,6 @@ def analyze_service(service, files, tool=None, recommendations_file=None, json=N
   with open(recommendations_file, 'r') as f:
     recommendations = toml.load(f)
 
-  print(f"\nVulnerabilities and/or deviations from the recommended settings (`{recommendations_file}`):")
-
   module = importlib.import_module(f'analyzers.{service}')
   analyzer = module.Analyzer(service, recommendations)
 
@@ -45,6 +43,13 @@ def analyze_service(service, files, tool=None, recommendations_file=None, json=N
   services = analyzer.analyze(files)
 
   affected_assets = []
+
+  print("\nThe following hosts have been analyzed:\n")
+
+  for asset in services.keys():
+    print(f"* `{asset}`")
+
+  print(f"\nThe following vulnerabilities and/or deviations from the recommended settings (`{recommendations_file}`) have been identified:")
 
   for asset, service in services.items():
     if not len(service['issues']):
