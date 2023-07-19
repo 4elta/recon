@@ -206,6 +206,9 @@ patterns = [ 'smtp' ]
   [smtp.scans.nmap]
   command = 'nmap -Pn -sV -p {port} --script="banner,smtp* and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" {address}'
 
+  [smtp.scans.'intrusive,nmap']
+  command = '#nmap -Pn -sV -p {port} --script="banner,smtp* and not (brute or dos or exploit)" -oN "{result_file}.log" {address}'
+
 [snmp]
 patterns = [ 'snmp' ]
 
