@@ -593,17 +593,77 @@ async def process(args):
 def main():
   parser = argparse.ArgumentParser()
 
-  parser.add_argument('-i', '--input', type=pathlib.Path, nargs='+', default='services.xml', help="the result file(s) of the Nmap service scan (default: 'services.xml')")
-  parser.add_argument('-o', '--output', type=pathlib.Path, default='./recon', help="where the results are stored (default: './recon')")
-  parser.add_argument('-c', '--config', type=pathlib.Path, help="path to the scan configuration file (default: '/path/to/recon/config/scans.toml')")
-  parser.add_argument('-t', '--concurrent_targets', type=int, default=3, help="how many targets should be scanned concurrently (default: 3)")
-  parser.add_argument('-s', '--concurrent_scans', type=int, default=2, help="how many scans should be running concurrently on a single target (default: 2)")
-  parser.add_argument('-m', '--max_time', type=int, default=MAX_TIME, help=f"maximum time in seconds each scan is allowed to take (default: {MAX_TIME})")
-  parser.add_argument('-v', '--verbose', action='store_true', help="show additional info including all output of all scans")
-  parser.add_argument('-n', '--dry_run', action='store_true', help="do not run any command; just create/update the 'commands.csv' file")
-  parser.add_argument('-y', '--overwrite_results', action='store_true', help="overwrite existing result files")
-  parser.add_argument('-d', '--delimiter', default=',', help="character used to delimit columns in the 'commands.csv' and 'services.csv' files (default: ',')")
-  parser.add_argument('--ignore_uid', action='store_true', help="ignore the warning about incorrect UID.")
+  parser.add_argument(
+    '-i', '--input',
+    help = "the result file(s) of the Nmap service scan (default: 'services.xml')",
+    type = pathlib.Path,
+    nargs = '+',
+    default = 'services.xml'
+  )
+
+  parser.add_argument(
+    '-o', '--output',
+    help = "where the results are stored (default: './recon')",
+    type = pathlib.Path,
+    default = './recon'
+  )
+
+  parser.add_argument(
+    '-c', '--config',
+    help = "path to the scan configuration file (default: '/path/to/recon/config/scans.toml')",
+    type = pathlib.Path
+  )
+
+  parser.add_argument(
+    '-t', '--concurrent_targets',
+    help = "how many targets should be scanned concurrently (default: 3)",
+    type = int,
+    default = 3
+  )
+
+  parser.add_argument(
+    '-s', '--concurrent_scans',
+    help = "how many scans should be running concurrently on a single target (default: 2)",
+    type = int,
+    default = 2
+  )
+
+  parser.add_argument(
+    '-m', '--max_time',
+    help = f"maximum time in seconds each scan is allowed to take (default: {MAX_TIME})",
+    type = int,
+    default = MAX_TIME
+  )
+
+  parser.add_argument(
+    '-v', '--verbose',
+    help = "show additional info including all output of all scans",
+    action = 'store_true'
+  )
+
+  parser.add_argument(
+    '-n', '--dry_run',
+    help = "do not run any command; just create/update the 'commands.csv' file",
+    action = 'store_true'
+  )
+
+  parser.add_argument(
+    '-y', '--overwrite_results',
+    help = "overwrite existing result files",
+    action = 'store_true'
+  )
+
+  parser.add_argument(
+    '-d', '--delimiter',
+    help = "character used to delimit columns in the 'commands.csv' and 'services.csv' files (default: ',')",
+    default = ','
+  )
+
+  parser.add_argument(
+    '--ignore_uid',
+    help = "ignore the warning about incorrect UID.",
+    action = 'store_true'
+  )
 
   try:
     asyncio.run(
