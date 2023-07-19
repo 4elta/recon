@@ -86,7 +86,9 @@ class Parser(AbstractParser):
 
           service['description'] = " ".join(descriptions)
 
-          service['protocol_version'] = self._parse_protocol_version(service_node.get('extrainfo'))
+          extrainfo = service_node.get('extrainfo')
+          if extrainfo:
+            service['protocol_version'] = self._parse_protocol_version(extrainfo)
 
         for script_node in port_node.iter('script'):
           script_ID = script_node.get('id')
