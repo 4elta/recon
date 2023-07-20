@@ -58,6 +58,7 @@ sudo apt install \
   ike-scan \
   nmap \
   onesixtyone \
+  rpctools \
   seclists \
   smbclient \
   snmp \

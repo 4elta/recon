@@ -178,6 +178,9 @@ patterns = [ 'msrpc', 'rpcbind', '^erpc' ]
   command = 'rpcinfo {address} 2>&1 | tee "{result_file}.log"'
   patterns = [ 'nfs' ]
 
+  [rpc.scans.rpcdump]
+  command = 'rpcdump.py -p {port} {address} 2>&1 | tee "{result_file}.log"'
+
 [sip]
 patterns = [ '^sip', '^ventrilo' ]
 
