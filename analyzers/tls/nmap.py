@@ -222,7 +222,7 @@ class Parser(AbstractParser):
     cipher_pref_node = node.find('./elem[@key="cipher preference"]')
     if cipher_pref_node:
       cipher_preference = cipher_pref_node.text
-      #TODO: how to handle the situation where this different for each protocol version (e.g. TLS 1.2: client; TLS 1.3: server)?
+      #TODO: how to handle the situation where this is different for each protocol version (e.g. TLS 1.2: client; TLS 1.3: server)?
 
   def _parse_cipher_suites(self, script_node, service):
     for protocol_table in script_node.findall('./table'):
