@@ -67,7 +67,7 @@ class Parser(AbstractParser):
         service_node = port_node.find('service')
 
         scheme = 'http'
-        if service_node.get('tunnel') in ('ssl', 'tls'):
+        if service_node.get('tunnel') in ('ssl', 'tls') or service_node.get('name') in ('https', 'https?'):
           scheme = 'https'
 
         identifier = f"{scheme}://{host}:{port}"
