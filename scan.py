@@ -486,7 +486,7 @@ def parse_result_file(base_directory, result_file, targets, unique_services, res
         if not (rescan_filter['protocol'] == '*' or rescan_filter['protocol'] == transport_protocol):
           continue
 
-        if not (rescan_filter['port'] == '*' or rescan_filter['protocol'] == port_ID):
+        if not (rescan_filter['port'] == '*' or rescan_filter['port'] == port_ID):
           continue
 
         if not (rescan_filter['service'] == '*' or rescan_filter['service'] == application_protocol):
@@ -699,7 +699,8 @@ def main():
     '-r', '--rescan',
     metavar = '<host>:<protocol>:<port>:<service>',
     help = "re-scan certain hosts/protocols/ports/services and overwrite existing result files;\nyou can use '*' if you cannot or don't want to specify a host/protocol/port/service part",
-    nargs = '+'
+    nargs = '+',
+    default = []
   )
 
   parser.add_argument(
