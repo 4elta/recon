@@ -11,6 +11,12 @@ password = "password"
 # well-known port list:
 # https://nmap.org/book/nmap-services.html
 # /usr/share/nmap/nmap-services
+[amqp]
+# https://www.rabbitmq.com/networking.html
+patterns = [ 'amqp' ]
+
+  [amqp.scans.nmap]
+  command = 'nmap -Pn -sV -n -p {port} --script="amqp-info" -oN "{result_file}.log" {address}'
 
 [cassandra]
 # https://cassandra.apache.org/
