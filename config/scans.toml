@@ -126,6 +126,9 @@ patterns = [ '^nfs' ]
   [nfs.scans.nmap]
   command = 'nmap -Pn -sV -p {port} --script="banner,(rpcinfo or nfs*) and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" {address}'
 
+  [nfs.scans.showmount]
+  command = 'showmount -e {address} | tee "{result_file}.log"'
+
 [nntp]
 patterns = [ '^nntp', 'snews' ]
 
