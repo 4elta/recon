@@ -11,8 +11,8 @@ from .. import AbstractParser
 from . import CERTIFICATE_SCHEMA, SERVICE_SCHEMA
 
 PROTOCOL_VERSIONS = {
-  'SSLv2.0': 'SSL 2.0',
-  'SSLv3.0': 'SSL 3.0',
+  'SSLv2': 'SSL 2.0',
+  'SSLv3': 'SSL 3.0',
   'TLSv1.0': 'TLS 1.0',
   'TLSv1.1': 'TLS 1.1',
   'TLSv1.2': 'TLS 1.2',
