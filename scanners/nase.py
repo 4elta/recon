@@ -26,6 +26,9 @@ ECS_PREFIX = 24
 PORT = 53
 TRANSPORT_PROTOCOL = 'udp'
 
+RETRIES = 3
+TIMEOUT = 10
+
 def reverse_DNS_lookup(address):
   try:
     response = dns.resolver.resolve(
@@ -38,14 +41,23 @@ def reverse_DNS_lookup(address):
   return str(response[0])
 
 def send_query(query, nameserver):
+  retries = RETRIES
   try:
-    if TRANSPORT_PROTOCOL == 'udp':
-      return dns.query.udp(query, nameserver, port=PORT)
+    while retries > 0:
+      try:
 
-    if TRANSPORT_PROTOCOL == 'tcp':
-      return dns.query.tcp(query, nameserver, port=PORT)
+        if TRANSPORT_PROTOCOL == 'udp':
+          return dns.query.udp(query, nameserver, port=PORT, timeout=TIMEOUT)
+
+        if TRANSPORT_PROTOCOL == 'tcp':
+          return dns.query.tcp(query, nameserver, port=PORT, timeout=TIMEOUT)
+
+      except dns.exception.Timeout:
+        retries -= 1
   except:
     return
+
+  return
 
 def get_SOA(domain, nameserver):
   if domain is None:
@@ -221,6 +233,9 @@ def process(args):
   TRANSPORT_PROTOCOL = args.transport_protocol
   print(f"transport protocol: {TRANSPORT_PROTOCOL.upper()}")
 
+  global RETRIES
+  RETRIES = args.retries
+
   is_recursive = test_recursive(TEST_DOMAIN, address)
   print(f"recursive: {is_recursive}")
 
@@ -290,6 +305,12 @@ def main():
     '--json',
     help = "in addition to the scan result being printed to STDOUT, also save the analysis as a JSON document",
     type = pathlib.Path
+  )
+  parser.add_argument(
+    "--retries",
+    help = f"the number of retries for testing UDP ports (default: {RETRIES})",
+    type = int,
+    default = RETRIES
   )
   
   process(parser.parse_args())
