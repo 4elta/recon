@@ -284,6 +284,7 @@ def main():
 
   parser.add_argument(
     '--transport_protocol',
+    metavar = 'protocol',
     help = f"the transport protocol (i.e. UDP/TCP) which the name server is using (default: '{TRANSPORT_PROTOCOL}')",
     choices = [ 'tcp', 'udp' ],
     default = TRANSPORT_PROTOCOL
@@ -291,6 +292,7 @@ def main():
 
   parser.add_argument(
     '--port',
+    metavar = 'number',
     help = f"the port number where the name server is listening for DNS queries (default: {PORT})",
     type = int,
     default = PORT
@@ -298,16 +300,20 @@ def main():
 
   parser.add_argument(
     '--domain',
+    metavar = 'FQDN',
     help = "the domain for which the name server has authority; if not specified, it will be determined via rDNS and SOA"
   )
 
   parser.add_argument(
     '--json',
+    metavar = 'path',
     help = "in addition to the scan result being printed to STDOUT, also save the analysis as a JSON document",
     type = pathlib.Path
   )
+
   parser.add_argument(
     "--retries",
+    metavar = 'number',
     help = f"the number of retries for testing UDP ports (default: {RETRIES})",
     type = int,
     default = RETRIES
