@@ -120,7 +120,7 @@ Analyze and summarize the results of specific tools previously run by the scanne
 
 ```text
 $ analyze -h
-usage: analyze [-h] [-t TOOL] [-r RECOMMENDATIONS] [-i INPUT] [--json JSON] [--csv CSV] {?,dns,ftp,http,isakmp,ntp,rdp,ssh,tls}
+usage: analyze [-h] [-t name] [-r path] [-i path] [--json path] [--csv path] {?,dns,ftp,http,isakmp,ntp,rdp,ssh,tls}
 
 positional arguments:
   {?,dns,ftp,http,isakmp,ntp,rdp,ssh,tls}
@@ -128,13 +128,13 @@ positional arguments:
 
 optional arguments:
   -h, --help            show this help message and exit
-  -t TOOL, --tool TOOL  specify the tool whose results are to be parsed
-  -r RECOMMENDATIONS, --recommendations RECOMMENDATIONS
+  -t name, --tool name  specify the tool whose results are to be parsed
+  -r path, --recommendations path
                         path to the recommendations document (default: '/path/to/recon/config/recommendations/<service>/default.toml')
-  -i INPUT, --input INPUT
+  -i path, --input path
                         path to the root directory that holds the results to be analysed (default: './recon')
-  --json JSON           in addition to the analysis printed in Markdown to STDOUT, also save the analysis as a JSON document
-  --csv CSV             in addition to the analysis printed in Markdown to STDOUT, also save the analysis as a CSV document
+  --json path           in addition to the analysis printed in Markdown to STDOUT, also save the analysis as a JSON document
+  --csv path            in addition to the analysis printed in Markdown to STDOUT, also save the analysis as a CSV document
 ```
 
 The following analyzers (and parsers) are currently implemented:

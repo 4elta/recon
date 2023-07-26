@@ -144,17 +144,20 @@ def main():
 
   parser.add_argument(
     '-t', '--tool',
+    metavar = 'name',
     help = "specify the tool whose results are to be parsed"
   )
 
   parser.add_argument(
     '-r', '--recommendations',
+    metavar = 'path',
     type = pathlib.Path,
     help = "path to the recommendations document (default: '/path/to/recon/config/recommendations/<service>/default.toml')"
   )
 
   parser.add_argument(
     '-i', '--input',
+    metavar = 'path',
     type = pathlib.Path,
     default = './recon',
     help = "path to the root directory that holds the results to be analysed (default: './recon')"
@@ -162,12 +165,14 @@ def main():
 
   parser.add_argument(
     '--json',
+    metavar = 'path',
     type = pathlib.Path,
     help = "in addition to the analysis printed in Markdown to STDOUT, also save the analysis as a JSON document"
   )
 
   parser.add_argument(
     '--csv',
+    metavar = 'path',
     type = pathlib.Path,
     help = "in addition to the analysis printed in Markdown to STDOUT, also save the analysis as a CSV document"
   )
