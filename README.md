@@ -54,6 +54,7 @@ Based on the scans you are going to run (see [`config/scans.toml`](config/scans.
 sudo apt install \
   curl \
   python3-dnspython \
+  python3-impacket \
   dnsutils \
   ike-scan \
   nmap \
@@ -70,9 +71,6 @@ sudo apt install \
 
 * via [`pipx`](https://github.com/pypa/pipx):
   * [enum4linux-ng](https://github.com/cddmp/enum4linux-ng)
-
-* as binary:
-  * [rpctools](https://packetstormsecurity.com/files/31879/rpctools-1.0.zip.html)
 
 ## usage
 
