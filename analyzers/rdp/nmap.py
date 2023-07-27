@@ -142,7 +142,8 @@ class Parser(AbstractParser):
       ntlm_info[key] = value
 
       if key in ('DNS_Computer_Name', 'Product_Version'):
-        service['issues'].append(f"disclosure of potentially sensitive information: `{key}: {value}`")
+        message = _("disclosure of potentially sensitive information")
+        service['issues'].append(f"{message}: `{key}: {value}`")
         # "Sending an incomplete CredSSP (NTLM) authentication request with null credentials will cause the remote service to respond with a NTLMSSP message disclosing information to include NetBIOS, DNS, and OS build version."
 
     service['NTLM_info'] = ntlm_info

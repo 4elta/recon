@@ -100,7 +100,7 @@ class Parser(AbstractParser):
           if script_ID == 'ssh-auth-methods':
             script_output = script_node.get("output")
             if "ERROR:" in script_output:
-              service['issues'].append("could not establish authentication methods")
+              service['issues'].append(_("could not establish authentication methods"))
             elif 'none_auth' in script_output:
               # https://www.rfc-editor.org/rfc/rfc4252#section-5.2
               service['client_authentication_methods'] = [ 'none' ]

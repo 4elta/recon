@@ -1,0 +1,26 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-07-27 22:53+0200\n"
+"PO-Revision-Date: 2023-07-27 23:02+0200\n"
+"Last-Translator: ikstream\n"
+"Language-Team: \n"
+"Language: de\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.3.2\n"
+
+#: analyzers/rdp/nmap.py:101
+msgid "Nmap script scan result not parsed"
+msgstr "Nicht geprüfte Nmap-Skript-Ergebnisse"
+
+#: analyzers/rdp/nmap.py:144
+msgid "disclosure of potentially sensitive information"
+msgstr "Preisgabe potenziell vertraulicher Informationen"
