@@ -7,6 +7,8 @@ import json
 import pathlib
 import re
 import sys
+import gettext
+import os
 
 try:
   # https://github.com/uiri/toml
@@ -15,6 +17,7 @@ except:
   sys.exit("this script requires the 'toml' module.\nplease install it via 'pip3 install toml'.")
 
 SUPPORTED_SERVICES = ['dns', 'ftp', 'http', 'isakmp', 'ntp', 'rdp', 'ssh', 'tls', ]
+SUPPORTED_LANG = ['en', 'de', ]
 
 def analyze_service(service, files, tool=None, recommendations_file=None, json_path=None, csv_path=None):
   if recommendations_file:
@@ -124,6 +127,12 @@ def process(args):
   else:
     files = get_files(args.input, args.service)
 
+    try:
+      localedir = os.path.normpath(os.path.join(os.path.dirname(__file__), "locales"))
+      gettext.translation(args.service, localedir=localedir, languages=[args.lang]).install()
+    except AttributeError:
+      print(f"No translation available for {args.service}")
+
     analyze_service(
       args.service,
       files,
@@ -175,6 +184,12 @@ def main():
     metavar = 'path',
     type = pathlib.Path,
     help = "in addition to the analysis printed in Markdown to STDOUT, also save the analysis as a CSV document"
+  )
+  parser.add_argument(
+    '--lang',
+    choices = SUPPORTED_LANG,
+    default = 'en',
+    help = "specify the language to use for analyzer output"
   )
 
   process(parser.parse_args())
