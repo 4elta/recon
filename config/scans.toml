@@ -11,6 +11,12 @@ password = "password"
 # well-known port list:
 # https://nmap.org/book/nmap-services.html
 # /usr/share/nmap/nmap-services
+[amqp]
+# https://www.rabbitmq.com/networking.html
+patterns = [ 'amqp' ]
+
+  [amqp.scans.nmap]
+  command = 'nmap -Pn -sV -n -p {port} --script="amqp-info" -oN "{result_file}.log" {address}'
 
 [cassandra]
 # https://cassandra.apache.org/
@@ -126,6 +132,9 @@ patterns = [ '^nfs' ]
   [nfs.scans.nmap]
   command = 'nmap -Pn -sV -p {port} --script="banner,(rpcinfo or nfs*) and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" {address}'
 
+  [nfs.scans.showmount]
+  command = 'showmount -e {address} | tee "{result_file}.log"'
+
 [nntp]
 patterns = [ '^nntp', 'snews' ]
 
@@ -174,6 +183,9 @@ patterns = [ 'msrpc', 'rpcbind', '^erpc' ]
   [rpc.scans.rpcinfo]
   command = 'rpcinfo {address} 2>&1 | tee "{result_file}.log"'
   patterns = [ 'nfs' ]
+
+  [rpc.scans.rpcdump]
+  command = 'rpcdump.py -p {port} {address} 2>&1 | tee "{result_file}.log"'
 
 [sip]
 patterns = [ '^sip', '^ventrilo' ]
