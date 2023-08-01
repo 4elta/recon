@@ -90,21 +90,31 @@ class Parser(AbstractParser):
 
           if script_ID == 'ssl-cert':
             service['FTPS'] = True
+            continue
 
           if script_ID == 'ftp-anon':
             self._parse_ftp_anon(script_node, service)
+            continue
 
           if script_ID == 'ftp-bounce':
             self._parse_ftp_bounce(script_node, service)
+            continue
 
           if script_ID == 'ftp-proftpd-backdoor':
             self._parse_ftp_proftpd_backdoor(script_node, service)
+            continue
 
           if script_ID == 'ftp-vsftpd-backdoor':
             self._parse_ftp_vsftpd_backdoor(script_node, service)
+            continue
 
           if script_ID == 'ftp-vuln-cve2010-4221':
             self._parse_ftp_vuln_cve2010_4221(script_node, service)
+            continue
+
+          if 'ftp' in script_ID and script_ID not in ('ftp-syst', ):
+            service['issues'].append(f"Nmap script scan result not parsed: {script_ID}")
+            #TODO: parse results
 
   def _parse_ftp_anon(self, script_node, service):
     # https://nmap.org/nsedoc/scripts/ftp-anon.html

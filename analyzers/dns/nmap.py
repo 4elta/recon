@@ -122,6 +122,7 @@ class Parser(AbstractParser):
                 service['info']['version.bind'] = elem_node.text.splitlines()[-1].strip()
             continue
 
-          #service['issues'].append(f"Nmap script scan result not parsed: {script_ID}")
-          #TODO: parse results
+          if 'dns' in script_ID:
+            service['issues'].append(f"Nmap script scan result not parsed: {script_ID}")
+            #TODO: parse results
 

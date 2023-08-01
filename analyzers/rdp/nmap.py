@@ -92,13 +92,15 @@ class Parser(AbstractParser):
 
           if script_ID == 'rdp-enum-encryption':
             self._parse_rdp_enum_encryption(script_node, service)
+            continue
 
           if script_ID == 'rdp-ntlm-info':
             self._parse_rdp_ntlm_info(script_node, service)
+            continue
 
-          if script_ID in ( 'rdp-vuln-ms12-020' ):
-            #TODO: implement this
+          if 'rdp' in script_ID:
             service['issues'].append(f"Nmap script scan result not parsed: {script_ID}")
+            #TODO: implement this
 
   def _parse_rdp_enum_encryption(self, script_node, service):
     # https://nmap.org/nsedoc/scripts/rdp-enum-encryption.html

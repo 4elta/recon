@@ -104,11 +104,13 @@ class Parser(AbstractParser):
 
           if script_ID == 'ssl-cert':
             self._parse_certificate(script_node, service)
+            continue
 
           if script_ID == 'ssl-enum-ciphers':
             self._parse_cipher_suites(script_node, service)
+            continue
 
-          if script_ID in ('ssl-heartbleed', 'ssl-known-key', 'ssl-poodle', 'sslv2-drown'):
+          if 'ssl' in script_ID and script_ID not in ('ssl-date', 'ssl-dh-params', ):
             service['issues'].append(f"Nmap script scan result not parsed: {script_ID}")
             #TODO: parse results
 

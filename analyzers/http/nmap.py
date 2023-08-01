@@ -91,10 +91,10 @@ class Parser(AbstractParser):
               script_node,
               service['response_headers']
             )
+            continue
 
-          if script_ID in ( 'http-git', 'http-internal-ip-disclosure', 'http-referer-checker', 'http-robots.txt', 'http-wordpress-users' ):
-            service['issues'].append(f"Nmap script scan result not parsed: {script_ID}")
-            #TODO: parse results
+          #service['issues'].append(f"Nmap script scan result not parsed: {script_ID}")
+          #TODO: parse results
 
   def parse_http_headers(self, script_node, response_headers):
     # strip whitespace characters
