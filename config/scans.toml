@@ -49,7 +49,7 @@ patterns = [ 'finger' ]
 patterns = [ 'ftps?(-data)?' ]
 
   [ftp.scans.nmap]
-  command = 'nmap -Pn -v -sV -p {port} --script="banner,ftp* and not (brute or broadcast or dos or external or fuzzer)" -oX "{result_file}.xml" -oN "{result_file}.log" {address}'
+  command = 'nmap -Pn -v -sV -p {port} --script="banner,ssl-cert,ftp* and not (brute or broadcast or dos or external or fuzzer)" -oX "{result_file}.xml" -oN "{result_file}.log" {address}'
   patterns = [ 'Anonymous FTP login allowed' ]
 
 [http]
