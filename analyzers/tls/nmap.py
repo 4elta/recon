@@ -1,5 +1,6 @@
 import copy
 import re
+import sys
 
 try:
   # https://github.com/tiran/defusedxml
@@ -63,7 +64,10 @@ class Parser(AbstractParser):
                 elem (key="cipher preference")
     '''
 
-    nmaprun_node = defusedxml.ElementTree.parse(path).getroot()
+    try:
+      nmaprun_node = defusedxml.ElementTree.parse(path).getroot()
+    except defusedxml.ElementTree.ParseError as e:
+      sys.exit(f"error parsing file '{path}': {e}")
 
     for host_node in nmaprun_node.iter('host'):
       address = host_node.find('address').get('addr')
