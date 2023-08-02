@@ -16,7 +16,7 @@ except:
 
 SUPPORTED_SERVICES = ['dns', 'ftp', 'http', 'isakmp', 'ntp', 'rdp', 'ssh', 'tls', ]
 
-def analyze_service(service, files, tool=None, recommendations_file=None, json=None, csv=None):
+def analyze_service(service, files, tool=None, recommendations_file=None, json_path=None, csv_path=None):
   if recommendations_file:
     if not recommendations_file.exists():
       sys.exit(f"the recommendations file '{recommendations_file}' does not exist!")
@@ -67,12 +67,12 @@ def analyze_service(service, files, tool=None, recommendations_file=None, json=N
   for asset in affected_assets:
     print(f"* `{asset}`")
 
-  if json:
-    with open(json, 'w') as f:
+  if json_path:
+    with open(json_path, 'w') as f:
       json.dump(services, f, indent=2)
 
-  if csv:
-    save_CSV(services, csv)
+  if csv_path:
+    save_CSV(services, csv_path)
 
 def get_files(directory, service):
   files = {}
@@ -129,8 +129,8 @@ def process(args):
       files,
       tool = args.tool,
       recommendations_file = args.recommendations,
-      json = args.json,
-      csv = args.csv
+      json_path = args.json,
+      csv_path = args.csv
     )
 
 def main():
