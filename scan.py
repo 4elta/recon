@@ -69,6 +69,7 @@ class Service:
     self.port = int(port)
     self.application_protocol = application_protocol
     self.description = description
+    self.scanned = False
 
 class Target:
   def __init__(self, address, directory):
@@ -374,8 +375,14 @@ async def scan_services(target: Target):
     port = service.port
     application_protocol = service.application_protocol
 
+    # find suitable scans based on the service's application protocol
+    suitable_scans = find_suitable_scans(application_protocol)
+
+    # mark the service as "scanned" if at least 1 suitable scan was found; even though there is not even a scan scheduled yet
+    service.scanned = (len(suitable_scans) > 0)
+
     # iterate over each suitable scan
-    for scan in find_suitable_scans(application_protocol):
+    for scan in suitable_scans:
       if scan.service in ('http', 'tls'):
         queue_HTTP_service_scan(target, service, scan)
       else:
@@ -597,14 +604,9 @@ async def process(args):
   targets = parse_result_files(base_directory, args.input, rescan_filters)
   log(f"parsed {len(targets)} targets")
 
-  # create CSV file that lists all found services
+  # create services.csv file and initialize its header
   with open(pathlib.Path(base_directory, 'services.csv'), 'w') as f:
-    csv.writer(f, delimiter=args.delimiter, quoting=csv.QUOTE_MINIMAL).writerow(['host', 'transport_protocol', 'port', 'service'])
-
-    for address, target in targets.items():
-      for service in target.services:
-        row = [address, service.transport_protocol, service.port, service.application_protocol]
-        csv.writer(f, delimiter=args.delimiter, quoting=csv.QUOTE_MINIMAL).writerow(row)
+    csv.writer(f, delimiter=args.delimiter, quoting=csv.QUOTE_MINIMAL).writerow(['host', 'transport_protocol', 'port', 'service', 'scanned'])
 
   global OVERALL_TASK
   OVERALL_TASK = OVERALL_PROGRESS.add_task("overall progress:", total=len(targets))
@@ -631,7 +633,14 @@ async def process(args):
       await task
 
     OVERALL_PROGRESS.remove_task(OVERALL_TASK)
-      
+
+  # fill services.csv file with the found services services
+  with open(pathlib.Path(base_directory, 'services.csv'), 'a') as f:
+    for address, target in targets.items():
+      for service in target.services:
+        row = [address, service.transport_protocol, service.port, service.application_protocol, service.scanned]
+        csv.writer(f, delimiter=args.delimiter, quoting=csv.QUOTE_MINIMAL).writerow(row)
+
 def main():
   parser = argparse.ArgumentParser()
 
