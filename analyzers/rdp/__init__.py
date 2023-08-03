@@ -65,7 +65,7 @@ class Analyzer(AbstractAnalyzer):
 
       if service['public']:
         if 'public' in self.recommendations and not self.recommendations['public']:
-          issues.append("public RDP server")
+          issues.append(_("public RDP server"))
 
       if 'protocols' in self.recommendations:
         self._analyze_protocols(
@@ -76,17 +76,19 @@ class Analyzer(AbstractAnalyzer):
 
       if 'encryption_level' in self.recommendations:
         if service['encryption_level'] != self.recommendations['encryption_level']:
-          issues.append(f"supported encryption level: `{service['encryption_level']}`")
+          message = _("supported encryption level")
+          issues.append(f"{message}: `{service['encryption_level']}`")
 
       if 'NLA' in self.recommendations:
         if not service['NLA'] and self.recommendations['NLA']:
-          issues.append("does not support NLA: this could enable denial-of-service attacks on the server")
+          issues.append(_("does not support NLA: this could enable denial-of-service attacks on the server"))
 
     return services
 
   def _analyze_protocols(self, protocols, recommendation, issues):
     for deviation in list(set(protocols).difference(recommendation)):
-      issues.append(f"protocol supported: `{deviation}`")
+      message = _("protocol supported")
+      issues.append(f"{message}: `{deviation}`")
 
     '''
     for deviation in list(set(recommendation).difference(protocol_versions)):

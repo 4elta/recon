@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2023-07-28 09:32+0200\n"
+"POT-Creation-Date: 2023-08-03 21:16+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -15,11 +15,95 @@ msgstr ""
 "Generated-By: pygettext.py 1.5\n"
 
 
-#: analyzers/rdp/nmap.py:101
-msgid "Nmap script scan result not parsed"
+#: analyzers/tls/__init__.py:201
+msgid "protocol supported"
 msgstr ""
 
-#: analyzers/rdp/nmap.py:144
-msgid "disclosure of potentially sensitive information"
+#: analyzers/tls/__init__.py:205
+msgid "protocol not supported"
+msgstr ""
+
+#: analyzers/tls/__init__.py:210
+msgid "could not read server certificate"
+msgstr ""
+
+#: analyzers/tls/__init__.py:218
+msgid "certificate contains private IP address"
+msgstr ""
+
+#: analyzers/tls/__init__.py:232
+msgid "certificate lifespan in days"
+msgstr ""
+
+#: analyzers/tls/__init__.py:237
+msgid "server's public key"
+msgstr ""
+
+#: analyzers/tls/__init__.py:253
+msgid "server's certificate: signature algorithm"
+msgstr ""
+
+#: analyzers/tls/__init__.py:258
+msgid "cipher preference"
+msgstr ""
+
+#: analyzers/tls/__init__.py:263
+msgid "server does not appear to support any cipher suites"
+msgstr ""
+
+#: analyzers/tls/__init__.py:288
+msgid "server accepts any signature algorithm"
+msgstr ""
+
+#: analyzers/tls/__init__.py:295
+msgid "extension not supported"
+msgstr ""
+
+#: analyzers/tls/__init__.py:300
+msgid "extension supported"
+msgstr ""
+
+#: analyzers/tls/sslscan.py:131
+msgid "certificate not trusted: certificate does not match supplied URI"
+msgstr ""
+
+#: analyzers/tls/sslscan.py:197
+msgid "certificte not trusted: self signed"
+msgstr ""
+
+#: analyzers/tls/sslscan.py:211
+msgid "certificate not trusted: expired"
+msgstr ""
+
+#: analyzers/tls/sslyze.py:193
+msgid "could not connect to target"
+msgstr ""
+
+#: analyzers/tls/sslyze.py:251
+msgid "could not parse certificate information"
+msgstr ""
+
+#: analyzers/tls/sslyze.py:296
+msgid "certificate not trusted: hostname mismatch"
+msgstr ""
+
+#: analyzers/tls/sslyze.py:299
+msgid "certificate not trusted: invalid certificate chain order"
+msgstr ""
+
+#: analyzers/tls/sslyze.py:304
+msgid "certificate not trusted: path validation failed"
+msgstr ""
+
+#: analyzers/tls/sslyze.py:308
+msgid "signature based on SHA-1 found within the certificate chain"
+msgstr ""
+
+#: analyzers/tls/sslyze.py:312
+msgid "certificate chain contains a legacy Symantec certificate"
+msgstr ""
+
+#: analyzers/tls/testssl.py:249 analyzers/tls/testssl.py:256
+msgid "certificate not trusted"
 msgstr ""
 

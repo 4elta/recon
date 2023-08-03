@@ -139,7 +139,7 @@ def process(args):
       tool = args.tool,
       recommendations_file = args.recommendations,
       json_path = args.json,
-      csv_path = args.csv
+      csv_path = args.csv,
       lang = args.lang
     )
 
