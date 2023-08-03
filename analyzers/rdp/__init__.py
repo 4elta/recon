@@ -45,7 +45,7 @@ class Analyzer(AbstractAnalyzer):
 
     self.set_parser('nmap')
 
-  def analyze(self, files):
+  def analyze(self, files, lang):
     super().analyze(files)
 
     # parse result files

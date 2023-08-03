@@ -1,0 +1,122 @@
+# Recon translation for tls analyzer
+# Copyright (C) 2023 recon
+# This file is distributed under the same license as the recon package.
+# recon, 2023 .
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-07-30 19:21+0200\n"
+"PO-Revision-Date: 2023-07-31 08:57+0200\n"
+"Last-Translator: ikstream <stefan.venz@protonmail.com>\n"
+"Language-Team: de\n"
+"Language: de\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.3.2\n"
+
+#: analyzers/tls/__init__.py:196
+msgid "protocol supported"
+msgstr "Protokoll unterstützt"
+
+#: analyzers/tls/__init__.py:200
+msgid "protocol not supported"
+msgstr "Protokoll nicht unterstützt"
+
+#: analyzers/tls/__init__.py:205
+msgid "could not read server certificate"
+msgstr "Server-Zertifkat konnte nicht gelesen werden"
+
+#: analyzers/tls/__init__.py:213
+msgid "certificate contains private IP address"
+msgstr "Zertifikat enthält private IP Adresse"
+
+#: analyzers/tls/__init__.py:227
+msgid "certificate lifespan in days"
+msgstr "Zertifikats-Lebensspanne in Tagen"
+
+#: analyzers/tls/__init__.py:232
+msgid "server's public key"
+msgstr "Public-Key des Servers"
+
+#: analyzers/tls/__init__.py:248
+msgid "server's certificate: signature algorithm"
+msgstr "Server Zertifikat: Signatur Algortihmus"
+
+#: analyzers/tls/__init__.py:253
+msgid "cipher preference"
+msgstr "Bevorzugte Ciphers"
+
+#: analyzers/tls/__init__.py:258
+msgid "server does not appear to support any cipher suites"
+msgstr "Server scheint keine Cipher Suites anzubieten"
+
+#: analyzers/tls/__init__.py:283
+msgid "server accepts any signature algorithm"
+msgstr "Server akzeptiert jeglichen Signatur Algorithmus"
+
+#: analyzers/tls/__init__.py:290
+msgid "extension not supported"
+msgstr "Extension nicht unterstützt"
+
+#: analyzers/tls/__init__.py:295
+msgid "extension supported"
+msgstr "Extension unterstützt"
+
+#: analyzers/tls/vulnerabilities.toml;4
+msgid "vulnerable to client-initiated renegotiation DoS"
+msgstr "Anfällig für Client-Initiated Renogotiation DoS"
+
+#: analyzers/tls/vulnerabilities.toml;10
+msgid "potentially vulnerable to BEAST (Browser Exploit Against SSL/TLS): ciphers in CBC mode with SSL 3.0 or TLS 1.0"
+msgstr "Potenziell anfällig für BEAST (Browser Exploit Against SSL/TLS): Ciphers im CBC Mode mit SSL 3.0 oder TLS 1.0"
+
+#: analyzers/tls/vulnerabilities.toml;16
+msgid "vulnerable to CRIME (Compression Ratio Info-leak Made Easy): TLS compression or SPDY header compression"
+msgstr "Anfällig fúr CRIME (Compression Ratio Info-leak Made Easy): TLS Compression oder SPDY Header Compression"
+
+#: analyzers/tls/vulnerabilities.toml;22
+msgid "potentially vulnerable to BREACH: HTTP compression detected"
+msgstr "Potentiell anfällig für BREACH: HTTP Compression erkannt"
+
+#: analyzers/tls/vulnerabilities.toml;28
+msgid "potentially vulnerable to Lucky Thirteen: ciphers in CBC mode"
+msgstr "Potenziell anfällig für Lucky Thirteen: Ciphers im CBC Mode"
+
+#: analyzers/tls/vulnerabilities.toml;34
+msgid "vulnerable to Heartbleed: vulnerable version of the heartbeat TLS extension (OpenSSL 1.0.1 through 1.0.1f)"
+msgstr "Anfällig für Heartbleed: anfällige Version der Heartblee TLS Extension (OpenSSL 1.0.1 bis 1.0.1f)"
+
+#: analyzers/tls/vulnerabilities.toml;40
+msgid "vulnerable to POODLE (Padding Oracle On Downgraded Legacy Encryption): SSL 3.0"
+msgstr "Anfällig für POODLE (Padding Oracle On Downgraded Legacy Encryption): SSL 3.0"
+
+#: analyzers/tls/vulnerabilities.toml;46
+msgid "vulnerable to CCS (ChangeCipherSpec) injection: outdated version of OpenSSL"
+msgstr "Anfällig für CCS (ChangeCipherSpec) Injection: veraltete Version von OpenSSL"
+
+#: analyzers/tls/vulnerabilities.toml;52
+msgid "vulnerable to FREAK (Factoring RSA Export Keys): RSA with moduli of 512 bits or less"
+msgstr "Anfällig für FREAK (Factoring RSA Export Keys): RSA mit Moduli von 512 Bits oder weniger"
+
+#: analyzers/tls/vulnerabilities.toml;58
+msgid "vulnerable to Logjam: weak DH keys"
+msgstr "Anfällig für Logjam: schwache DH Keys"
+
+#: analyzers/tls/vulnerabilities.toml;64
+msgid "vulnerable to DROWN (Decrypting RSA with Obsolete and Weakened eNcryption): SSL 2.0"
+msgstr "Anfällig für DROWN (Decrypting RSA with Obsolete and Weakened eNcryption): SSL 2.0"
+
+#: analyzers/tls/vulnerabilities.toml;70
+msgid "vulnerable to Sweet32: DES/3DES"
+msgstr "Anfällig für Sweet32: DES/3DES"
+
+#: analyzers/tls/vulnerabilities.toml;76
+msgid "vulnerable to Ticketbleed: insecure implementation for handling Session Tickets"
+msgstr "Anfällig für Ticketbleed: unsichere Implementierung der Session Ticket Handhabung"
+
+#: analyzers/tls/vulnerabilities.toml;82
+msgid "vulnerable to ROBOT (Return Of Bleichenbacher's Oracle Threat): RSA for key exchange"
+msgstr "Anfállig für ROBOT (Return Of Bleichenbacher's Oracle Threat): RSA zum Key Exchange verwendet"

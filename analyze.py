@@ -19,7 +19,7 @@ except:
 SUPPORTED_SERVICES = ['dns', 'ftp', 'http', 'isakmp', 'ntp', 'rdp', 'ssh', 'tls', ]
 SUPPORTED_LANG = ['en', 'de', ]
 
-def analyze_service(service, files, tool=None, recommendations_file=None, json_path=None, csv_path=None):
+def analyze_service(service, files, tool=None, recommendations_file=None, json_path=None, csv_path=None, lang='en'):
   if recommendations_file:
     if not recommendations_file.exists():
       sys.exit(f"the recommendations file '{recommendations_file}' does not exist!")
@@ -43,7 +43,7 @@ def analyze_service(service, files, tool=None, recommendations_file=None, json_p
   if tool:
     analyzer.set_parser(tool)
 
-  services = analyzer.analyze(files)
+  services = analyzer.analyze(files, lang)
 
   affected_assets = []
 
@@ -130,7 +130,7 @@ def process(args):
     try:
       localedir = os.path.normpath(os.path.join(os.path.dirname(__file__), "locales"))
       gettext.translation(args.service, localedir=localedir, languages=[args.lang]).install()
-    except AttributeError:
+    except FileNotFoundError:
       print(f"No translation available for {args.service}")
 
     analyze_service(
@@ -140,6 +140,7 @@ def process(args):
       recommendations_file = args.recommendations,
       json_path = args.json,
       csv_path = args.csv
+      lang = args.lang
     )
 
 def main():

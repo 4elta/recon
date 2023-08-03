@@ -3,6 +3,7 @@ import ipaddress
 import json
 import pathlib
 import sys
+import gettext
 
 try:
   # https://github.com/uiri/toml
@@ -104,8 +105,12 @@ class Analyzer(AbstractAnalyzer):
     super().set_parser(tool)
     self.parser.cipher_suites_specifications = CIPHER_SUITES_SPECIFICATIONS
 
-  def analyze(self, files):
+  def analyze(self, files, lang):
     super().analyze(files)
+#    localdir = pathlib.Path(pathlib.Path(__file__).resolve().parent,'../../locales')
+    #print(f"localdir: {localdir}")
+    gettext.translation('tls', localedir='/home/ikstream/docs/workspace/ext-tools/dev-recon/locales/', languages=['de']).install()
+
 
     # parse result files
     services = self.parser.parse_files(files[self.parser_name])
@@ -182,21 +187,27 @@ class Analyzer(AbstractAnalyzer):
       # analyze vulnerabilities
       for vulnerability_ID in service['vulnerabilities']:
         vulnerability = VULNERABILITIES[vulnerability_ID]
+
+        desc = vulnerability['description']
+        message = gettext.dgettext('tls', desc)
+        print(f"type {message}, message {message}")
         # TODO: add CVE, references?
-        issues.append(vulnerability['description'])
+        issues.append(_(message))
 
     return services
 
   def _analyze_protocol_versions(self, protocol_versions, recommendation, issues):
     for deviation in list(set(protocol_versions).difference(recommendation)):
-      issues.append(f"protocol supported: {deviation}")
+      message = _("protocol supported")
+      issues.append(f"{message}: {deviation}")
 
     for deviation in list(set(recommendation).difference(protocol_versions)):
-      issues.append(f"protocol not supported: {deviation}")
+      message = _("protocol not supported")
+      issues.append(f"{message}: {deviation}")
 
   def _analyze_certificate(self, is_private_host, certificate, recommendation, issues):
     if certificate == CERTIFICATE_SCHEMA:
-      issues.append("could not read server certificate")
+      issues.append(_("could not read server certificate"))
       return
 
     if not is_private_host:
@@ -204,7 +215,8 @@ class Analyzer(AbstractAnalyzer):
       for subject in certificate['subjects']:
         try:
           if ipaddress.ip_address(subject).is_private:
-            issues.append(f"certificate contains private IP address: `{subject}`")
+            message = _("certificate contains private IP address")
+            issues.append(f"{messae}: `{subject}`")
         except ValueError:
           # subject is NOT a valid IP address
           continue
@@ -217,34 +229,38 @@ class Analyzer(AbstractAnalyzer):
     livespan_in_days = int(livespan.total_seconds() / (24 * 60 * 60))
 
     if livespan_in_days > recommendation['lifespan']:
-      issues.append(f"certificate lifespan: {livespan_in_days} days")
+      message = _("certificate lifespan in days")
+      issues.append(f"{message}: {livespan_in_days}")
 
     pub_key = certificate['public_key']
 
+    message = _("server's public key")
     if pub_key['type'] not in recommendation['public_key']['types']:
       if pub_key['bits']:
-        issues.append(f"server's public key: {pub_key['type']} {pub_key['bits']} bits")
+        issues.append(f"{message}: {pub_key['type']} {pub_key['bits']} bits")
       else:
-        issues.append(f"server's public key: {pub_key['type']}")
+        issues.append(f"{message}: {pub_key['type']}")
     else:
       if pub_key['bits'] and pub_key['bits'] < recommendation['public_key']['types'][pub_key['type']]:
-        issues.append(f"server's public key: {pub_key['type']} {pub_key['bits']} bits")
+        issues.append(f"{message}: {pub_key['type']} {pub_key['bits']} bits")
 
     if pub_key['curve'] and pub_key['curve'] not in recommendation['public_key']['curves']:
-      issues.append(f"server's public key: curve `{pub_key['curve']}`")
+      issues.append(f"{message}: curve `{pub_key['curve']}`")
 
     sig_alg = certificate['signature_algorithm']
 
     if sig_alg and sig_alg not in recommendation['signature_algorithms']:
-      issues.append(f"server's certificate: signature algorithm `{sig_alg}`")
+      message = _("server's certificate: signature algorithm")
+      issues.append(f"{message} `{sig_alg}`")
 
   def _analyze_preference(self, preference, recommendation, issues):
     if not preference == recommendation:
-      issues.append(f"cipher preference: {preference}")
+      message = _("cipher preference")
+      issues.append(f"{message}: {preference}")
 
   def _analyze_cipher_suites(self, cipher_suites, recommendation, issues):
     if len(cipher_suites) == 0:
-      issues.append("server does not appear to support any cipher suites")
+      issues.append(_("server does not appear to support any cipher suites"))
       return
 
     for deviation in list(set(cipher_suites).difference(recommendation)):
@@ -269,15 +285,17 @@ class Analyzer(AbstractAnalyzer):
   def _analyze_signature_algorithms(self, signature_algorithms, recommendation, issues):
     for deviation in list(set(signature_algorithms).difference(recommendation)):
       if deviation == '*':
-        issues.append("server accepts any signature algorithm")
+        issues.append(_("server accepts any signature algorithm"))
       else:
         issues.append(f"signature algorithm: `{deviation}`")
 
   def _analyze_extensions(self, extensions, recommendation, issues):
     if 'yes' in recommendation:
       for deviation in list(set(recommendation['yes']).difference(extensions)):
-        issues.append(f"extension not supported: `{deviation}`")
+        message = _("extension not supported")
+        issues.append(f"{message}: `{deviation}`")
 
     if 'no' in extensions:
       for deviation in list(set(extensions).intersection(recommendation['no'])):
-        issues.append(f"extension supported: `{deviation}`")
+        message = _("extension supported")
+        issues.append(f"{message}: `{deviation}`")
