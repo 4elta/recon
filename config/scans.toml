@@ -59,7 +59,7 @@ patterns = [ 'ftps?(-data)?' ]
   patterns = [ 'Anonymous FTP login allowed' ]
 
 [http]
-patterns = [ 'http' ]
+patterns = [ '^(.+\|)?http' ] # 'http', 'https', '.+|http'
 
   [http.scans.nmap]
   command = 'nmap -Pn -v -sV -p {port} --script="banner,http* and not (brute or broadcast or dos or external or http-slowloris* or fuzzer)" -oN "{result_file}.log" -oX "{result_file}.xml" {hostname}'
