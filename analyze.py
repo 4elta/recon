@@ -48,7 +48,8 @@ def analyze_service(service, files, tool=None, recommendations_file=None, json_p
     pathlib.Path(__file__).resolve().parent,
     "config",
     "issues",
-    f"{service}.{LANGUAGE}.toml"
+    service,
+    f"{LANGUAGE}.toml"
   )
 
   if not issues_file.exists():
