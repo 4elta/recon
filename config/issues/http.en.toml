@@ -27,7 +27,7 @@ references = [
 ]
 
 ["STS expire time too short"]
-description = "`strict-transport-security`: `max-age` (i.e. expire time) too short"
+description = "`strict-transport-security`: `max-age` (i.e. expire time) too short: {value} seconds"
 recommendations = [ "`strict-transport-security`: raise `max-age` to the recommended value" ]
 references = [
   "[Mozilla: HTTP headers: `strict-transport-security`](https://developer.mozilla.org/en-US/docs/web/http/headers/strict-transport-security)",
