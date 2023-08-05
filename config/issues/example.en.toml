@@ -1,0 +1,13 @@
+# example issue
+["example issue"]
+description = "issue description with some details: `{details}`"
+recommendations = [
+  "one ({more_details})",
+  "two",
+  "three",
+]
+references = [
+  "CVE-9999-12345",
+  "[example.com: {variable}](https://example.com/{variable})",
+]
+

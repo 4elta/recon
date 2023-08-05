@@ -2,7 +2,7 @@ import ipaddress
 import json
 import re
 
-from .. import AbstractAnalyzer
+from .. import Issue, AbstractAnalyzer
 
 SERVICE_SCHEMA = {
   'address': None,
@@ -65,7 +65,7 @@ class Analyzer(AbstractAnalyzer):
 
       if service['public']:
         if 'public' in self.recommendations and not self.recommendations['public']:
-          issues.append("public RDP server")
+          issues.append(Issue("public RDP server"))
 
       if 'protocols' in self.recommendations:
         self._analyze_protocols(
@@ -76,19 +76,34 @@ class Analyzer(AbstractAnalyzer):
 
       if 'encryption_level' in self.recommendations:
         if service['encryption_level'] != self.recommendations['encryption_level']:
-          issues.append(f"supported encryption level: `{service['encryption_level']}`")
+          issues.append(
+            Issue(
+              "encryption level",
+              level = service['encryption_level']
+            )
+          )
 
       if 'NLA' in self.recommendations:
         if not service['NLA'] and self.recommendations['NLA']:
-          issues.append("does not support NLA: this could enable denial-of-service attacks on the server")
+          issues.append(Issue("no NLA"))
 
     return services
 
   def _analyze_protocols(self, protocols, recommendation, issues):
     for deviation in list(set(protocols).difference(recommendation)):
-      issues.append(f"protocol supported: `{deviation}`")
+      issues.append(
+        Issue(
+          "protocol: supported",
+          protocol = deviation
+        )
+      )
 
     '''
     for deviation in list(set(recommendation).difference(protocol_versions)):
-      issues.append(f"protocol not supported: `{deviation}`")
+      issues.append(
+        Issue(
+          "protocol: not supported",
+          protocol = deviation
+        )
+      )
     '''

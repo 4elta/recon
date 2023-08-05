@@ -1,0 +1,26 @@
+["public SSH server"]
+description = "public SSH server"
+
+["protocol: supported"]
+description = "protocol supported: {version}"
+
+["protocol: not supported"]
+description = "protocol not supported: {version}"
+
+["key exchange method"]
+description = "key exchange method: `{method}`"
+
+["server host key"]
+description = "server host key: {key_type_size} bits"
+
+["encryption algorithm"]
+description = "encryption algorithm: `{algorithm}`"
+
+["MAC algorithm"]
+description = "MAC algorithm: `{algorithm}`"
+
+["client authentication method"]
+description = "client authentication method: `{method}`"
+
+["client authentication method: unknown"]
+description = "could not establish authentication method"

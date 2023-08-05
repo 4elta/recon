@@ -99,6 +99,8 @@ class Parser(AbstractParser):
         service['port'] = port
         service['transport_protocol'] = transport_protocol
 
+        service['info'] = []
+
         service_node = port_node.find('service')
         if service_node is not None:
           service['application_protocol'] = service_node.get('name')
@@ -115,7 +117,7 @@ class Parser(AbstractParser):
             continue
 
           if 'ssl' in script_ID and script_ID not in ('ssl-date', 'ssl-dh-params', ):
-            service['issues'].append(f"Nmap script scan result not parsed: {script_ID}")
+            service['info'].append(f"Nmap script scan result not parsed: '{script_ID}'")
             #TODO: parse results
 
   def _parse_certificate_subject_node(self, node, subjects):

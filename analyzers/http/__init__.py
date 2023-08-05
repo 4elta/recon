@@ -1,7 +1,7 @@
 import json
 import re
 
-from .. import AbstractAnalyzer
+from .. import Issue, AbstractAnalyzer
 
 SERVICE_SCHEMA = {
   'scheme': None,
@@ -37,10 +37,10 @@ class Analyzer(AbstractAnalyzer):
         if 'location' in service['response_headers']:
           for redirect in service['response_headers']['location']:
             if 'https://' not in redirect:
-              issues.append("`location` header: HTTP service does not redirect to HTTPS")
+              issues.append(Issue("missing redirect to HTTPS"))
               break
         else:
-          issues.append("HTTP service does not redirect to HTTPS")
+          issues.append(Issue("missing redirect to HTTPS"))
 
       if 'mandatory_headers' in self.recommendations:
         # compile a list of HTTP response headers deemed to be mandatory but which haven't been sent
@@ -61,17 +61,22 @@ class Analyzer(AbstractAnalyzer):
             # this means the STS header was NOT in that list.
             # this further means that the server sent the STS header.
             # https://datatracker.ietf.org/doc/html/rfc6797#section-7.2
-            issues.append("`strict-transport-security` header: an HSTS host must not include this header in responses conveyed over non-secure transport (i.e. HTTP)")
+            issues.append(Issue("STS header over HTTP"))
             del service['response_headers']['strict-transport-security']
 
         for missing_header in mandatory_headers:
-          issues.append(f"`{missing_header}` header missing")
+          issues.append(
+            Issue(
+              "mandatory header missing",
+              header = missing_header
+            )
+          )
 
       for header_name, header_values in service['response_headers'].items():
         if header_name in self.recommendations['header']:
           for header_value in header_values:
             self._run_check(
-              [ 'header', header_name ],
+              ( 'header', header_name ),
               header_value,
               issues
             )
@@ -103,13 +108,12 @@ class Analyzer(AbstractAnalyzer):
     return services
 
   def _run_check(self, breadcrumbs, value, issues):
-    names = []
     recommendation = self.recommendations
 
-    for breadcrumb in breadcrumbs:
-      recommendation = recommendation[breadcrumb]
-      if 'name' in recommendation:
-        names.append(recommendation['name'])
+    # recurse down the recommendations:
+    # 'header'.<header name>.<...>.<check ID>
+    for check in breadcrumbs:
+      recommendation = recommendation[check]
 
     match = True
 
@@ -127,24 +131,32 @@ class Analyzer(AbstractAnalyzer):
 
     if match and 'on_match' in recommendation:
       on_match = recommendation['on_match']
-      self._handle_event(on_match, names, m, breadcrumbs, value, issues)
+      self._handle_event(on_match, value, breadcrumbs, issues, match=m)
 
     if not match and 'on_mismatch' in recommendation:
       on_mismatch = recommendation['on_mismatch']
-      self._handle_event(on_mismatch, names, None, breadcrumbs, value, issues)
+      self._handle_event(on_mismatch, value, breadcrumbs, issues)
 
-  def _handle_event(self, event_handler, names, match, breadcrumbs, value, issues):
+  def _handle_event(self, event_handler, value, breadcrumbs, issues, match=None):
     if 'issue' in event_handler:
-      issues.append(f"{' '.join(names)} {event_handler['issue']}")
+      issue_id = event_handler['issue'].pop('id', None)
+      if issue_id:
+        issues.append(
+          Issue(
+            issue_id,
+            value = value,
+            **event_handler['issue']
+          )
+        )
       return
 
     if 'next' in event_handler:
-      for n in event_handler['next']:
-        if match and n in match.groupdict():
-          value = match.group(n)
+      for next_check in event_handler['next']:
+        if match and next_check in match.groupdict():
+          value = match.group(next_check)
 
         self._run_check(
-          [*breadcrumbs, n],
+          (*breadcrumbs, next_check),
           value,
           issues
         )

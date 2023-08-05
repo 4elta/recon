@@ -3,7 +3,7 @@ import json
 import re
 import sys
 
-from .. import AbstractParser
+from .. import Issue, AbstractParser
 from . import CERTIFICATE_SCHEMA, SERVICE_SCHEMA
 
 PROTOCOL_VERSIONS = {
@@ -183,77 +183,85 @@ class Parser(AbstractParser):
         # vulnerabilities
 
         if f['id'] == 'secure_client_renego' and f['severity'] not in ('OK', 'INFO'):
-          service['vulnerabilities'].append('client_initiated_renegotiation_DoS')
+          service['issues'].append(Issue("vuln: client-initiated renegotiation DoS"))
           continue
 
         if f['id'] == 'BEAST' and f['severity'] not in ('OK', 'INFO'):
-          service['vulnerabilities'].append('BEAST')
+          service['issues'].append(Issue("vuln: BEAST"))
           continue
 
         if f['id'] == 'CRIME_TLS' and f['severity'] not in ('OK', 'INFO'):
-          service['vulnerabilities'].append('CRIME')
+          service['issues'].append(Issue("vuln: CRIME"))
           continue
 
         if f['id'] == 'BREACH' and f['severity'] not in ('OK', 'INFO'):
-          service['vulnerabilities'].append('BREACH')
+          service['issues'].append(Issue("vuln: BREACH"))
           continue
 
         if f['id'] == 'LUCKY13' and f['severity'] not in ('OK', 'INFO'):
-          service['vulnerabilities'].append('Lucky_Thirteen')
+          service['issues'].append(Issue("vuln: Lucky Thirteen"))
           continue
 
         if f['id'] == 'heartbleed' and f['severity'] not in ('OK', 'INFO'):
-          service['vulnerabilities'].append('Heartbleed')
+          service['issues'].append(Issue("vuln: Heartbleed"))
           continue
 
         if f['id'] == 'POODLE_SSL' and f['severity'] not in ('OK', 'INFO'):
-          service['vulnerabilities'].append('POODLE')
+          service['issues'].append(Issue("vuln: POODLE"))
           continue
 
         if f['id'] == 'CCS' and f['severity'] not in ('OK', 'INFO'):
-          service['vulnerabilities'].append('OpenSSL_CCS_injection')
+          service['issues'].append(Issue("vuln: OpenSSL CCS injection"))
           continue
 
         if f['id'] == 'FREAK' and f['severity'] not in ('OK', 'INFO'):
-          service['vulnerabilities'].append('FREAK')
+          service['issues'].append(Issue("vuln: FREAK"))
           continue
 
         if f['id'] == 'LOGJAM' and f['severity'] not in ('OK', 'INFO'):
-          service['vulnerabilities'].append('Logjam')
+          service['issues'].append(Issue("vuln: Logjam"))
           continue
 
         if f['id'] == 'DROWN' and f['severity'] not in ('OK', 'INFO'):
-          service['vulnerabilities'].append('DROWN')
+          service['issues'].append(Issue("vuln: DROWN"))
           continue
 
         # https://sweet32.info/
         # support of DES/3DES
         if f['id'] == 'SWEET32' and f['severity'] not in ('OK', 'INFO'):
-          service['vulnerabilities'].append('Sweet32')
+          service['issues'].append(Issue("vuln: Sweet32"))
           continue
 
         if f['id'] == 'ticketbleed' and f['severity'] not in ('OK', 'INFO'):
-          service['vulnerabilities'].append('Ticketbleed')
+          service['issues'].append(Issue("vuln: Ticketbleed"))
           continue
 
         # https://www.robotattack.org/
         # use of RSA for key exchange
         if f['id'] == 'ROBOT' and f['severity'] not in ('OK', 'INFO'):
-          service['vulnerabilities'].append('ROBOT')
+          service['issues'].append(Issue("vuln: ROBOT"))
           continue
 
         # (other) issues
 
         if f['id'] == 'cert_trust':
           if f['severity'] not in ('OK', 'INFO'):
-            issue = f"certificate not trusted: {f['finding']}"
-            service['issues'].append(issue)
+            service['issues'].append(
+              Issue(
+                "certificate: not trusted",
+                info = f['finding']
+              )
+            )
           continue
 
         if f['id'] == 'cert_chain_of_trust':
           if f['severity'] not in ('OK', 'INFO'):
-            issue = f"certificate not trusted: {self._parse_chain_of_trust(f['finding'])}"
-            service['issues'].append(issue)
+            service['issues'].append(
+              Issue(
+                "certificate: not trusted",
+                info = self._parse_chain_of_trust(f['finding'])
+              )
+            )
           continue
 
   def _parse_public_key(self, description, public_key):

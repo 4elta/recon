@@ -1,0 +1,17 @@
+["public RDP server"]
+description = "public RDP server"
+
+["protocol: supported"]
+description = "protocol supported: `{protocol}`"
+
+["protocol: not supported"]
+description = "protocol not supported: `{protocol}`"
+
+["encryption level"]
+description = "supported encryption level: `{level}`"
+
+["no NLA"]
+description = "does not support NLA: this could enable denial-of-service attacks on the server"
+
+["information disclosure"]
+description = "disclosure of potentially sensitive information: `{key}: {value}`"

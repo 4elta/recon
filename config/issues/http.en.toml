@@ -1,0 +1,188 @@
+["missing redirect to HTTPS"]
+description = "missing redirect to HTTPS"
+recommendations = [ "use the `location` header to redirect HTTP requests to HTTPS" ]
+references = [
+  "[Mozilla: HTTP headers: `location`](https://developer.mozilla.org/en-US/docs/web/http/headers/location)",
+]
+
+["STS header over HTTP"]
+description = "`strict-transport-security` header: an HSTS host must not include this header in responses conveyed over non-secure transport (i.e. HTTP)"
+recommendations = [ "only send the STS header over HTTPS" ]
+references = [
+  "[RFC6797: HTTP Strict Transport Security](https://datatracker.ietf.org/doc/html/rfc6797)",
+]
+
+["mandatory header missing"]
+description = "`{header}` header missing"
+recommendations = [ "send the `{header}` header" ]
+references = [
+  "[Mozilla: HTTP headers: `{header}`](https://developer.mozilla.org/en-US/docs/web/http/headers/{header})",
+]
+
+["incorrect syntax"]
+description = "`{header}`: incorrect syntax"
+recommendations = [ "review the syntax for the `{header}` header" ]
+references = [
+  "[Mozilla: HTTP headers: `{header}`](https://developer.mozilla.org/en-US/docs/web/http/headers/{header})",
+]
+
+["STS expire time too short"]
+description = "`strict-transport-security`: `max-age` (i.e. expire time) too short"
+recommendations = [ "`strict-transport-security`: raise `max-age` to the recommended value" ]
+references = [
+  "[Mozilla: HTTP headers: `strict-transport-security`](https://developer.mozilla.org/en-US/docs/web/http/headers/strict-transport-security)",
+]
+
+["CSP default-src missing"]
+description = "`content-security-policy`: `default-src` directive missing"
+recommendations = [ "`content-security-policy`: declare a `default-src` directive" ]
+references = [
+  "[Mozilla: HTTP headers: `content-security-policy`](https://developer.mozilla.org/en-US/docs/web/http/headers/content-security-policy)",
+]
+
+["CSP allows loading sources over HTTP"]
+description = "`content-security-policy`: policy allows loading sources over HTTP"
+recommendations = [ "`content-security-policy`: do not allow loading sources over HTTP" ]
+references = [
+  "[Mozilla: HTTP headers: `content-security-policy`](https://developer.mozilla.org/en-US/docs/web/http/headers/content-security-policy)",
+]
+
+["CSP allows loading sources from local host"]
+description = "`content-security-policy`: policy allows loading sources from the local host"
+recommendations = [ "`content-security-policy`: do not allow loading sources from the local host" ]
+references = [
+  "[Mozilla: HTTP headers: `content-security-policy`](https://developer.mozilla.org/en-US/docs/web/http/headers/content-security-policy)",
+]
+
+["CSP script-src missing"]
+description = "`content-security-policy`: `script-src` directive missing"
+recommendations = [ "`content-security-policy`: declare a `script-src`" ]
+references = [
+  "[Mozilla: HTTP headers: `content-security-policy`](https://developer.mozilla.org/en-US/docs/web/http/headers/content-security-policy)",
+]
+
+["CSP script-src unsafe-inline"]
+description = "`content-security-policy`: `script-src` directive contains `'unsafe-inline'` keyword: this allows the execution of unsafe in-page scripts and event handlers"
+recommendations = [ "`content-security-policy`: remove `'unsafe-inline'` keyword from the `script-src` directive" ]
+references = [
+  "[Mozilla: HTTP headers: `content-security-policy`](https://developer.mozilla.org/en-US/docs/web/http/headers/content-security-policy)",
+]
+
+["CSP script-src unsafe-eval"]
+description = "`content-security-policy`: `script-src` directive contains `'unsafe-eval'` keyword: this allows the execution of code injected into DOM APIs such as `eval()`"
+recommendations = [ "`content-security-policy`: remove `'unsafe-eval'` keyword from the `script-src` directive" ]
+references = [
+  "[Mozilla: HTTP headers: `content-security-policy`](https://developer.mozilla.org/en-US/docs/web/http/headers/content-security-policy)",
+]
+
+["CSP object-src missing"]
+description = "`content-security-policy`: `object-src` directive missing: this allows the injection of plugins which can execute JavaScript"
+recommendations = [ "`content-security-policy`: set `object-src` to `'none'`" ]
+references = [
+  "[Mozilla: HTTP headers: `content-security-policy`](https://developer.mozilla.org/en-US/docs/web/http/headers/content-security-policy)",
+]
+
+["CSP object-src wildcard"]
+description = "`content-security-policy`: `object-src` directive contains the wildcard (`*`)"
+recommendations = [ "`content-security-policy`: remove `*` from the `object-src` directive" ]
+references = [
+  "[Mozilla: HTTP headers: `content-security-policy`](https://developer.mozilla.org/en-US/docs/web/http/headers/content-security-policy)",
+]
+
+["CSP object-src unsafe-inline"]
+description = "`content-security-policy`: `object-src` directive contains `'unsafe-inline'` keyword"
+recommendations = [ "`content-security-policy`: remove `'unsafe-inline'` keyword from the `object-src` directive" ]
+references = [
+  "[Mozilla: HTTP headers: `content-security-policy`](https://developer.mozilla.org/en-US/docs/web/http/headers/content-security-policy)",
+]
+
+["CSP object-src unsafe-eval"]
+description = "`content-security-policy`: `object-src` directive contains `'unsafe-eval'` keyword"
+recommendations = [ "`content-security-policy`: remove `'unsafe-eval'` keyword from the `object-src` directive" ]
+references = [
+  "[Mozilla: HTTP headers: `content-security-policy`](https://developer.mozilla.org/en-US/docs/web/http/headers/content-security-policy)",
+]
+
+["CSP base-uri missing"]
+description = "`content-security-policy`: `base-uri` directive missing"
+recommendations = [ "`content-security-policy`: specify a `base-uri`" ]
+references = [
+  "[Mozilla: HTTP headers: `content-security-policy`](https://developer.mozilla.org/en-US/docs/web/http/headers/content-security-policy)",
+]
+
+["x-xss-protection"]
+description = "`x-xss-protection`: this setting introduces vulnerabilities due to XSS filtering"
+recommendations = [ "`x-xss-protection`: do not send this header; it is deprecated; use CSP instead" ]
+references = [
+  "[Mozilla: HTTP headers: `x-xss-protection`](https://developer.mozilla.org/en-US/docs/web/http/headers/x-xss-protection)",
+]
+
+["referrer-policy"]
+description = "`referrer-policy`: `unsafe-url` policy will leak potentially-private information"
+recommendations = [ "`referrer-policy`: do not specify the `unsafe-url` directive" ]
+references = [
+  "[Mozilla: HTTP headers: `referrer-policy`](https://developer.mozilla.org/en-US/docs/web/http/headers/referrer-policy)",
+]
+
+["CORS wildcard origin"]
+description = "`access-control-allow-origin`: server allows requests to its resources from any origin (i.e. `*`); make sure to not also send the `access-control-allow-credentials` header!"
+recommendations = [ "`access-control-allow-origin`: limit the origins allowed to requests resources from your server" ]
+references = [
+  "[Mozilla: HTTP headers: `access-control-allow-origin`](https://developer.mozilla.org/en-US/docs/web/http/headers/access-control-allow-origin)",
+  "[CORS not supporting Credentials](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS/Errors/CORSNotSupportingCredentials)"
+]
+
+["CORS null origin"]
+description = "`access-control-allow-origin`: server allows requests to its resources from the `null` origin"
+recommendations = [ "`access-control-allow-origin`: do not allow the `null` origin" ]
+references = [
+  "[Mozilla: HTTP headers: `access-control-allow-origin`](https://developer.mozilla.org/en-US/docs/web/http/headers/access-control-allow-origin)",
+  "[Avoid returning `access-control-allow-origin: null`](https://w3c.github.io/webappsec-cors-for-developers/#avoid-returning-access-control-allow-origin-null)"
+]
+
+["CORS http origin"]
+description = "`access-control-allow-origin`: server allows requests to its resources from HTTP origins"
+recommendations = [ "`access-control-allow-origin`: do not allow requests via HTTP" ]
+references = [
+  "[Mozilla: HTTP headers: `access-control-allow-origin`](https://developer.mozilla.org/en-US/docs/web/http/headers/access-control-allow-origin)",
+]
+
+["CORS allow credentials"]
+description = "`access-control-allow-credentials`: server allows sending credentials"
+recommendations = [ "`access-control-allow-credentials`: make sure to not allow the wildcard (`*`) origin" ]
+references = [
+  "[Mozilla: HTTP headers: `access-control-allow-credentials`](https://developer.mozilla.org/en-US/docs/web/http/headers/access-control-allow-credentials)",
+  "[Mozilla: HTTP headers: `access-control-allow-origin`](https://developer.mozilla.org/en-US/docs/web/http/headers/access-control-allow-origin)",
+  "[CORS not supporting Credentials](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS/Errors/CORSNotSupportingCredentials)"
+]
+
+["server"]
+description = "`server`: potential information disclosure: `{value}`"
+recommendations = [ "do not publish sensitive information via the `server` header" ]
+# TODO: add references for how to disable this header for various server software
+
+["x-powered-by"]
+description = "`x-powered-by`: potential information disclosure: `{value}`"
+recommendations = [ "do not send the `x-powered-by` header" ]
+# TODO: add references for how toon disable this header for various server software
+
+["x-host"]
+description = "`x-host`: potential information disclosure: `{value}`"
+recommendations = [ "do not send the `x-host` header" ]
+# TODO: references
+
+["HPKP"]
+description = "`public-key-pins`: this is an obsolete security feature that has the [potential to do more harm than good](https://scotthelme.co.uk/using-security-features-to-do-bad-things/#usinghpkpforevil)"
+recommendations = [ "`public-key-pins`: do not send this header" ]
+references = [
+  "[RFC7469: Public Key Pinning Extension for HTTP](https://datatracker.ietf.org/doc/html/rfc7469)",
+  "[Using HPKP for evil](https://scotthelme.co.uk/using-security-features-to-do-bad-things/#usinghpkpforevil)"
+]
+
+["HPKP report-only"]
+description = "`public-key-pins-report-only`: this is an obsolete security feature that has the [potential to do more harm than good](https://scotthelme.co.uk/using-security-features-to-do-bad-things/#usinghpkpforevil)"
+recommendations = [ "`public-key-pins-report-only`: do not send this header" ]
+references = [
+  "[RFC7469: Public Key Pinning Extension for HTTP](https://datatracker.ietf.org/doc/html/rfc7469)",
+  "[Using HPKP for evil](https://scotthelme.co.uk/using-security-features-to-do-bad-things/#usinghpkpforevil)"
+]

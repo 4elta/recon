@@ -7,7 +7,7 @@ try:
 except:
   sys.exit("this script requires the 'defusedxml' module.\nplease install it via 'pip3 install defusedxml'.")
 
-from .. import AbstractParser
+from .. import Issue, AbstractParser
 from . import SERVICE_SCHEMA
 
 class Parser(AbstractParser):
@@ -72,6 +72,8 @@ class Parser(AbstractParser):
         service['port'] = port
         service['transport_protocol'] = transport_protocol
 
+        service['info'] = []
+
         service_node = port_node.find('service')
         if service_node is not None:
           descriptions = []
@@ -100,7 +102,7 @@ class Parser(AbstractParser):
           if script_ID == 'ssh-auth-methods':
             script_output = script_node.get("output")
             if "ERROR:" in script_output:
-              service['issues'].append("could not establish authentication methods")
+              service['issues'].append(Issue("client authentication method: unknown"))
             elif 'none_auth' in script_output:
               # https://www.rfc-editor.org/rfc/rfc4252#section-5.2
               service['client_authentication_methods'] = [ 'none' ]
@@ -132,7 +134,7 @@ class Parser(AbstractParser):
             continue
 
           if 'ssh' in script_ID:
-            service['issues'].append(f"Nmap script scan result not parsed: {script_ID}")
+            service['info'].append(f"Nmap script scan result not parsed: '{script_ID}'")
             #TODO: parse results
 
   def _parse_protocol_version(self, extrainfo):

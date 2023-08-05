@@ -212,7 +212,8 @@ def process(args):
   version = None
   requests = []
   info = []
-  issues = []
+  mode_6 = {}
+  mode_7 = {}
 
   with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as udp_socket:
     try:
@@ -263,12 +264,13 @@ def process(args):
         print(f"amplification factor: {amplification_factor:.1f}")
         r = {
           'request': f"version {VERSION_NUMBER}, mode 6, opcode {opcode}",
-          'amplification_factor': amplification_factor
+          'amplification_factor': float(amplification_factor)
         }
 
         requests.append(r)
 
-        issues.append(f"could be abused for traffic amplification attacks: permits Mode 6 (opcode {opcode}) requests; amplification factor: {amplification_factor:.1f}")
+        mode_6['opcode'] = int(opcode)
+        mode_6['amplification_factor'] = f"{amplification_factor:.1f}"
 
       req_code = 42 # MON_GETLIST=20, MON_GETLIST_1=42
       print(f"\nsending Mode 7 (req code {req_code}) request ...")
@@ -298,12 +300,13 @@ def process(args):
         print(f"amplification factor: {amplification_factor:.1f}")
         r = {
           'request': f"version {VERSION_NUMBER}, mode 7, implementation {IMPLEMENTATION_NUMBER}, req code {req_code}",
-          'amplification_factor': amplification_factor
+          'amplification_factor': float(amplification_factor)
         }
 
         requests.append(r)
 
-        issues.append(f"could be abused for traffic amplification attacks: permits Mode 7 (req code {req_code}) requests; amplification factor: {amplification_factor} (CVE-2013-5211)")
+        mode_7['req_code'] = int(req_code)
+        mode_7['amplification_factor'] = f"{amplification_factor:.1f}"
 
     except (socket.timeout, socket.error) as e:
       print("no response")
@@ -316,7 +319,8 @@ def process(args):
       'version': version,
       'requests': requests,
       'info': info,
-      'issues': issues
+      'mode_6': mode_6,
+      'mode_7': mode_7
     }
 
     with open(args.json, 'w') as f:

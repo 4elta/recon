@@ -1,7 +1,7 @@
 import copy
 import json
 
-from .. import AbstractParser
+from .. import Issue, AbstractParser
 from . import SERVICE_SCHEMA
 
 class Parser(AbstractParser):
@@ -29,4 +29,21 @@ class Parser(AbstractParser):
 
     service = copy.deepcopy(SERVICE_SCHEMA)
     service.update(result)
+
+    if 'mode_6' in service:
+      service['issues'].append(
+        Issue(
+          "Mode 6",
+          **service['mode_6']
+        )
+      )
+
+    if 'mode_7' in service:
+      service['issues'].append(
+        Issue(
+          "Mode 7",
+          **service['mode_7']
+        )
+      )
+
     self.services[identifier] = service

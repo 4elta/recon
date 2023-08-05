@@ -9,34 +9,32 @@ mandatory_headers = [
 
 [header.strict-transport-security]
 # https://www.rfc-editor.org/rfc/rfc6797#section-6.1
-name = "`strict-transport-security` header:"
 regex = "max-age=(?P<expire_time>[0-9]+)(?:; +includeSubDomains(?:; +preload)?)?"
 on_match = { next = [ "expire_time" ] }
-on_mismatch = { issue = "syntax error" }
+on_mismatch = { issue.id = "incorrect syntax", issue.header = "strict-transport-security" }
 
 [header.strict-transport-security.expire_time]
 lower_bound = 31536000
 #upper_bound = ###
-on_mismatch = { issue = "`max-age` (i.e. expire time) too short" }
+on_mismatch = { issue.id = "STS expire time too short" }
 
 [header.content-security-policy]
 # https://w3c.github.io/webappsec-csp/#csp-header
-name = "`content-security-policy` header:"
 regex = "(?P<policy_directive>(?:child|connect|default|font|frame|img|manifest|media|object|prefetch|worker)-src|(?:script|style)-src(?:-(?:elem|attr))?|webrtc|base-uri|sandbox|form-action|frame-ancestors|navigate-to|report-(?:uri|to)|require-trusted-types-for|trusted-types|upgrade-insecure-requests) (?P<policy_values>[^;]+)(?:; *)?"
-on_mismatch = { issue = "syntax error" }
+on_mismatch = { issue.id = "incorrect syntax", issue.header = "content-security-policy" }
 on_match = { next = [ "default-src", "src_http", "src_localhost", "report-uri", "script-src", "object-src", "base-uri" ] }
 
 [header.content-security-policy.default-src]
 regex = "default-src"
-on_mismatch = { issue = "`default-src` directive missing" }
+on_mismatch = { issue.id = "CSP default-src missing" }
 
 [header.content-security-policy.src_http]
 regex = "[a-z]+-src[^;]+http:[^;]*"
-on_match = { issue = "policy allows loading sources over HTTP" }
+on_match = { issue.id = "policy allows loading sources over HTTP" }
 
 [header.content-security-policy.src_localhost]
 regex = "[a-z]+-src[^;]+(?:https?://)?(?:127.0.0.1|localhost)[^;]*"
-on_match = { issue = "policy allows loading sources from the local host" }
+on_match = { issue.id = "CSP allows loading sources from local host" }
 
 [header.content-security-policy.report-uri]
 # https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/report-uri
@@ -47,7 +45,7 @@ on_match = { issue = "`report-uri` directive is deprecated; use `report-to` inst
 
 [header.content-security-policy.script-src]
 regex = "script-src"
-on_mismatch = { issue = "`script-src` directive missing" }
+on_mismatch = { issue.id = "CSP script-src missing" }
 on_match = { next = [ "unsafe-inline", "unsafe-eval" ] }
 
 [header.content-security-policy.script-src.unsafe-inline]
@@ -55,56 +53,52 @@ on_match = { next = [ "unsafe-inline", "unsafe-eval" ] }
 # https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/Sources#nonce-base64-value
 # therefore, even if the directive includes `'nonce-...'` along with `'unsafe-inline'`, we will flag it.
 regex = "script-src[^;]+'unsafe-inline'[^;]*"
-on_match = { issue = "`script-src` directive contains `unsafe-inline` keyword: this allows the execution of unsafe in-page scripts and event handlers" }
+on_match = { issue.id = "CSP script-src unsafe-inline" }
 
 [header.content-security-policy.script-src.unsafe-eval]
 regex = "script-src[^;]+'unsafe-eval'[^;]*"
-on_match = { issue = "`script-src` directive contains `unsafe-eval` keyword: this allows the execution of code injected into DOM APIs such as `eval()`" }
+on_match = { issue.id = "CSP script-src unsafe-eval" }
 
 [header.content-security-policy.object-src]
 regex = "object-src"
-on_mismatch = { issue = "`object-src` directive missing: this allows the injection of plugins which can execute JavaScript; you should set it to `'none'`" }
+on_mismatch = { issue.id = "CSP object-src missing" }
 on_match = { next = [ "wildcard", "unsafe-inline", "unsafe-eval" ] }
 
 [header.content-security-policy.object-src.wildcard]
 regex = "object-src[^;]+[*][^;]*"
-on_match = { issue = "`object-src` directive contains the wildcard (`*`)" }
+on_match = { issue.id = "CSP object-src wildcard" }
 
 [header.content-security-policy.object-src.unsafe-inline]
 regex = "object-src[^;]+'unsafe-inline'[^;]*"
-on_match = { issue = "`object-src` directive contains `unsafe-inline` keyword" }
+on_match = { issue.id = "CSP object-src unsafe-inline" }
 
 [header.content-security-policy.object-src.unsafe-eval]
 regex = "object-src[^;]+'unsafe-eval'[^;]*"
-on_match = { issue = "`object-src` directive contains `unsafe-eval` keyword" }
+on_match = { issue.id = "CSP object-src unsafe-eval" }
 
 [header.content-security-policy.base-uri]
 regex = "base-uri"
-on_mismatch = { issue = "`base-uri` directive missing" }
+on_mismatch = { issue.id = "CSP base-uri missing" }
 
 [header.x-content-type-options]
 # https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Content-Type-Options
-name = "`x-content-type-options` header:"
 regex = "nosniff"
-on_mismatch = { issue = "syntax error" }
+on_mismatch = { issue.id = "incorrect syntax", issue.header = "x-content-type-options" }
 
 [header.x-frame-options]
 # https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Frame-Options
-name = "`x-frame-options` header:"
 regex = "DENY|SAMEORIGIN"
-on_mismatch = { issue = "syntax error" }
+on_mismatch = { issue.id = "incorrect syntax", issue.header = "x-frame-options" }
 
 [header.x-xss-protection]
 # https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-XSS-Protection
-name = "`x-xss-protection` header:"
 regex = "0|(?:1; mode=block)"
-on_mismatch = { issue = "this setting introduces vulnerabilities due to XSS filtering" }
+on_mismatch = { issue.id = "x-xss-protection" }
 
 [header.referrer-policy]
 # https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referrer-Policy
-name = "`referrer-policy` header:"
 regex = "unsafe-url"
-on_match = { issue = "`unsafe-url` policy will leak potentially-private information" }
+on_match = { issue.id = "referrer-policy" }
 
 [header.access-control-allow-origin]
 # https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Origin
@@ -115,43 +109,43 @@ on_match = { next = ["wildcard", "null", "http"] }
 [header.access-control-allow-origin.wildcard]
 # https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS/Errors/CORSNotSupportingCredentials
 regex = "[*]"
-on_match = { issue = "server allows requests to its resources from any origin (i.e. `*`); make sure to not also send the `access-control-allow-credentials` header!" }
+on_match = { issue.id = "CORS wildcard origin" }
 
 [header.access-control-allow-origin.null]
 # https://w3c.github.io/webappsec-cors-for-developers/#avoid-returning-access-control-allow-origin-null
 regex = "null"
-on_match = { issue = "server allows requests to its resources from the `null` origin" }
+on_match = { issue.id = "CORS null origin" }
 
 [header.access-control-allow-origin.http]
 # https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Origin
 regex = "http:"
-on_match = { issue = "server allows requests to its resources from HTTP origins" }
+on_match = { issue.id = "CORS http origin" }
 
 [header.access-control-allow-credentials]
 # https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Credentials
 name = "`access-control-allow-credentials` header:"
 regex = "true"
-on_match = { issue = "server allows sending credentials" }
+on_match = { issue.id = "CORS allow credentials" }
+
+[header.server]
+regex = "(.+)"
+on_match = { issue.id = "server" }
 
 [header.x-powered-by]
-name = "`x-powered-by` header:"
-regex = "."
-on_match = { issue = "server discloses information about the application and/or the technology stack" }
+regex = "(.+)"
+on_match = { issue.id = "x-powered-by" }
 
 [header.x-host]
-name = "`x-host` header:"
-regex = "."
-on_match = { issue = "server/proxy discloses information about the technology stack" }
+regex = "(.+)"
+on_match = { issue.id = "x-host" }
 
 [header.public-key-pins]
 # https://datatracker.ietf.org/doc/html/rfc7469
-name = "`public-key-pins` header:"
 regex = "."
-on_match = { issue = "this is an obsolete security feature that has the [potential to do more harm than good](https://scotthelme.co.uk/using-security-features-to-do-bad-things/#usinghpkpforevil)" }
+on_match = { issue.id = "HPKP" }
 
 [header.public-key-pins-report-only]
 # https://datatracker.ietf.org/doc/html/rfc7469
-name = "`public-key-pins-report-only` header:"
 regex = "."
-on_match = { issue = "this is an obsolete security feature that has the [potential to do more harm than good](https://scotthelme.co.uk/using-security-features-to-do-bad-things/#usinghpkpforevil)" }
+on_match = { issue.id = "HPKP report-only" }
 

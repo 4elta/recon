@@ -2,7 +2,7 @@ import copy
 import json
 import re
 
-from .. import AbstractParser
+from .. import Issue, AbstractParser
 from . import CERTIFICATE_SCHEMA, SERVICE_SCHEMA
 
 PROTOCOL_VERSIONS = {
@@ -190,7 +190,7 @@ class Parser(AbstractParser):
       service['port'] = port
 
       if server_scan_result['connectivity_status'] == 'ERROR':
-        service['issues'].append("could not connect to target")
+        service['issues'].append(Issue("connection error"))
         continue
 
       if 'scan_result' in server_scan_result and server_scan_result['scan_result']:
@@ -225,16 +225,16 @@ class Parser(AbstractParser):
       service['misc']['fallback_SCSV'] = 'supported'
 
     if self._parse_generic_scan_result(scan_result['tls_compression'], 'supports_compression'):
-      service['vulnerabilities'].append('CRIME')
+      service['issues'].append(Issue("vuln: CRIME"))
 
     if self._parse_generic_scan_result(scan_result['openssl_ccs_injection'], 'is_vulnerable_to_ccs_injection'):
-      service['vulnerabilities'].append('OpenSSL_CCS_injection')
+      service['issues'].append(Issue("vuln: OpenSSL CCS injection"))
 
     if self._parse_generic_scan_result(scan_result['heartbleed'], 'is_vulnerable_to_heartbleed'):
-      service['vulnerabilities'].append('Heartbleed')
+      service['issues'].append(Issue("vuln: Heartbleed"))
 
     if not self._parse_generic_scan_result(scan_result['robot'], 'robot_result').startswith('NOT_VULNERABLE'):
-      service['vulnerabilities'].append('ROBOT')
+      service['issues'].append(Issue("vuln: ROBOT"))
 
     self._parse_session_renegotiation_result(
       scan_result['session_renegotiation'],
@@ -248,7 +248,7 @@ class Parser(AbstractParser):
 
   def _parse_certificate_info(self, certificate_info, service):
     if not certificate_info['status'] == 'COMPLETED' or 'result' not in certificate_info:
-      service['issues'].append('could not parse certificate information')
+      service['issues'].append(Issue("certificate: none"))
       return
 
     result = certificate_info['result']
@@ -293,23 +293,23 @@ class Parser(AbstractParser):
         public_key['curve'] = pub_key['ec_curve_name']
 
       if not certificate_deployment['leaf_certificate_subject_matches_hostname']:
-        service['issues'].append(f"certificate not trusted: hostname mismatch")
+        service['issues'].append(Issue("certificate: not trusted: hostname mismatch"))
 
       if not certificate_deployment['received_chain_has_valid_order']:
-        service['issues'].append(f"certificate not trusted: invalid certificate chain order")
+        service['issues'].append(Issue("certificate: not trusted: invalid certificate chain order"))
 
       for path_validation_result in certificate_deployment['path_validation_results']:
         if not path_validation_result['was_validation_successful']:
           # TODO: add certificate_deployment['path_validation_results']['openssl_error_string']?
-          service['issues'].append("certificate not trusted: path validation failed")
+          service['issues'].append(Issue("certificate: not trusted: path validation failed"))
           break
 
       if not certificate_deployment['verified_chain_has_sha1_signature']:
-        service['issues'].append(f"signature based on SHA-1 found within the certificate chain")
+        service['issues'].append(Issue("certificate: SHA-1 signature"))
 
       # https://blog.mozilla.org/security/2018/03/12/distrust-symantec-tls-certificates/
       if not certificate_deployment['verified_chain_has_legacy_symantec_anchor']:
-        service['issues'].append(f"certificate chain contains a legacy Symantec certificate")
+        service['issues'].append(Issue("certificate: legacy Symantec"))
 
   def _parse_protocol(self, cipher_suites, service):
     if not cipher_suites['status'] == 'COMPLETED' or 'result' not in cipher_suites:
@@ -363,7 +363,7 @@ class Parser(AbstractParser):
     result = result['result']
 
     if result['is_vulnerable_to_client_renegotiation_dos']:
-      service['vulnerabilities'].append('client_initiated_renegotiation_DoS')
+      service['issues'].append(Issue("vuln: client-initiated renegotiation DoS"))
 
   def _parse_elliptic_curves(self, result, service):
     if not result['status'] == 'COMPLETED' or 'result' not in result:

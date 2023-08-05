@@ -7,7 +7,7 @@ try:
 except:
   sys.exit("this script requires the 'defusedxml' module.\nplease install it via 'pip3 install defusedxml'.")
 
-from .. import AbstractParser
+from .. import Issue, AbstractParser
 from . import SERVICE_SCHEMA
 
 ENCRYPTION_LEVELS = {
@@ -87,6 +87,8 @@ class Parser(AbstractParser):
         service['transport_protocol'] = transport_protocol
         service['port'] = port
 
+        service['info'] = []
+
         for script_node in port_node.iter('script'):
           script_ID = script_node.get('id')
 
@@ -99,7 +101,7 @@ class Parser(AbstractParser):
             continue
 
           if 'rdp' in script_ID:
-            service['issues'].append(f"Nmap script scan result not parsed: {script_ID}")
+            service['info'].append(f"Nmap script scan result not parsed: '{script_ID}'")
             #TODO: implement this
 
   def _parse_rdp_enum_encryption(self, script_node, service):
@@ -142,7 +144,13 @@ class Parser(AbstractParser):
       ntlm_info[key] = value
 
       if key in ('DNS_Computer_Name', 'Product_Version'):
-        service['issues'].append(f"disclosure of potentially sensitive information: `{key}: {value}`")
+        service['issues'].append(
+          Issue(
+            "information disclosure",
+            key = key,
+            value = value
+          )
+        )
         # "Sending an incomplete CredSSP (NTLM) authentication request with null credentials will cause the remote service to respond with a NTLMSSP message disclosing information to include NetBIOS, DNS, and OS build version."
 
     service['NTLM_info'] = ntlm_info

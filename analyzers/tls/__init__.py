@@ -18,7 +18,7 @@ vulnerabilities_specification_document = pathlib.Path(
 with open(vulnerabilities_specification_document, 'r') as f:
   VULNERABILITIES = toml.load(f)
 
-from .. import AbstractAnalyzer
+from .. import Issue, AbstractAnalyzer
 
 CERTIFICATE_SCHEMA = {
   'subjects': [],
@@ -76,8 +76,6 @@ SERVICE_SCHEMA = {
   # https://www.iana.org/assignments/tls-extensiontype-values/tls-extensiontype-values.xhtml#tls-extensiontype-values-1
 
   'issues': [],
-
-  'vulnerabilities': [],
 }
 
 # path to the cipher suites specification document; downloaded from https://ciphersuite.info/api/cs/
@@ -179,24 +177,28 @@ class Analyzer(AbstractAnalyzer):
           issues
         )
 
-      # analyze vulnerabilities
-      for vulnerability_ID in service['vulnerabilities']:
-        vulnerability = VULNERABILITIES[vulnerability_ID]
-        # TODO: add CVE, references?
-        issues.append(vulnerability['description'])
-
     return services
 
   def _analyze_protocol_versions(self, protocol_versions, recommendation, issues):
     for deviation in list(set(protocol_versions).difference(recommendation)):
-      issues.append(f"protocol supported: {deviation}")
+      issues.append(
+        Issue(
+          "protocol: supported",
+          protocol = deviation
+        )
+      )
 
     for deviation in list(set(recommendation).difference(protocol_versions)):
-      issues.append(f"protocol not supported: {deviation}")
+      issues.append(
+        Issue(
+          "protocol: not supported",
+          protocol = deviation
+        )
+      )
 
   def _analyze_certificate(self, is_private_host, certificate, recommendation, issues):
     if certificate == CERTIFICATE_SCHEMA:
-      issues.append("could not read server certificate")
+      issues.append(Issue("certificate: none"))
       return
 
     if not is_private_host:
@@ -204,7 +206,12 @@ class Analyzer(AbstractAnalyzer):
       for subject in certificate['subjects']:
         try:
           if ipaddress.ip_address(subject).is_private:
-            issues.append(f"certificate contains private IP address: `{subject}`")
+            issues.append(
+              Issue(
+                "certificate: private IP address",
+                address = subject
+              )
+            )
         except ValueError:
           # subject is NOT a valid IP address
           continue
@@ -217,67 +224,134 @@ class Analyzer(AbstractAnalyzer):
     livespan_in_days = int(livespan.total_seconds() / (24 * 60 * 60))
 
     if livespan_in_days > recommendation['lifespan']:
-      issues.append(f"certificate lifespan: {livespan_in_days} days")
+      issues.append(
+        Issue(
+          "certificate: lifespan",
+          lifespan = livespan_in_days
+        )
+      )
 
     pub_key = certificate['public_key']
 
     if pub_key['type'] not in recommendation['public_key']['types']:
-      if pub_key['bits']:
-        issues.append(f"server's public key: {pub_key['type']} {pub_key['bits']} bits")
-      else:
-        issues.append(f"server's public key: {pub_key['type']}")
+      issues.append(
+        Issue(
+          "certificate: public key",
+          key_info = pub_key['type']
+        )
+      )
     else:
       if pub_key['bits'] and pub_key['bits'] < recommendation['public_key']['types'][pub_key['type']]:
-        issues.append(f"server's public key: {pub_key['type']} {pub_key['bits']} bits")
+        issues.append(
+          Issue(
+            "certificate: public key",
+            key_info = f"{pub_key['type']} {pub_key['bits']} bits"
+          )
+        )
 
     if pub_key['curve'] and pub_key['curve'] not in recommendation['public_key']['curves']:
-      issues.append(f"server's public key: curve `{pub_key['curve']}`")
+      issues.append(
+        Issue(
+          "certificate: public key: curve",
+          curve = pub_key['curve']
+        )
+      )
 
     sig_alg = certificate['signature_algorithm']
 
     if sig_alg and sig_alg not in recommendation['signature_algorithms']:
-      issues.append(f"server's certificate: signature algorithm `{sig_alg}`")
+      issues.append(
+        Issue(
+          "certificate: signature algorithm",
+          algorithm = sig_alg
+        )
+      )
 
   def _analyze_preference(self, preference, recommendation, issues):
     if not preference == recommendation:
-      issues.append(f"cipher preference: {preference}")
+      issues.append(
+        Issue(
+          "cipher preference",
+          preference = preference
+        )
+      )
 
   def _analyze_cipher_suites(self, cipher_suites, recommendation, issues):
     if len(cipher_suites) == 0:
-      issues.append("server does not appear to support any cipher suites")
+      issues.append(
+        Issue(
+          "cipher suites: none"
+        )
+      )
       return
 
     for deviation in list(set(cipher_suites).difference(recommendation)):
-      issues.append(f"cipher suite supported: `{deviation}`")
+      issues.append(
+        Issue(
+          "cipher suites: supported",
+          cipher_suite = deviation
+        )
+      )
 
   def _analyze_key_exchange(self, key_exchange, recommendation, issues):
     for kex_method, kex_bits in key_exchange['methods'].items():
       if kex_method not in recommendation['methods']:
-        issue = f"key exchange: {kex_method}"
-        if kex_bits:
-          issue += f" {kex_bits} bits"
-
-        issues.append(issue)
+        issues.append(
+          Issue(
+            "key exchange",
+            info = kex_method
+          )
+        )
         continue
 
       if kex_bits and kex_bits < recommendation['methods'][kex_method]:
-        issues.append(f"key exchange: {kex_method} {kex_bits} bits")
+        issues.append(
+          Issue(
+            "key exchange",
+            info = f"{kex_method} {kex_bits} bits"
+          )
+        )
 
     for deviation in list(set(key_exchange['groups']).difference(recommendation['groups'])):
-      issues.append(f"key exchange: group `{deviation}`")
+      issues.append(
+        Issue(
+          "key exchange: group",
+          group = deviation
+        )
+      )
 
   def _analyze_signature_algorithms(self, signature_algorithms, recommendation, issues):
     for deviation in list(set(signature_algorithms).difference(recommendation)):
       if deviation == '*':
-        issues.append("server accepts any signature algorithm")
+        issues.append(
+          Issue(
+            "signature algorithm",
+            info = "server accepts any signature algorithm"
+          )
+        )
       else:
-        issues.append(f"signature algorithm: `{deviation}`")
+        issues.append(
+          Issue(
+            "signature algorithm",
+            info = f"`{deviation}`"
+          )
+        )
 
   def _analyze_extensions(self, extensions, recommendation, issues):
     if 'yes' in recommendation:
       for deviation in list(set(recommendation['yes']).difference(extensions)):
-        issues.append(f"extension not supported: `{deviation}`")
+        issues.append(
+          Issue(
+            "extensions: not supported",
+            extension = deviation
+          )
+        )
 
     if 'no' in extensions:
       for deviation in list(set(extensions).intersection(recommendation['no'])):
-        issues.append(f"extension supported: `{deviation}`")
+        issues.append(
+          Issue(
+            "extensions: supported",
+            extension = deviation
+          )
+        )

@@ -16,6 +16,8 @@ except:
 
 SUPPORTED_SERVICES = ['dns', 'ftp', 'http', 'isakmp', 'ntp', 'rdp', 'ssh', 'tls', ]
 
+LANGUAGE = 'en'
+
 def analyze_service(service, files, tool=None, recommendations_file=None, json_path=None, csv_path=None):
   if recommendations_file:
     if not recommendations_file.exists():
@@ -42,9 +44,26 @@ def analyze_service(service, files, tool=None, recommendations_file=None, json_p
 
   services = analyzer.analyze(files)
 
-  affected_assets = []
+  issues_file = pathlib.Path(
+    pathlib.Path(__file__).resolve().parent,
+    "config",
+    "issues",
+    f"{service}.{LANGUAGE}.toml"
+  )
 
-  print("\nThe following hosts have been analyzed:\n")
+  if not issues_file.exists():
+    sys.exit(f"the file '{issues_file}' does not exist!")
+
+  with open(issues_file, 'r') as f:
+    issue_templates = toml.load(f)
+
+  affected_assets = []
+  recommendations = []
+  references = []
+  info = []
+
+  print("\n# evidence\n")
+  print("The following hosts have been analyzed:\n")
 
   for asset in services.keys():
     print(f"* `{asset}`")
@@ -60,12 +79,43 @@ def analyze_service(service, files, tool=None, recommendations_file=None, json_p
     print(f"\n## {asset}\n")
 
     for issue in service['issues']:
-      print(f"* {issue}")
+      issue.format(issue_templates)
 
-  print(f"\n# affected assets\n")
+      print(f"* {issue.description}")
 
-  for asset in affected_assets:
-    print(f"* `{asset}`")
+      for recommendation in issue.recommendations:
+        if recommendation not in recommendations:
+          recommendations.append(recommendation)
+
+      for reference in issue.references:
+        if reference not in references:
+          references.append(reference)
+
+    # collect additional (debug) information
+    if 'info' in service:
+      for i in service['info']:
+        if i not in info:
+          info.append(i)
+
+  if len(affected_assets):
+    print("\n# affected assets\n")
+    for asset in affected_assets:
+      print(f"* `{asset}`")
+
+  if len(recommendations):
+    print("\n# recommendations\n")
+    for recommendation in recommendations:
+      print(f"* {recommendation}")
+
+  if len(references):
+    print("\n# references\n")
+    for reference in references:
+      print(f"* {reference}")
+
+  if len(info):
+    print("\n# additional info\n")
+    for i in info:
+      print(f"* {i}")
 
   if json_path:
     with open(json_path, 'w') as f:
@@ -102,7 +152,7 @@ def save_CSV(services, path):
 
     for identifier, service in services.items():
       for issue in service['issues']:
-        row = [identifier, issue]
+        row = [identifier, issue.description]
         csv.writer(f, delimiter=delimiter, quoting=csv.QUOTE_MINIMAL).writerow(row)
 
 def process(args):
@@ -123,6 +173,9 @@ def process(args):
       print(f"* {service} ({', '.join(tools)})")
   else:
     files = get_files(args.input, args.service)
+
+    global LANGUAGE
+    LANGUAGE = args.language
 
     analyze_service(
       args.service,
@@ -161,6 +214,13 @@ def main():
     type = pathlib.Path,
     default = './recon',
     help = "path to the root directory that holds the results to be analysed (default: './recon')"
+  )
+
+  parser.add_argument(
+    '-l', '--language',
+    metavar = 'code',
+    default = LANGUAGE,
+    help = f"specify the language in which the analysis should be printed (default: '{LANGUAGE}')"
   )
 
   parser.add_argument(

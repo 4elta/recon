@@ -9,7 +9,7 @@ try:
 except:
   sys.exit("this script requires the 'defusedxml' module.\nplease install it via 'pip3 install defusedxml'.")
 
-from .. import AbstractParser
+from .. import Issue, AbstractParser
 from . import CERTIFICATE_SCHEMA, SERVICE_SCHEMA
 
 class Parser(AbstractParser):
@@ -87,15 +87,15 @@ class Parser(AbstractParser):
 
       renegotiation_node = ssltest_node.find('renegotiation')
       if renegotiation_node and renegotiation_node.get('supported') == '1' and renegotiation_node.get('secure') == '0':
-        service['vulnerabilities'].append('client_initiated_renegotiation_DoS')
+        service['issues'].append(Issue("vuln: client-initiated renegotiation DoS"))
 
       compression_node = ssltest_node.find('compression')
       if compression_node and compression_node.get('supported') == '1':
-        service['vulnerabilities'].append('CRIME')
+        service['issues'].append(Issue("vuln: CRIME"))
 
       for heartbleed_node in ssltest_node.iter('heartbleed'):
         if heartbleed_node.get('vulnerable') == '1':
-          service['vulnerabilities'].append('Heartbleed')
+          service['issues'].append(Issue("vuln: Heartbleed"))
           break
 
       # cipher suites
@@ -128,7 +128,7 @@ class Parser(AbstractParser):
 
       for certificate in service['certificates']:
         if not self._evaluate_certificate_trust(certificate, host):
-          service['issues'].append("certificate not trusted: certificate does not match supplied URI")
+          service['issues'].append(Issue("certificate: not trusted: hostname mismatch"))
           break
 
   def _parse_cipher_node(self, node, cipher_suites, key_exchange):
@@ -179,7 +179,10 @@ class Parser(AbstractParser):
     if pk_type == 'EC':
       pk_type = 'ECDSA'
       public_key['curve'] = node.get('curve_name')
-      public_key['bits'] = None # TODO: currently, the value reported by sslscan is NOT correct for ECDSA
+
+      # TODO: currently, the value reported by sslscan is NOT correct for ECDSA
+      # remove the next line in the future
+      public_key['bits'] = None
 
     public_key['type'] = pk_type
 
@@ -194,7 +197,7 @@ class Parser(AbstractParser):
 
   def _parse_certificate_self_signed_node(self, node, issues):
     if node.text == 'true':
-      issues.append("certificte not trusted: self signed")
+      issues.append(Issue("certificate: not trusted: self signed"))
 
   def _parse_certificate_validity(self, node):
     # Feb  2 23:00:24 2023 GMT
@@ -208,7 +211,7 @@ class Parser(AbstractParser):
 
   def _parse_certificate_expired_node(self, node, issues):
     if node.text == 'true':
-      issues.append("certificate not trusted: expired")
+      issues.append(Issue("certificate: not trusted: expired"))
 
   def _parse_certificate_node(self, node, service):
     certificate = copy.deepcopy(CERTIFICATE_SCHEMA)

@@ -1,0 +1,29 @@
+["public DNS server"]
+description = "public DNS server"
+
+["recursive DNS"]
+description = "supports recursive DNS: this could be abused for traffic amplification attacks"
+references = [
+  "[Cloudflare: What is recursive DNS?](https://www.cloudflare.com/learning/dns/what-is-recursive-dns/)",
+]
+
+["DNSSEC not validated"]
+description = "does not validate DNSSEC: this could lead to DNS cache poisoning"
+
+["ECS: supported"]
+description = "supports ECS: this might decrease users' privacy and could enable targeted DNS poisoning attacks"
+references = [
+  "[Understanding the Privacy Implications of ECS](https://yacin.nadji.us/docs/pubs/dimva16_ecs.pdf)",
+]
+
+["ECS: not supported"]
+description = "does not support ECS: this might hinder load balancing"
+
+["AXFR"]
+description = "permits AXFR: this might expose potentially sensitive information"
+
+["additional info"]
+description = "additional information: {info}"
+recommendations = [
+  "[disable version reporting](https://kb.isc.org/docs/aa-00359)"
+]

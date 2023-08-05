@@ -97,6 +97,8 @@ class Parser(AbstractParser):
         service['port'] = port
         service['transport_protocol'] = transport_protocol
 
+        service['info'] = []
+
         if hostname:
           service['info']['rDNS'] = hostname
 
@@ -123,6 +125,6 @@ class Parser(AbstractParser):
             continue
 
           if 'dns' in script_ID:
-            service['issues'].append(f"Nmap script scan result not parsed: {script_ID}")
+            service['info'].append(f"Nmap script scan result not parsed: '{script_ID}'")
             #TODO: parse results
 

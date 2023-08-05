@@ -7,7 +7,7 @@ try:
 except:
   sys.exit("this script requires the 'defusedxml' module.\nplease install it via 'pip3 install defusedxml'.")
 
-from .. import AbstractParser
+from .. import Issue, AbstractParser
 from . import SERVICE_SCHEMA
 
 class Parser(AbstractParser):
@@ -71,18 +71,29 @@ class Parser(AbstractParser):
           script_ID = script_node.get('id')
 
           if script_ID == 'ntp-monlist':
-            service['issues'].append('could be abused for traffic amplification attacks: permits Mode 7 (req code 42) requests (CVE-2013-5211)')
-            # https://nvd.nist.gov/vuln/detail/CVE-2013-5211
-            service['info'].append(self._parse_monlist(script_node))
+            service['issues'].append(
+              Issue(
+                "Mode 7",
+                req_code = 42,
+                amplification_factor = "?"
+              )
+            )
+            service['info'] += self._parse_monlist(script_node)
             continue
 
           if script_ID == 'ntp-info':
-            service['issues'].append('could be abused for traffic amplification attacks: permits Mode 6 (opcode 2) requests')
-            service['info'] = self._parse_info(script_node)
+            service['issues'].append(
+              Issue(
+                "Mode 6",
+                opcode = 2,
+                amplification_factor = "?"
+              )
+            )
+            service['info'] += self._parse_info(script_node)
             continue
 
           if 'ntp' in script_ID:
-            service['issues'].append(f"Nmap script scan result not parsed: {script_ID}")
+            service['info'].append(f"Nmap script scan result not parsed: '{script_ID}'")
             #TODO: implement this
 
   def _parse_version(self, service_node):
@@ -97,7 +108,7 @@ class Parser(AbstractParser):
 
   def _parse_monlist(self, monlist_node):
     # TODO: properly parse this as soon as we have access to an XML result
-    return [ 'TODO' ]
+    return (f"Nmap script scan result not parsed: 'ntp-monlist'")
 
   def _parse_info(self, info_node):
     info = []

@@ -7,7 +7,7 @@ try:
 except:
   sys.exit("this script requires the 'defusedxml' module.\nplease install it via 'pip3 install defusedxml'.")
 
-from .. import AbstractParser
+from .. import Issue, AbstractParser
 from . import SERVICE_SCHEMA
 
 class Parser(AbstractParser):
@@ -81,6 +81,8 @@ class Parser(AbstractParser):
         service['transport_protocol'] = transport_protocol
         service['port'] = port
 
+        service['info'] = []
+
         # https://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.xhtml?search=ftps
         if port == '990':
           service['FTPS'] = True
@@ -113,7 +115,7 @@ class Parser(AbstractParser):
             continue
 
           if 'ftp' in script_ID and script_ID not in ('ftp-syst', ):
-            service['issues'].append(f"Nmap script scan result not parsed: {script_ID}")
+            service['info'].append(f"Nmap script scan result not parsed: '{script_ID}'")
             #TODO: parse results
 
   def _parse_ftp_anon(self, script_node, service):
@@ -130,10 +132,10 @@ class Parser(AbstractParser):
     script_output = script_node.get('output')
 
     if 'bounce working!' in script_output:
-      service['issues'].append('server allows bouncing')
+      service['issues'].append(Issue("bouncing"))
 
     if 'server forbids bouncing to low ports <1025' in script_output:
-      service['issues'].append('server forbids bouncing to low ports <1025')
+      service['issues'].append(Issue("bouncing: no low ports"))
 
   def _parse_ftp_proftpd_backdoor(self, script_node, service):
     # https://nmap.org/nsedoc/scripts/ftp-proftpd-backdoor.html
@@ -141,7 +143,7 @@ class Parser(AbstractParser):
     script_output = script_node.get('output')
 
     if 'This installation has been backdoored.' in script_output:
-      service['issues'].append("the server seems to be running a version of ProFTPD that contains a backdoor (i.e. `1.3.3c`)")
+      service['issues'].append(Issue("ProFTPD backdoor"))
 
   def _parse_ftp_vsftpd_backdoor(self, script_node, service):
     # https://nmap.org/nsedoc/scripts/ftp-vsftpd-backdoor.html
@@ -149,7 +151,7 @@ class Parser(AbstractParser):
     script_output = script_node.get('output')
 
     if 'State: VULNERABLE (Exploitable)' in script_output:
-      service['issues'].append("the server seems to be running a version of vsFTPd that contains a backdoor (i.e. `2.3.4`)")
+      service['issues'].append(Issue("vsFTPd backdoor"))
 
   def _parse_ftp_vuln_cve2010_4221(self, script_node, service):
     # https://nmap.org/nsedoc/scripts/ftp-vuln-cve2010-4221.html
@@ -157,4 +159,4 @@ class Parser(AbstractParser):
     script_output = script_node.get('output')
 
     if 'State: VULNERABLE' in script_output:
-      service['issues'].append("the server seems to be running a version of ProFTPD that contains a buffer-overflow vulnerability (i.e. versions `1.3.2rc3` through `1.3.3b`)")
+      service['issues'].append(Issue("ProFTPD buffer overflow"))

@@ -1,0 +1,35 @@
+["public FTP server"]
+description = "public FTP server"
+
+["no FTPS"]
+description = "does not support FTPS"
+
+["anonymous access"]
+description = "allows anonymous access"
+recommendations = [ "do not allow anonymous access" ]
+
+["bouncing"]
+description = "server allows bouncing"
+
+["bouncing: no low ports"]
+description = "server forbids bouncing to low ports <1025"
+
+["ProFTPD backdoor"]
+description = "the server seems to be running a version of ProFTPd that contains a backdoor (i.e. `1.3.3c`)"
+recommendations = [ "update FTP sofware" ]
+references = [
+  "[Exploit DB: ProFTPD backdoor](https://www.exploit-db.com/exploits/15662)"
+]
+
+["vsFTPd backdoor"]
+description = "the server seems to be running a version of vsFTPd that contains a backdoor (i.e. `2.3.4`)"
+recommendations = [ "update FTP sofware" ]
+references = [
+  "[CVE-2011-2523](https://nvd.nist.gov/vuln/detail/CVE-2011-2523)"
+]
+
+["ProFTPD buffer overflow"]
+description = "the server seems to be running a version of ProFTPD that contains a buffer-overflow vulnerability (i.e. versions `1.3.2rc3` through `1.3.3b`)"
+references = [
+  "[CVE-2010-4221](https://nvd.nist.gov/vuln/detail/CVE-2010-4221)"
+]

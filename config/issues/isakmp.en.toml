@@ -1,0 +1,31 @@
+["protocol: supported"]
+description = "{deviation} supported"
+recommendations = [ "disable {deviation}" ]
+
+["protocol: not supported"]
+description = "{deviation} not supported"
+recommendations = [ "support {deviation}" ]
+
+["IKEv1: Aggressive Mode supported"]
+description = "IKEv1: Aggressive Mode supported"
+
+["IKEv1: Aggressive Mode not supported"]
+description = "IKEv1: Aggressive Mode not supported"
+
+["IKE Attributes: supported"]
+description = "{name} supported: `{deviation}`"
+references = [
+  "[IANA: IKE Attributes](https://www.iana.org/assignments/ipsec-registry/ipsec-registry.xhtml)",
+]
+
+["IKE Attributes: not supported"]
+description = "{name} not supported: `{deviation}`"
+
+["IKEv2 Parameters: supported"]
+description = "{name} supported: `{deviation}`"
+references = [
+  "[IANA: IKEv2 Parameters](https://www.iana.org/assignments/ikev2-parameters/ikev2-parameters.xhtml)",
+]
+
+["IKEv2 Parameters: not supported"]
+description = "{name} not supported: `{deviation}`"

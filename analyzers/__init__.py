@@ -1,6 +1,57 @@
 import importlib
+import json
 import pathlib
 import sys
+
+class Issue(dict):
+
+  def __init__(self, id, **values):
+    '''
+    initialize an issue:
+    issue = Issue(123, a='42', b='bits')
+    or:
+    values = {"a": "42", "b": "bits"}
+    issue = Issue(123, **values)
+    '''
+
+    self.id = id
+    self.values = values
+
+    self.description = None
+    self.recommendations = []
+    self.references = []
+
+    dict.__init__(self, **values)
+
+  def format(self, templates):
+    issue_template = templates[self.id]
+
+    self._format_description(issue_template['description'])
+
+    if 'recommendations' in issue_template:
+      self._format_recommendations(issue_template['recommendations'])
+
+    if 'references' in issue_template:
+      self._format_references(issue_template['references'])
+
+  def _format_description(self, description):
+    self.description = description.format(**self.values)
+    self['description'] = self.description
+
+  def _format_recommendations(self, recommendations):
+    self.recommendations = []
+    for recommendation in recommendations:
+      formatted_recommendation = recommendation.format(**self.values)
+      self.recommendations.append(formatted_recommendation)
+    self['recommendations'] = self.recommendations
+
+  def _format_references(self, references):
+    self.references = []
+    for reference in references:
+      formatted_reference = reference.format(**self.values)
+      self.references.append(formatted_reference)
+
+    self['references'] = self.references
 
 class AbstractParser:
 

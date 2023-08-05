@@ -6,7 +6,7 @@ import pathlib
 import re
 import sys
 
-from .. import AbstractAnalyzer
+from .. import Issue, AbstractAnalyzer
 
 SERVICE_SCHEMA = {
   'address': None,
@@ -46,30 +46,33 @@ class Analyzer(AbstractAnalyzer):
 
       if service['public']:
         if 'public' in self.recommendations and not self.recommendations['public']:
-          issues.append("public DNS server")
+          issues.append(Issue("public DNS server"))
 
         if service['recursive']:
           if service['transport_protocol'].upper() == 'UDP':
+            issues.append(Issue("recursive DNS"))
             issues.append("supports recursive DNS: this could be abused for traffic amplification attacks")
-            # https://www.cloudflare.com/learning/dns/what-is-recursive-dns/
 
       if 'DNSSEC' in self.recommendations and service['DNSSEC'] is not None:
         if self.recommendations['DNSSEC'] and not service['DNSSEC']:
-          issues.append("does not validate DNSSEC: this could lead to DNS cache poisoning")
+          issues.append(Issue("DNSSEC not validated"))
 
       if service['recursive'] and 'ECS' in self.recommendations:
         if service['ECS'] and not self.recommendations['ECS']:
-          issues.append("supports ECS: this might decrease users' privacy and could enable targeted DNS poisoning attacks")
-          # https://yacin.nadji.us/docs/pubs/dimva16_ecs.pdf
+          issues.append(Issue("ECS: supported"))
         if not service['ECS'] and self.recommendations['ECS']:
-          issues.append("does not support ECS: this might hinder load balancing")
+          issues.append(Issue("ECS: not supported"))
 
       if service['AXFR']:
-        issues.append("permits AXFR: this might expose potentially sensitive information")
+        issues.append(Issue("AXFR"))
 
       for key, value in service['info'].items():
-        issues.append(f"additional information: `{key}={value}`")
-        # version.bind: https://kb.isc.org/docs/aa-00359
+        issues.append(
+          Issue(
+            "additional info",
+            info = f"`{key}={value}`"
+          )
+        )
 
     return services
 

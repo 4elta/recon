@@ -2,7 +2,7 @@ import ipaddress
 import json
 import re
 
-from .. import AbstractAnalyzer
+from .. import Issue, AbstractAnalyzer
 
 SERVICE_SCHEMA = {
   'address': None,
@@ -40,7 +40,7 @@ class Analyzer(AbstractAnalyzer):
 
       if service['public']:
         if 'public' in self.recommendations and not self.recommendations['public']:
-          issues.append("public NTP server")
+          issues.append(Issue("public NTP server"))
 
       if 'version' in self.recommendations:
         self.analyze_version(
@@ -62,4 +62,10 @@ class Analyzer(AbstractAnalyzer):
     if version is None:
       return
 
-    issues.append(f"used version: `{version}` (recommended version: `{recommendation}`)")
+    issues.append(
+      Issue(
+        "protocol version",
+        used_version = version,
+        recommended_version = recommendation
+      )
+    )
