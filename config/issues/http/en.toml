@@ -6,21 +6,21 @@ references = [
 ]
 
 ["STS header over HTTP"]
-description = "`strict-transport-security` header: an HSTS host must not include this header in responses conveyed over non-secure transport (i.e. HTTP)"
+description = "`strict-transport-security`: an HSTS host must not include this header in responses conveyed over non-secure transport (i.e. HTTP)"
 recommendations = [ "only send the STS header over HTTPS" ]
 references = [
   "[RFC6797: HTTP Strict Transport Security](https://datatracker.ietf.org/doc/html/rfc6797)",
 ]
 
 ["mandatory header missing"]
-description = "`{header}` header missing"
+description = "header missing: `{header}`"
 recommendations = [ "send the `{header}` header" ]
 references = [
   "[Mozilla: HTTP headers: `{header}`](https://developer.mozilla.org/en-US/docs/web/http/headers/{header})",
 ]
 
 ["incorrect syntax"]
-description = "`{header}`: incorrect syntax"
+description = "incorrect syntax: `{header}`"
 recommendations = [ "review the syntax for the `{header}` header" ]
 references = [
   "[Mozilla: HTTP headers: `{header}`](https://developer.mozilla.org/en-US/docs/web/http/headers/{header})",
@@ -164,7 +164,7 @@ recommendations = [ "do not publish sensitive information via the `server` heade
 ["x-powered-by"]
 description = "`x-powered-by`: potential information disclosure: `{value}`"
 recommendations = [ "do not send the `x-powered-by` header" ]
-# TODO: add references for how toon disable this header for various server software
+# TODO: add references for how to disable this header for various server software
 
 ["x-host"]
 description = "`x-host`: potential information disclosure: `{value}`"
