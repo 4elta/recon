@@ -121,7 +121,7 @@ Analyze and summarize the results of specific tools previously run by the scanne
 
 ```text
 $ analyze -h
-usage: analyze [-h] [-t name] [-r path] [-i path] [--json path] [--csv path] {?,dns,ftp,http,isakmp,ntp,rdp,ssh,tls}
+usage: analyze [-h] [-t name] [-r path] [-i path] [-l code] [--json path] [--csv path] {?,dns,ftp,http,isakmp,ntp,rdp,ssh,tls}
 
 positional arguments:
   {?,dns,ftp,http,isakmp,ntp,rdp,ssh,tls}
@@ -134,6 +134,8 @@ optional arguments:
                         path to the recommendations document (default: '/path/to/recon/config/recommendations/<service>/default.toml')
   -i path, --input path
                         path to the root directory that holds the results to be analysed (default: './recon')
+  -l code, --language code
+                        specify the language in which the analysis should be printed (default: 'en')
   --json path           in addition to the analysis printed in Markdown to STDOUT, also save the analysis as a JSON document
   --csv path            in addition to the analysis printed in Markdown to STDOUT, also save the analysis as a CSV document
 ```
