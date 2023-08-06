@@ -100,7 +100,7 @@ class Parser(AbstractParser):
             )
             continue
 
-          #service['issues'].append(f"Nmap script scan result not parsed: {script_ID}")
+          service['info'].append(f"Nmap script scan result not parsed: '{script_ID}'")
           #TODO: parse results
 
   def parse_http_headers(self, script_node, response_headers):
