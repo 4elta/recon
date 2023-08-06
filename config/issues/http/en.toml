@@ -20,7 +20,7 @@ references = [
 ]
 
 ["incorrect syntax"]
-description = "incorrect syntax: `{header}`"
+description = "incorrect syntax with `{header}` header"
 recommendations = [ "review the syntax for the `{header}` header" ]
 references = [
   "[Mozilla: HTTP headers: `{header}`](https://developer.mozilla.org/en-US/docs/web/http/headers/{header})",
