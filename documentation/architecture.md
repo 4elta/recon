@@ -61,9 +61,11 @@ In case the service was identified as a web service, the following additional va
 ## analysis
 
 The analysis component (i.e. `analyze.py`) provides functionality to analyze and summarize results of specific tools.
-The analysis is based on recommendations which are specified as TOML files.
+The analysis is based on recommendations which are specified as TOML files (i.e. [`config/recommendations/<protocol>`](../config/recommendations/)).
 TOML (or, more generally, a markup language) was chosen because it ensures that the recommendations are human-readable and therefore easier to maintain than code.
-Some example recommendations can be found in [`config/recommendations/<protocol>`](../config/recommendations/).
 
 The analysis component consists of at least one analyzer sub-component; one for each protocol.
 Each analyzer sub-component requires a parser that is responsible for mapping/parsing the result of a particular tool to an internal (tool-agnostic) representation of a service's configuration/vulnerabilities.
+
+The issue descriptions (e.g. "protocol supported: TLS 1.0"), recommendations (e.g. "disable support for TLS 1.0") and links to references are stored in a TOML file (i.e. [`config/issues/<service>/<language>.toml`](../config/issues/)).
+This allows easy translation of the information.
