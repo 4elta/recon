@@ -90,6 +90,8 @@ class Parser(AbstractParser):
         service['host'] = host
         service['port'] = port
 
+        service['info'] = []
+
         for script_node in port_node.findall('script'):
           script_ID = script_node.get('id')
 
