@@ -1,0 +1,17 @@
+["public NTP server"]
+description = "öffentlicher NTP-Server"
+
+["protocol version"]
+description = "verwendete Version: `{used_version}`"
+recommendations = [
+  "verwenden Sie Version `{recommended_version}`"
+]
+
+["Mode 6"]
+description = "kann für sogenannte \"Traffic Amplification\"-Angriffe missbraucht werden: erlaubt Mode-6-Anfragen (opcode {opcode}); Verstärkungsfaktor: {amplification_factor}"
+
+["Mode 7"]
+description = "kann für sogenannte \"Traffic Amplification\"-Angriffe missbraucht werden: erlaubt Mode-7-Anfragen (req code {req_code}); Verstärkungsfaktor: {amplification_factor}"
+references = [
+  "[CVE-2013-5211](https://nvd.nist.gov/vuln/detail/CVE-2013-5211)"
+]

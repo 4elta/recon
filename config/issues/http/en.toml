@@ -6,7 +6,7 @@ references = [
 ]
 
 ["STS header over HTTP"]
-description = "`strict-transport-security`: an HSTS host must not include this header in responses conveyed over non-secure transport (i.e. HTTP)"
+description = "`strict-transport-security`: an HSTS host must not include this header in responses conveyed over non-secure transport (e.g. HTTP)"
 recommendations = [ "only send the STS header over HTTPS" ]
 references = [
   "[RFC6797: HTTP Strict Transport Security](https://datatracker.ietf.org/doc/html/rfc6797)",
@@ -56,7 +56,7 @@ references = [
 
 ["CSP script-src missing"]
 description = "`content-security-policy`: `script-src` directive missing"
-recommendations = [ "`content-security-policy`: declare a `script-src`" ]
+recommendations = [ "`content-security-policy`: declare a `script-src` directive" ]
 references = [
   "[Mozilla: HTTP headers: `content-security-policy`](https://developer.mozilla.org/en-US/docs/web/http/headers/content-security-policy)",
 ]
@@ -125,7 +125,7 @@ references = [
 ]
 
 ["CORS wildcard origin"]
-description = "`access-control-allow-origin`: server allows requests to its resources from any origin (i.e. `*`); make sure to not also send the `access-control-allow-credentials` header!"
+description = "`access-control-allow-origin`: server allows requests to its resources from any origin (i.e. `*`); make sure to not also send the `access-control-allow-credentials` header"
 recommendations = [ "`access-control-allow-origin`: limit the origins allowed to requests resources from your server" ]
 references = [
   "[Mozilla: HTTP headers: `access-control-allow-origin`](https://developer.mozilla.org/en-US/docs/web/http/headers/access-control-allow-origin)",

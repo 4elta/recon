@@ -1,90 +1,90 @@
 ["connection error"]
-description = "could not connect to server"
+description = "konnte keine Verbindung zum Server aufbauen"
 
 ["protocol: supported"]
-description = "protocol supported: {protocol}"
-recommendations = [ "remove support for {protocol}" ]
+description = "Protokoll wird unterstützt: {protocol}"
+recommendations = [ "Protokoll nicht mehr unterstützen: {protocol}" ]
 
 ["protocol: not supported"]
-description = "protocol not supported: {protocol}"
-recommendations = [ "support {protocol}" ]
+description = "Protokoll wird nicht unterstützt: {protocol}"
+recommendations = [ "Protokoll unterstützen: {protocol}" ]
 
 ["certificate: none"]
-description = "could not parse server certificate"
+description = "Serverzertifikat konnte nicht gelesen werden"
 
 ["certificate: not trusted"]
-description = "certificate not trusted: {info}"
+description = "Zertifikat nicht vertrauenswürdig: {info}"
 
 ["certificate: not trusted: self signed"]
-description = "certificate not trusted: self signed"
+description = "Zertifikat nicht vertrauenswürdig: selbst signiert"
 
 ["certificate: not trusted: hostname mismatch"]
-description = "certificate not trusted: hostname mismatch"
+description = "Zertifikat nicht vertrauenswürdig: Hostname unstimmig"
 
 ["certificate: not trusted: invalid certificate chain"]
-description = "certificate not trusted: invalid certificate chain"
+description = "Zertifikat nicht vertrauenswürdig: ungültige Zertifikatskette"
 
 ["certificate: not trusted: path validation failed"]
-description = "certificate not trusted: path validation failed"
+description = "Zertifikat nicht vertrauenswürdig: Pfadvalidierung fehlgeschlagen"
 
 ["certificate: not trusted: expired"]
-description = "certificate not trusted: expired"
+description = "Zertifikat nicht vertrauenswürdig: abgelaufen"
 
 ["certificate: SHA-1 signature"]
-description = "signature based on SHA-1 found within the certificate chain"
+description = "Signature auf Grundlage von SHA-1 in der Zertifikatskette gefunden"
 
 ["certificate: legacy Symantec"]
-description = "certificate chain contains a legacy Symantec certificate"
+description = "Zertifikatskette enthält ein altes Symantec-Zertifikat"
 references = [
   "[Distrust of Symantec TLS Certificates](https://blog.mozilla.org/security/2018/03/12/distrust-symantec-tls-certificates/)"
 ]
 
 ["certificate: private IP address"]
-description = "certificate contains private IP address: `{address}`"
-recommendations = [ "do not publish private IP address in the server certificate" ]
+description = "Zertifikat enthält private IP-Adresse: `{address}`"
+recommendations = [ "keine privaten IP-Adressen im Serverzertifikat veröffentlichen" ]
 
 ["certificate: lifespan"]
-description = "certificate lifespan: {lifespan} days"
-recommendations = [ "limit the lifespan of the certificate to the recommended value" ]
+description = "Lebensdauer des Zertifikats: {lifespan} Tage"
+recommendations = [ "begrenzen Sie die Lebensdauer des Zertifikats auf den empfohlenen Wert" ]
 
 ["certificate: public key"]
-description = "certificate: public key: {key_info}"
+description = "Zertifikat: öffentlicher Schlüssel: {key_info}"
 
 ["certificate: public key: curve"]
-description = "certificate: public key: curve `{curve}`"
+description = "Zertifikat: öffentlicher Schlüssel: Kurve `{curve}`"
 
 ["certificate: signature algorithm"]
-description = "certificate: signature algorithm: `{algorithm}`"
+description = "Zertifikat: Signatur-Algorithmus: `{algorithm}`"
 
 ["cipher preference"]
-description = "cipher preference: {preference}"
+description = "Chiffre-Präferenz: {preference}"
 
 ["cipher suites: none"]
-description = "server does not appear to support any cipher suites"
+description = "Server scheint keine Cipher-Suites zu unterstützen"
 
 ["cipher suites: supported"]
-description = "cipher suite supported: `{cipher_suite}`"
+description = "unterstützte Cipher-Suite: `{cipher_suite}`"
 
 ["key exchange"]
-description = "key exchange: {info}"
+description = "Schlüssel-Austausch: {info}"
 
 ["key exchange: group"]
-description = "key exchange: group `{group}`"
+description = "Schlüssel-Austausch: Gruppe `{group}`"
 
 ["signature algorithm"]
-description = "signature algorithm: {info}"
+description = "Signatur-Algorithmus: {info}"
 
 ["extensions: not supported"]
-description = "extension not supported: `{extension}`"
+description = "Erweiterung wird nicht unterstützt: `{extension}`"
 
 ["extensions: supported"]
-description = "extension supported: `{extension}`"
+description = "Erweiterung wird unterstützt: `{extension}`"
 
 # VULNERABILITIES
 
 # legacy (insecure) renegotiation
 ["vuln: client-initiated renegotiation DoS"]
-description = "vulnerable to client-initiated renegotiation DoS"
+description = "anfällig für DoS-Angriff durch Client-initiierte TLS-Neuverhandlung"
 references = [
   "[CVE-2011-1473](https://nvd.nist.gov/vuln/detail/CVE-2011-1473)",
   "[RFC5746: TLS Renegotiation Indication Extenstion](https://www.rfc-editor.org/rfc/rfc5746.html#section-4.4)",
@@ -92,7 +92,7 @@ references = [
 
 # CBC vulnerability in SSL 3.0 and TLS 1.0
 ["vuln: BEAST"]
-description = "potentially vulnerable to BEAST (Browser Exploit Against SSL/TLS): ciphers in CBC mode with SSL 3.0 or TLS 1.0"
+description = "potenziell anfällig für BEAST (Browser Exploit Against SSL/TLS): Verschlüsselungsalgorithmen im CBC-Modus mit SSL 3.0 oder TLS 1.0"
 references = [
   "[CVE-2011-3389](https://nvd.nist.gov/vuln/detail/CVE-2011-3389)",
   "[BEAST](https://web.archive.org/web/20140603102506/https://bug665814.bugzilla.mozilla.org/attachment.cgi?id=540839)",
@@ -100,7 +100,7 @@ references = [
 
 # server accepts TLS compression, or uses SPDY header compression
 ["vuln: CRIME"]
-description = "vulnerable to CRIME (Compression Ratio Info-leak Made Easy): TLS compression or SPDY header compression"
+description = "anfällig für CRIME (Compression Ratio Info-leak Made Easy): TLS-Kompression oder SPDY-Header-Kompression"
 references = [
   "[CVE-2012-4929](https://nvd.nist.gov/vuln/detail/CVE-2012-4929)",
   "[CRIME](https://en.wikipedia.org/wiki/CRIME)",
@@ -108,7 +108,7 @@ references = [
 
 # HTTP compression
 ["vuln: BREACH"]
-description = "potentially vulnerable to BREACH (Browser Reconnaissance and Exfiltration via Adaptive Compression of Hypertext): HTTP compression detected"
+description = "potenziell anfällig für BREACH (Browser Reconnaissance and Exfiltration via Adaptive Compression of Hypertext): HTTP-Kompression entdeckt"
 references = [
   "[CVE-2013-3587](https://nvd.nist.gov/vuln/detail/CVE-2013-3587)",
   "[BREACH](https://www.breachattack.com/)",
@@ -117,7 +117,7 @@ references = [
 
 # certain implementations of the TLS protocol that use the CBC mode of operation are vulnerable
 ["vuln: Lucky Thirteen"]
-description = "potentially vulnerable to Lucky Thirteen: ciphers in CBC mode"
+description = "potenziell anfällig für Lucky Thirteen: Verschlüsselungsalgorithmen im CBC-Modus"
 references = [
   "[CVE-2013-0169](https://nvd.nist.gov/vuln/detail/CVE-2013-0169)",
   "[Lucky Thirteen](https://en.wikipedia.org/wiki/Lucky_Thirteen_attack)",
@@ -125,7 +125,7 @@ references = [
 
 # vulnerable version of heartbeat TLS extension
 ["vuln: Heartbleed"]
-description = "vulnerable to Heartbleed: vulnerable version of the heartbeat TLS extension (OpenSSL 1.0.1 through 1.0.1f)"
+description = "anfällig für Heartbleed: anfällige Version der Heartbeat-TLS-Erweiterung (OpenSSL 1.0.1 bis 1.0.1f)"
 references = [
   "[CVE-2014-0160](https://nvd.nist.gov/vuln/detail/CVE-2014-0160)",
   "[Heartbleed](https://heartbleed.com/)",
@@ -133,7 +133,7 @@ references = [
 
 # legacy protocols (SSL 3)
 ["vuln: POODLE"]
-description = "vulnerable to POODLE (Padding Oracle On Downgraded Legacy Encryption): SSL 3.0"
+description = "anfällig für POODLE (Padding Oracle On Downgraded Legacy Encryption): SSL 3.0"
 references = [
   "[CVE-2014-3566](https://nvd.nist.gov/vuln/detail/CVE-2014-3566)",
   "[POODLE](https://en.wikipedia.org/wiki/POODLE)",
@@ -141,7 +141,7 @@ references = [
 
 # this is an attack against implementations of the ChangeCipherSpec (CCS) in outdated versions of OpenSSL
 ["vuln: OpenSSL CCS injection"]
-description = "vulnerable to CCS (ChangeCipherSpec) injection: outdated version of OpenSSL"
+description = "anfällig für Injektion im Kontext von CCS (ChangeCipherSpec): veraltete Version von OpenSSL"
 references = [
   "[CVE-2014-0224](https://nvd.nist.gov/vuln/detail/CVE-2014-0224)",
   "[Early ChangeCipherCpec](https://www.imperialviolet.org/2014/06/05/earlyccs.html)",
@@ -149,7 +149,7 @@ references = [
 
 # server supports RSA with moduli of 512 bits or less
 ["vuln: FREAK"]
-description = "vulnerable to FREAK (Factoring RSA Export Keys): RSA with moduli of 512 bits or less"
+description = "anfällig für FREAK (Factoring RSA Export Keys): RSA mit Moduli von 512 Bit oder weniger"
 references = [
   "[CVE-2015-0204](https://nvd.nist.gov/vuln/detail/CVE-2015-0204)",
   "[FREAK](https://en.wikipedia.org/wiki/FREAK)",
@@ -157,7 +157,7 @@ references = [
 
 # weak DH keys
 ["vuln: Logjam"]
-description = "vulnerable to Logjam: weak DH keys"
+description = "anfällig für Logjam: schwache DH-Schlüssel"
 references = [
   "[CVE-2015-4000](https://nvd.nist.gov/vuln/detail/CVE-2015-4000)",
   "[Logjam](https://weakdh.org/)",
@@ -165,7 +165,7 @@ references = [
 
 # server supports SSL 2
 ["vuln: DROWN"]
-description = "vulnerable to DROWN (Decrypting RSA with Obsolete and Weakened eNcryption): SSL 2.0"
+description = "anfällig für DROWN (Decrypting RSA with Obsolete and Weakened eNcryption): SSL 2.0"
 references = [
   "[CVE-2016-0800](https://nvd.nist.gov/vuln/detail/CVE-2016-0800)",
   "[DROWN](https://drownattack.com/)",
@@ -173,7 +173,7 @@ references = [
 
 # support of DES/3DES
 ["vuln: Sweet32"]
-description = "vulnerable to Sweet32: DES/3DES"
+description = "anfällig für Sweet32: DES/3DES"
 references = [
   "[CVE-2016-2183](https://nvd.nist.gov/vuln/detail/CVE-2016-2183)",
   "[CVE-2016-6329](https://nvd.nist.gov/vuln/detail/CVE-2016-6329)",
@@ -182,7 +182,7 @@ references = [
 
 # vulnerable implementation of Session Tickets
 ["vuln: Ticketbleed"]
-description = "vulnerable to Ticketbleed: insecure implementation for handling Session Tickets"
+description = "anfällig für Ticketbleed: unsichere Implementierung im Umgang mit Session-Tickets"
 references = [
   "[CVE-2016-9244](https://nvd.nist.gov/vuln/detail/CVE-2016-9244)",
   "[Ticketbleed](https://filippo.io/Ticketbleed/)",
@@ -190,7 +190,7 @@ references = [
 
 # use of RSA for key exchange
 ["vuln: ROBOT"]
-"description" = "vulnerable to ROBOT (Return Of Bleichenbacher's Oracle Threat): RSA for key exchange"
+"description" = "anfällig für ROBOT (Return Of Bleichenbacher's Oracle Threat): RSA für den Schlüsselaustausch"
 references = [
   "[CVE-2017-13099](https://nvd.nist.gov/vuln/detail/CVE-2017-13099)",
   "[ROBOT](https://www.robotattack.org/)",

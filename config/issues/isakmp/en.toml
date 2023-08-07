@@ -1,9 +1,9 @@
 ["protocol: supported"]
-description = "{deviation} supported"
+description = "protocol supported: {deviation}"
 recommendations = [ "disable {deviation}" ]
 
 ["protocol: not supported"]
-description = "{deviation} not supported"
+description = "protocol not supported: {deviation}"
 recommendations = [ "support {deviation}" ]
 
 ["IKEv1: Aggressive Mode supported"]

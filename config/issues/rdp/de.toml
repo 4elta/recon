@@ -1,0 +1,17 @@
+["public RDP server"]
+description = "öffentlicher RDP-Server"
+
+["protocol: supported"]
+description = "Protokoll wird unterstützt: `{protocol}`"
+
+["protocol: not supported"]
+description = "Protokoll wird nicht unterstützt: `{protocol}`"
+
+["encryption level"]
+description = "unterstützte Verschlüsselungsstufe: `{level}`"
+
+["no NLA"]
+description = "NLA nicht unterstützt: dies könnte Denial-of-Service-Angriffe auf den Server ermöglichen"
+
+["information disclosure"]
+description = "Offenlegung von potenziell sensiblen Informationen: `{key}: {value}`"
