@@ -10,14 +10,6 @@ try:
 except:
   sys.exit("this script requires the 'toml' module.\nplease install it via 'pip3 install toml'.")
 
-vulnerabilities_specification_document = pathlib.Path(
-  pathlib.Path(__file__).resolve().parent,
-  "vulnerabilities.toml"
-  )
-
-with open(vulnerabilities_specification_document, 'r') as f:
-  VULNERABILITIES = toml.load(f)
-
 from .. import Issue, AbstractAnalyzer
 
 CERTIFICATE_SCHEMA = {
