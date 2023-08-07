@@ -106,6 +106,8 @@ class Parser(AbstractParser):
             elif 'none_auth' in script_output:
               # https://www.rfc-editor.org/rfc/rfc4252#section-5.2
               service['client_authentication_methods'] = [ 'none' ]
+            elif 'false' in script_output:
+              service['client_authentication_methods'] = [ 'false' ]
             else:
               service['client_authentication_methods'] = self._parse_table(script_node.find('table'))
 
