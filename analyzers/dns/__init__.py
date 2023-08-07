@@ -51,7 +51,6 @@ class Analyzer(AbstractAnalyzer):
         if service['recursive']:
           if service['transport_protocol'].upper() == 'UDP':
             issues.append(Issue("recursive DNS"))
-            issues.append("supports recursive DNS: this could be abused for traffic amplification attacks")
 
       if 'DNSSEC' in self.recommendations and service['DNSSEC'] is not None:
         if self.recommendations['DNSSEC'] and not service['DNSSEC']:
