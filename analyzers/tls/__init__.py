@@ -4,12 +4,6 @@ import json
 import pathlib
 import sys
 
-try:
-  # https://github.com/uiri/toml
-  import toml
-except:
-  sys.exit("this script requires the 'toml' module.\nplease install it via 'pip3 install toml'.")
-
 from .. import Issue, AbstractAnalyzer
 
 CERTIFICATE_SCHEMA = {
