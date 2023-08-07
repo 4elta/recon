@@ -1,0 +1,26 @@
+["public SSH server"]
+description = "öffentlicher SSH-Server"
+
+["protocol: supported"]
+description = "Protokoll wird unterstützt: {version}"
+
+["protocol: not supported"]
+description = "Protokoll wird nicht unterstützt: {version}"
+
+["key exchange method"]
+description = "Schlüsselaustauschmethode: `{method}`"
+
+["server host key"]
+description = "Server-Host-Schlüssel: {key_type_size} bits"
+
+["encryption algorithm"]
+description = "Verschlüsselungsalgorithmus: `{algorithm}`"
+
+["MAC algorithm"]
+description = "MAC-Algorithmus: `{algorithm}`"
+
+["client authentication method"]
+description = "Client-Authentifizierungsmethode: `{method}`"
+
+["client authentication method: unknown"]
+description = "Authentifizierungsmethode konnte nicht ermittelt werden"
