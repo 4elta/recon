@@ -74,7 +74,7 @@ sudo apt install \
 
 ## usage
 
-1. run your "standard" Nmap port and service scans; just make sure to include `-sV --version-all` and `-oX services.xml`
+1. run your "standard" Nmap port and service scan(s); make sure to use `-sV` and `-oX services.xml` for the service scan
 2. run the scanner on the results of the Nmap service scan; be aware that this (like the Nmap scan itself) will send requests to the target system(s)
 3. run the analyzer on the results of the scanner; no network traffic will be generated during this step
 
@@ -141,6 +141,7 @@ optional arguments:
 ```
 
 The following analyzers (and parsers) are currently implemented:
+
 * DNS configuration (`nase`, `nmap`)
 * FTP configuration (`nmap`)
 * HTTP response headers (`nmap`)
@@ -149,6 +150,11 @@ The following analyzers (and parsers) are currently implemented:
 * RDP configuration (`nmap`)
 * SSH configuration (`nmap`)
 * TLS configuration (`testssl`, `sslscan`, `sslyze`, or `nmap`)
+
+The following languages are currently available for the analysis:
+
+* `en`: English
+* `de`: Deutsch
 
 The analyzer prints its results in Markdown, in the format expected by the [report generator](https://github.com/4elta/report-generator).
 If you need the analysis in a markup format other than Markdown, just [pipe](https://en.wikipedia.org/wiki/Pipeline_(Unix)) the output of the analyzer to [`pandoc`](https://pandoc.org/) and you are good to go.
