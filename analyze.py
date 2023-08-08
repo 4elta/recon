@@ -75,7 +75,7 @@ def analyze_service(service, files, tool=None, recommendations_file=None, json_p
     if not len(service['issues']):
       continue
 
-    affected_assets.append(f"{asset}")
+    affected_assets.append(asset)
 
     print(f"\n## {asset}\n")
 
