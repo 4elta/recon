@@ -61,7 +61,7 @@ class Parser(AbstractParser):
       host = ssltest_node.get('host')
       port = ssltest_node.get('port')
 
-      identifier = f"{host}:{port}"
+      identifier = f"{host}:{port} ({self.transport_protocol})"
 
       if identifier in self.services:
         continue

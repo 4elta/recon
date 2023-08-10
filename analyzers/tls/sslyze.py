@@ -171,7 +171,7 @@ class Parser(AbstractParser):
       host = server_location['hostname'] # TODO: or is it 'ip_address'?
       port = server_location['port']
 
-      identifier = f"{host}:{port}"
+      identifier = f"{host}:{port} ({self.transport_protocol})"
 
       if identifier in self.services:
         continue

@@ -81,7 +81,11 @@ class AbstractParser:
     parse a specific file.
     this method has to be implemented by each concrete Parser class.
     '''
-    pass
+
+    # extract the application/transport protocol from the filename
+    tokens = path.split(',')
+    self.application_protocol = tokens[0]
+    self.transport_protocol = tokens[1]
 
 class AbstractAnalyzer:
 

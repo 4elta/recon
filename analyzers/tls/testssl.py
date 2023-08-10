@@ -63,7 +63,7 @@ class Parser(AbstractParser):
       if s['severity'] == 'INFO':
         application_protocol = s['finding']
 
-      identifier = f"{host}:{port}"
+      identifier = f"{host}:{port} ({self.transport_protocol})"
 
       if identifier in self.services:
         continue
