@@ -11,26 +11,23 @@ This allows for an automated and consistent assessment of specific services (i.e
 
 ## installation
 
+The tools in this suite (i.e. `analyze.py` and `scan.py`) require Python 3.11+.
 Install the dependencies:
 
 ```shell
-sudo apt install \
-  python3-defusedxml \
-  python3-rich \
-  python3-toml
+sudo apt install python3-defusedxml python3-rich
 ```
 
 Install the tool suite:
 
 ```shell
-cd /path/to/tools
 git clone https://github.com/4elta/recon.git
-cd recon
 ```
 
 Make sure that the scripts have the *executable* flag set:
 
 ```shell
+cd recon
 chmod +x analyze.py
 chmod +x scan.py
 chmod +x scanners/*

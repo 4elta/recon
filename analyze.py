@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3.11
 
 import argparse
 import csv
@@ -7,12 +7,7 @@ import json
 import pathlib
 import re
 import sys
-
-try:
-  # https://github.com/uiri/toml
-  import toml
-except:
-  sys.exit("this script requires the 'toml' module.\nplease install it via 'pip3 install toml'.")
+import tomllib as toml
 
 SUPPORTED_SERVICES = ['dns', 'ftp', 'http', 'isakmp', 'ntp', 'rdp', 'ssh', 'tls', ]
 
@@ -33,7 +28,7 @@ def analyze_service(service, files, tool=None, recommendations_file=None, json_p
     if not recommendations_file.exists():
       sys.exit(f"the default recommendations file '{recommendations_file}' does not exist!")
 
-  with open(recommendations_file, 'r') as f:
+  with open(recommendations_file, 'rb') as f:
     recommendations = toml.load(f)
 
   module = importlib.import_module(f'analyzers.{service}')
@@ -55,7 +50,7 @@ def analyze_service(service, files, tool=None, recommendations_file=None, json_p
   if not issues_file.exists():
     sys.exit(f"the file '{issues_file}' does not exist!")
 
-  with open(issues_file, 'r') as f:
+  with open(issues_file, 'rb') as f:
     issue_templates = toml.load(f)
 
   affected_assets = []

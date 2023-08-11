@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3.11
 
 # run service-specific scans based on the result of Nmap service scans.
 
@@ -14,7 +14,7 @@ import string
 import subprocess
 import sys
 import time
-
+import tomllib as toml
 
 try:
   # https://rich.readthedocs.io/en/latest/index.html
@@ -25,12 +25,6 @@ except:
 from rich.console import Group
 from rich.live import Live
 from rich.progress import Progress, SpinnerColumn
-
-try:
-  # https://github.com/uiri/toml
-  import toml
-except:
-  sys.exit("this script requires the 'toml' module.\nplease install it via 'pip3 install toml'.")
 
 try:
   # https://github.com/tiran/defusedxml
@@ -562,7 +556,7 @@ async def process(args):
       sys.exit(f"the default configuration file '{config_file_path}' does not exist!")
 
   global SERVICES_CONFIG
-  with open(config_file_path, 'r') as f:
+  with open(config_file_path, 'rb') as f:
     SERVICES_CONFIG = toml.load(f)
 
   base_directory = args.output.resolve()
