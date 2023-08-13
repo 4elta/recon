@@ -141,7 +141,7 @@ class Parser(AbstractParser):
       key = elem_node.get('key')
       value = elem_node.text
 
-      service['info'].append(f"NTLM info: `{key}={value}`")
+      service['info'].append(f"NTLMSSP: `{key}={value}`")
 
       if key in ('DNS_Computer_Name', 'Product_Version'):
         service['issues'].append(
