@@ -135,13 +135,13 @@ class Parser(AbstractParser):
 
   def _parse_rdp_ntlm_info(self, script_node, service):
     # https://nmap.org/nsedoc/scripts/rdp-ntlm-info.html
-
-    ntlm_info = {}
+    # "Sending an incomplete CredSSP (NTLM) authentication request with null credentials will cause the remote service to respond with a NTLMSSP message disclosing information to include NetBIOS, DNS, and OS build version."
 
     for elem_node in script_node.iter('elem'):
       key = elem_node.get('key')
       value = elem_node.text
-      ntlm_info[key] = value
+
+      service['info'].append(f"NTLM info: `{key}={value}`")
 
       if key in ('DNS_Computer_Name', 'Product_Version'):
         service['issues'].append(
@@ -151,6 +151,3 @@ class Parser(AbstractParser):
             value = value
           )
         )
-        # "Sending an incomplete CredSSP (NTLM) authentication request with null credentials will cause the remote service to respond with a NTLMSSP message disclosing information to include NetBIOS, DNS, and OS build version."
-
-    service['NTLM_info'] = ntlm_info
