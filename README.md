@@ -13,7 +13,7 @@ This allows for an automated and consistent assessment of specific services (i.e
 
 The tools in this suite (i.e. `analyze.py` and `scan.py`) require Python 3.11+.
 
-Install the dependencies:
+Install the dependencies ([defusedxml](https://github.com/tiran/defusedxml), [Rich](https://rich.readthedocs.io/en/latest/introduction.html)):
 
 ```shell
 sudo apt install python3-defusedxml python3-rich
