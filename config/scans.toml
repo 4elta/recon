@@ -66,6 +66,9 @@ patterns = [ '^(.+\|)?http' ] # 'http', 'https', '.+|http'
   patterns = [ '[Ss]erver: ([^\n]+)', 'WebDAV is ENABLED' ]
 
   [http.scans.index]
+  command = 'curl --silent --insecure --max-time 10 {scheme}://{hostname}:{port}/ 2>&1 | tee --append "{result_file}.html"'
+
+  [http.scans.curl]
   command = 'curl --silent --verbose --insecure --show-error --max-time 10 {scheme}://{hostname}:{port}/ 2>&1 | tee --append "{result_file}.log"'
   patterns = [ '(?i)Powered by [^\n]+', '[Ss]erver: [^\n]+' ]
 
