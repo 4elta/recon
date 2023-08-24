@@ -160,7 +160,7 @@ async def read_command_results(process, command):
       for pattern in command.patterns:
         match = re.search(pattern, line)
         if match:
-          JOB_PROGRESS.console.print(f"{command.description}: \"{line.strip()}\"")
+          JOB_PROGRESS.console.print(f"{command.description}: \"{match.group(0)}\"")
     else:
       return
 
