@@ -142,7 +142,7 @@ The following analyzers (and parsers) are currently implemented:
 
 * DNS configuration (`nase`, `nmap`)
 * FTP configuration (`nmap`)
-* HTTP response headers (`nmap`)
+* HTTP response headers (`nmap`, `curl`)
 * ISAKMP/IKE configuration (`ike`)
 * NTP configuration (`ntp`, `nmap`)
 * RDP configuration (`nmap`)
