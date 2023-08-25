@@ -186,3 +186,6 @@ references = [
   "[RFC7469: Public Key Pinning Extension for HTTP](https://datatracker.ietf.org/doc/html/rfc7469)",
   "[Using HPKP for evil](https://scotthelme.co.uk/using-security-features-to-do-bad-things/#usinghpkpforevil)"
 ]
+
+["CSP via meta element"]
+description = "CSP via `meta`-Element deklariert"

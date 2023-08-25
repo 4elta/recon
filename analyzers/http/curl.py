@@ -23,9 +23,9 @@ class Parser(AbstractParser):
     pattern_info = re.compile(r'^\*\s+(?P<info>.+)')
     pattern_request = re.compile(r'^> (?P<request>.+)')
     pattern_response = re.compile(r'^< (?P<response>.+)')
-    pattern_body = re.compile(r'^(?P<body>[^*>}<{].*)')
+    pattern_body = re.compile(r'^(?P<body>(?![*>}<{][\s]).*)')
 
-    pattern_info_host = re.compile(r'Connected to .+ \((?P<host>[^)]+)\) port (?P<port>\d+)')
+    pattern_info_host = re.compile(r'Connected to (?P<host>[^\s]+) \((?P<address>[^)]+)\) port (?P<port>\d+)')
     pattern_info_https = re.compile(r'SSL connection using .+')
 
     scheme = 'http'

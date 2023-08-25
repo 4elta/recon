@@ -81,6 +81,14 @@ class Analyzer(AbstractAnalyzer):
               issues
             )
 
+      if service['response_body']:
+        for html_elem in self.recommendations['body']:
+          self._run_check(
+            ( 'body', html_elem ),
+            service['response_body'],
+            issues
+          )
+
       '''
       special cases: vulnerability scanners
 

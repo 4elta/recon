@@ -20,7 +20,7 @@ on_mismatch = { issue.id = "STS expire time too short" }
 
 [header.content-security-policy]
 # https://w3c.github.io/webappsec-csp/#csp-header
-regex = "(?P<policy_directive>(?:child|connect|default|font|frame|img|manifest|media|object|prefetch|worker)-src|(?:script|style)-src(?:-(?:elem|attr))?|webrtc|base-uri|sandbox|form-action|frame-ancestors|navigate-to|report-(?:uri|to)|require-trusted-types-for|trusted-types|upgrade-insecure-requests) (?P<policy_values>[^;]+)(?:; *)?"
+regex = "(?P<policy_directive>(?:(?:child|connect|default|font|frame|img|manifest|media|object|prefetch|worker)-src)|(?:(?:script|style)-src(?:-(?:elem|attr))?)|webrtc|base-uri|sandbox|form-action|frame-ancestors|navigate-to|(?:report-(?:uri|to))|require-trusted-types-for|trusted-types|upgrade-insecure-requests) (?P<policy_values>[^;]+)(?:; *)?"
 on_mismatch = { issue.id = "incorrect syntax", issue.header = "content-security-policy" }
 on_match = { next = [ "default-src", "src_http", "src_localhost", "report-uri", "script-src", "object-src", "base-uri" ] }
 
@@ -148,4 +148,18 @@ on_match = { issue.id = "HPKP" }
 # https://datatracker.ietf.org/doc/html/rfc7469
 regex = "."
 on_match = { issue.id = "HPKP report-only" }
+
+
+[body.meta]
+regex = "<meta http-equiv"
+on_match = { next = ["http-equiv"] }
+
+[body.meta.'http-equiv']
+# https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP
+regex = "http-equiv=(['\"])(?P<http_equiv>content-security-policy)\\1"
+on_match = { next = ["content-security-policy"] }
+
+[body.meta.'http-equiv'.'content-security-policy']
+regex = "content=(['\"]).+?\\1"
+on_match = { issue.id = "CSP via meta element" }
 
