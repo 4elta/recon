@@ -156,15 +156,21 @@ class Analyzer(AbstractAnalyzer):
             **event_handler['issue']
           )
         )
-      return
 
     if 'next' in event_handler:
       for next_check in event_handler['next']:
         if match and next_check in match.groupdict():
           value = match.group(next_check)
 
-        self._run_check(
-          (*breadcrumbs, next_check),
-          value,
-          issues
-        )
+        if '.' in next_check:
+          self._run_check(
+            next_check.split('.'),
+            value,
+            issues
+          )
+        else:
+          self._run_check(
+            (*breadcrumbs, next_check),
+            value,
+            issues
+          )

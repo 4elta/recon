@@ -20,8 +20,8 @@ references = [
 ]
 
 ["incorrect syntax"]
-description = "falsche Syntax beim `{header}`-Header"
-recommendations = [ "überprüfen Sie die Syntax für den `{header}`-Header" ]
+description = "falsche Syntax bei `{header}`"
+recommendations = [ "überprüfen Sie die Syntax für `{header}`" ]
 references = [
   "[Mozilla: HTTP headers: `{header}`](https://developer.mozilla.org/en-US/docs/web/http/headers/{header})",
 ]
