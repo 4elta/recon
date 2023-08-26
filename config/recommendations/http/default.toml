@@ -72,7 +72,7 @@ regex = '''
   )
   \s+
   [^;]+
-  ;?
+  ;? # this "optional" semicolon here is a workaround for the limited regex capabilities of Python: unfortunately we can not use `(?1)` in Python
 )+
 \s*
 $
@@ -215,13 +215,12 @@ regex = '''
   (?:\s+.*?)?
   (?:\s+http-equiv=(['"])content-security-policy\2)
   (?:\s+[^>]+)?
-  /?
   >
 )
 '''
 on_match = { next = ["policy"] }
 
 [body.content-security-policy.policy]
-regex = '(?m)content="(?P<value>[^"]+)"'
+regex = 'content="(?P<value>[^"]+)"'
 on_match = { issue.id = "CSP via meta element", next = ["header.content-security-policy"] }
 
