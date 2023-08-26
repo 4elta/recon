@@ -9,7 +9,22 @@ mandatory_headers = [
 
 [header.strict-transport-security]
 # https://www.rfc-editor.org/rfc/rfc6797#section-6.1
-regex = "max-age=(?P<expire_time>[0-9]+)(?:; +includeSubDomains(?:; +preload)?)?"
+regex = '''
+(?x)
+^
+max-age=(?P<expire_time>[0-9]+)
+(?:
+  ;
+  [ ]+
+  includeSubDomains
+  (?:
+    ;
+    [ ]+
+    preload
+  )?
+)?
+$
+'''
 on_match = { next = [ "expire_time" ] }
 on_mismatch = { issue.id = "incorrect syntax", issue.header = "strict-transport-security" }
 
@@ -20,7 +35,48 @@ on_mismatch = { issue.id = "STS expire time too short" }
 
 [header.content-security-policy]
 # https://w3c.github.io/webappsec-csp/#csp-header
-regex = "(?P<policy_directive>(?:(?:child|connect|default|font|frame|img|manifest|media|object|prefetch|worker)-src)|(?:(?:script|style)-src(?:-(?:elem|attr))?)|webrtc|base-uri|sandbox|form-action|frame-ancestors|navigate-to|(?:report-(?:uri|to))|require-trusted-types-for|trusted-types|upgrade-insecure-requests) (?P<policy_values>[^;]+)(?:; *)?"
+regex = '''
+(?x)
+^
+(
+  \s*
+  (?:
+    child-src
+    |connect-src
+    |default-src
+    |font-src
+    |frame-src
+    |img-src
+    |manifest-src
+    |media-src
+    |object-src
+    |prefetch-src
+    |script-src
+    |script-src-elem
+    |script-src-attr
+    |style-src
+    |style-src-elem
+    |style-src-attr
+    |worker-src
+    |webrtc
+    |base-uri
+    |sandbox
+    |form-action
+    |frame-ancestors
+    |navigate-to
+    |report-uri
+    |report-to
+    |require-trusted-types-for
+    |trusted-types
+    |upgrade-insecure-requests
+  )
+  \s+
+  [^;]+
+  ;?
+)+
+\s*
+$
+'''
 on_mismatch = { issue.id = "incorrect syntax", issue.header = "content-security-policy" }
 on_match = { next = [ "default-src", "src_http", "src_localhost", "report-uri", "script-src", "object-src", "base-uri" ] }
 
@@ -30,7 +86,7 @@ on_mismatch = { issue.id = "CSP default-src missing" }
 
 [header.content-security-policy.src_http]
 regex = "[a-z]+-src[^;]+http:[^;]*"
-on_match = { issue.id = "policy allows loading sources over HTTP" }
+on_match = { issue.id = "CSP allows loading sources over HTTP" }
 
 [header.content-security-policy.src_localhost]
 regex = "[a-z]+-src[^;]+(?:https?://)?(?:127.0.0.1|localhost)[^;]*"
@@ -41,7 +97,7 @@ on_match = { issue.id = "CSP allows loading sources from local host" }
 # browsers that support `report-to` will ignore the `report-uri` directive.
 # for adding forward compatibility when browsers get `report-to` support, you can specify both `report-uri` and `report-to`.
 regex = "report-uri.+(?!report-to)"
-on_match = { issue = "`report-uri` directive is deprecated; use `report-to` instead" }
+on_match = { issue.id = "CSP `report-uri` deprecated" }
 
 [header.content-security-policy.script-src]
 regex = "script-src"
@@ -150,16 +206,22 @@ regex = "."
 on_match = { issue.id = "HPKP report-only" }
 
 
-[body.meta]
-regex = "<meta http-equiv"
-on_match = { next = ["http-equiv"] }
-
-[body.meta.'http-equiv']
+[body.content-security-policy]
 # https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP
-regex = "http-equiv=(['\"])(?P<http_equiv>content-security-policy)\\1"
-on_match = { next = ["content-security-policy"] }
+regex = '''
+(?mx)
+(?P<policy>
+  <meta
+  (?:\s+.*?)?
+  (?:\s+http-equiv=(['"])content-security-policy\2)
+  (?:\s+[^>]+)?
+  /?
+  >
+)
+'''
+on_match = { next = ["policy"] }
 
-[body.meta.'http-equiv'.'content-security-policy']
-regex = "content=(['\"]).+?\\1"
+[body.content-security-policy.policy]
+regex = '(?m)content="(?P<value>[^"]+)"'
 on_match = { issue.id = "CSP via meta element", next = ["header.content-security-policy"] }
 

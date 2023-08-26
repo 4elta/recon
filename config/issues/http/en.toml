@@ -54,6 +54,13 @@ references = [
   "[Mozilla: HTTP headers: `content-security-policy`](https://developer.mozilla.org/en-US/docs/web/http/headers/content-security-policy)",
 ]
 
+["CSP report-uri deprecated"]
+description = "`content-security-policy`: `report-uri` directive is deprecated"
+recommendations = [ "`content-security-policy`: use `report-to` directive instead of `report-uri`" ]
+references = [
+  "[Mozilla: HTTP headers: `content-security-policy`: `report-uri`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/report-uri)",
+]
+
 ["CSP script-src missing"]
 description = "`content-security-policy`: `script-src` directive missing"
 recommendations = [ "`content-security-policy`: declare a `script-src` directive" ]

@@ -159,8 +159,11 @@ class Analyzer(AbstractAnalyzer):
 
     if 'next' in event_handler:
       for next_check in event_handler['next']:
-        if match and next_check in match.groupdict():
-          value = match.group(next_check)
+        if match:
+          if next_check in match.groupdict():
+            value = match.group(next_check)
+          elif 'value' in match.groupdict():
+            value = match.group('value')
 
         if '.' in next_check:
           self._run_check(
