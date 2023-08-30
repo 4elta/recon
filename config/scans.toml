@@ -208,11 +208,11 @@ patterns = [ 'smb', 'microsoft-ds', 'netbios' ]
   command = 'nmap -sT -sU -Pn -sV -p {port} --script="banner,(nbstat or smb*) and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" {address}'
 
   [smb.scans.smbclient]
-  command = 'smbclient --list={address} --no-pass --command="recurse ON; ls" 2>&1 | tee {result_file}.log'
+  command = 'smbclient --list={address} --no-pass --command="recurse ON; ls" 2>&1 | tee "{result_file}.log"'
   run_once = true
 
   [smb.scans.'enum4linux-ng']
-  command = 'enum4linux-ng.py -As -oJ "{result_file}" {address} 2>&1 | tee {result_file}.log'
+  command = 'enum4linux-ng.py -As -oJ "{result_file}" {address} 2>&1 | tee "{result_file}.log"'
   run_once = true
 
 [smtp]
