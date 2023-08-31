@@ -188,7 +188,7 @@ patterns = [ 'msrpc', 'rpcbind', '^erpc' ]
   patterns = [ 'nfs' ]
 
   [rpc.scans.rpcdump]
-  command = 'rpcdump.py -p {port} {address} 2>&1 | tee "{result_file}.log"'
+  command = 'impacket-rpcdump -port {port} {address} 2>&1 | tee "{result_file}.log"'
 
 [sip]
 patterns = [ '^sip', '^ventrilo' ]
