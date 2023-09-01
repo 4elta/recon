@@ -68,7 +68,11 @@ sudo apt install \
   * [nikto](https://github.com/sullo/nikto)
 
 * via [`pipx`](https://github.com/pypa/pipx):
-  * [enum4linux-ng](https://github.com/cddmp/enum4linux-ng)
+
+```shell
+pipx install git+https://github.com/cddmp/enum4linux-ng.git
+sudo ln --symbolic $(which enum4linux-ng) /usr/local/bin/enum4linux
+```
 
 ## usage
 
@@ -147,7 +151,7 @@ The following analyzers (and parsers) are currently implemented:
 * NTP configuration (`ntp`, `nmap`)
 * RDP configuration (`nmap`)
 * SSH configuration (`nmap`)
-* TLS configuration (`testssl`, `sslscan`, `sslyze`, or `nmap`)
+* TLS configuration (`testssl`, `sslscan`, `sslyze`, `nmap`)
 
 The following languages are currently available for the analysis:
 
