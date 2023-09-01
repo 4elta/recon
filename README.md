@@ -71,7 +71,7 @@ sudo apt install \
 
 ```shell
 pipx install git+https://github.com/cddmp/enum4linux-ng.git
-sudo ln --symbolic $(which enum4linux-ng) /usr/local/bin/enum4linux
+sudo ln --symbolic $(which enum4linux-ng) /usr/local/bin/enum4linux-ng
 ```
 
 ## usage
