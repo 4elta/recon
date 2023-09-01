@@ -140,7 +140,7 @@ def format(*args, frame_index=1, **kvargs):
 
 def create_summary(target: Target):
   
-  services_file = pathlib.Path(target.directory, 'services.md')
+  services_file = pathlib.Path(target.directory.parent, f'{target.address}.md')
   with open(services_file, 'w') as f:
     for service in target.services:
       description = service.application_protocol
@@ -254,7 +254,7 @@ def result_file_exists(results_directory, file_name):
 
 def queue_HTTP_service_scan(target: Target, service: Service, scan: Scan):
 
-  results_directory = pathlib.Path(target.directory, 'services')
+  results_directory = target.directory
 
   transport_protocol = service.transport_protocol
   port = service.port
@@ -299,7 +299,7 @@ def queue_HTTP_service_scan(target: Target, service: Service, scan: Scan):
 
 def queue_generic_service_scan(target: Target, service: Service, scan: Scan):
 
-  results_directory = pathlib.Path(target.directory, 'services')
+  results_directory = target.directory
 
   transport_protocol = service.transport_protocol
   port = service.port
@@ -358,10 +358,6 @@ async def scan_services(target: Target):
   # extract the target's address from the object
   # it's referenced like this in the scan configs
   address = target.address
-
-  results_directory = pathlib.Path(target.directory, 'services')
-  log(f"results directory: {results_directory}")
-  results_directory.mkdir(exist_ok=True)
 
   # iterate over the services found to be running on the target
   for service in target.services:

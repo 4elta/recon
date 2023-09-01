@@ -117,6 +117,14 @@ optional arguments:
   --ignore_uid          ignore the warning about incorrect UID.
 ```
 
+After running the scanner, the results directory (e.g. `recon/`) will contain the following files/directories:
+
+* `commands.csv`: contains information about the executed commands (incl. start time, end time and return code)
+* `services.csv`: contains information about the identified services (incl. whether they have been scanned or not)
+* `<IP address>/`: each host has its own directory where the result files of the various tools are stored
+  * the result files follow a specific naming scheme: `<service>[,<transport protocol>,<port>,...],<tool>.<ext>`
+* `<IP address>.md`: this file contains a list of services identified on this particular host
+
 ### analyzer
 
 Analyze and summarize the results of specific tools previously run by the scanner:

@@ -123,7 +123,7 @@ def analyze_service(service, files, tool=None, recommendations_file=None, json_p
 def get_files(directory, service):
   files = {}
 
-  for path in directory.glob(f'**/services/{service}*'):
+  for path in directory.glob(f'*/{service}*'):
     suffix = path.suffix[1:]
     stem = path.stem # the final path component, w/o its suffix
     tool = stem.split(',')[-1]
