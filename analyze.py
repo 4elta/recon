@@ -183,7 +183,9 @@ def process(args):
     )
 
 def main():
-  parser = argparse.ArgumentParser()
+  parser = argparse.ArgumentParser(
+    description = "Analyze and summarize the results of specific tools previously run by the scanner of the recon tool suite (i.e. 'scan')."
+  )
 
   parser.add_argument(
     'service',

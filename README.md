@@ -86,13 +86,13 @@ Make sure to have a look at the [architecture documentation](documentation/archi
 
 ### scanner
 
-Schedule and execute various tools based on the findings of the Nmap service scan:
-
 ```text
-$ scan -h
+% scan -h
 usage: scan [-h] [-i path [path ...]] [-o path] [-c path] [-t number] [-s number] [-m seconds] [-v] [-n] [-r <host>:<protocol>:<port>:<service> [<host>:<protocol>:<port>:<service> ...]] [-y] [-d character] [--ignore_uid]
 
-optional arguments:
+Schedule and execute various tools based on the findings of an Nmap service scan.
+
+options:
   -h, --help            show this help message and exit
   -i path [path ...], --input path [path ...]
                         the result file(s) of the Nmap service scan (default: 'services.xml')
@@ -114,7 +114,7 @@ optional arguments:
                         overwrite existing result files
   -d character, --delimiter character
                         character used to delimit columns in the 'commands.csv' and 'services.csv' files (default: ',')
-  --ignore_uid          ignore the warning about incorrect UID.
+  --ignore_uid          ignore the warning about potentially lacking permissions.
 ```
 
 After running the scanner, the results directory (e.g. `recon/`) will contain the following files/directories:
@@ -127,17 +127,17 @@ After running the scanner, the results directory (e.g. `recon/`) will contain th
 
 ### analyzer
 
-Analyze and summarize the results of specific tools previously run by the scanner:
-
 ```text
-$ analyze -h
+% analyze -h
 usage: analyze [-h] [-t name] [-r path] [-i path] [-l code] [--json path] [--csv path] {?,dns,ftp,http,isakmp,ntp,rdp,ssh,tls}
+
+Analyze and summarize the results of specific tools previously run by the scanner of the recon tool suite (i.e. 'scan').
 
 positional arguments:
   {?,dns,ftp,http,isakmp,ntp,rdp,ssh,tls}
                         specify the service that should be analyzed. use '?' to list services available for analysis.
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   -t name, --tool name  specify the tool whose results are to be parsed
   -r path, --recommendations path

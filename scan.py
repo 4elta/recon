@@ -632,7 +632,9 @@ async def process(args):
         csv.writer(f, delimiter=args.delimiter, quoting=csv.QUOTE_MINIMAL).writerow(row)
 
 def main():
-  parser = argparse.ArgumentParser()
+  parser = argparse.ArgumentParser(
+    description = "Schedule and execute various tools based on the findings of an Nmap service scan."
+  )
 
   parser.add_argument(
     '-i', '--input',
@@ -717,7 +719,7 @@ def main():
 
   parser.add_argument(
     '--ignore_uid',
-    help = "ignore the warning about incorrect UID.",
+    help = "ignore the warning about potentially lacking permissions.",
     action = 'store_true'
   )
 
