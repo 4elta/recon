@@ -30,7 +30,7 @@ class Parser(AbstractParser):
     service = copy.deepcopy(SERVICE_SCHEMA)
     service.update(result)
 
-    if 'mode_6' in service:
+    if 'mode_6' in service and service['mode_6']:
       service['issues'].append(
         Issue(
           "Mode 6",
@@ -38,7 +38,7 @@ class Parser(AbstractParser):
         )
       )
 
-    if 'mode_7' in service:
+    if 'mode_7' in service and service['mode_7']:
       service['issues'].append(
         Issue(
           "Mode 7",
