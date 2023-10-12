@@ -297,6 +297,7 @@ patterns = [
   'smtp', # SMTP supports STARTTLS: https://datatracker.ietf.org/doc/html/rfc3207
   'vnc', # TigerVNC supports TLS: https://github.com/TigerVNC/tigervnc/wiki/Secure-your-connection
   'xmpp', # XMPP supports TLS: https://xmpp.org/extensions/inbox/xtls.html
+  'ms-sql-s' # MS-SQL supports TLS
 ]
 
   [tls_misc.scans.nmap]
