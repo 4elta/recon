@@ -21,7 +21,23 @@ for path in ANALYZERS_DIR.iterdir():
 
 LANGUAGE = 'en'
 
-def analyze_service(service, files, tool=None, recommendations_file=None, json_path=None, csv_path=None):
+def _group_by_asset(assets):
+  for asset, issues in assets.items():
+    print(f"\n## {asset}\n")
+
+    for issue in issues:
+      print(f"* {issue}")
+
+def _group_by_issue(issues):
+  for description, assets in {key:issues[key] for key in sorted(issues.keys())}.items():
+    print(f"\n## {description}")
+
+    print("\nThis issue has been found in the following assets:\n")
+
+    for asset in assets:
+      print(f"* `{asset}`")
+
+def analyze_service(service, files, tool=None, recommendations_file=None, group_by_issue=False, json_path=None, csv_path=None):
   if recommendations_file:
     if not recommendations_file.exists():
       sys.exit(f"the recommendations file '{recommendations_file}' does not exist!")
@@ -61,7 +77,8 @@ def analyze_service(service, files, tool=None, recommendations_file=None, json_p
   with open(issues_file, 'rb') as f:
     issue_templates = toml.load(f)
 
-  affected_assets = []
+  affected_assets = {}
+  issues = {}
   recommendations = []
   references = []
   info = []
@@ -78,14 +95,10 @@ def analyze_service(service, files, tool=None, recommendations_file=None, json_p
     if not len(service['issues']):
       continue
 
-    affected_assets.append(asset)
-
-    print(f"\n## {asset}\n")
+    affected_assets[asset] = []
 
     for issue in service['issues']:
       issue.format(issue_templates)
-
-      print(f"* {issue.description}")
 
       for recommendation in issue.recommendations:
         if recommendation not in recommendations:
@@ -95,15 +108,27 @@ def analyze_service(service, files, tool=None, recommendations_file=None, json_p
         if reference not in references:
           references.append(reference)
 
+      affected_assets[asset].append(issue.description)
+
+      if issue.description not in issues:
+        issues[issue.description] = []
+
+      issues[issue.description].append(asset)
+
     # collect additional (debug) information
     if 'info' in service:
       for i in service['info']:
         if i not in info:
           info.append(i)
 
+  if group_by_issue:
+    _group_by_issue(issues)
+  else:
+    _group_by_asset(affected_assets)
+
   if len(affected_assets):
     print("\n# affected assets\n")
-    for asset in affected_assets:
+    for asset in affected_assets.keys():
       print(f"* `{asset}`")
 
   if len(recommendations):
@@ -186,6 +211,7 @@ def process(args):
       files,
       tool = args.tool,
       recommendations_file = args.recommendations,
+      group_by_issue = args.group_by_issue,
       json_path = args.json,
       csv_path = args.csv
     )
@@ -227,6 +253,12 @@ def main():
     metavar = 'code',
     default = LANGUAGE,
     help = f"specify the language in which the analysis should be printed (default: '{LANGUAGE}')"
+  )
+
+  parser.add_argument(
+    '-g', '--group_by_issue',
+    help = "group by issue and list all assets affected by it instead of grouping by asset and listing all its issues",
+    action = 'store_true'
   )
 
   parser.add_argument(
