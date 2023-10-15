@@ -9,7 +9,15 @@ import re
 import sys
 import tomllib as toml
 
-SUPPORTED_SERVICES = ['dns', 'ftp', 'http', 'isakmp', 'ntp', 'rdp', 'ssh', 'tls', ]
+ANALYZERS_DIR = pathlib.Path(
+  pathlib.Path(__file__).resolve().parent,
+  "analyzers"
+)
+
+SUPPORTED_SERVICES = []
+for path in ANALYZERS_DIR.iterdir():
+  if path.is_dir():
+    SUPPORTED_SERVICES.append(path.name)
 
 LANGUAGE = 'en'
 
@@ -189,7 +197,7 @@ def main():
 
   parser.add_argument(
     'service',
-    choices = ['?'] + SUPPORTED_SERVICES,
+    choices = ['?'] + sorted(SUPPORTED_SERVICES),
     help = "specify the service that should be analyzed. use '?' to list services available for analysis."
   )
 
