@@ -129,7 +129,7 @@ After running the scanner, the results directory (e.g. `recon/`) will contain th
 
 ```text
 % analyze -h
-usage: analyze [-h] [-t name] [-r path] [-i path] [-l code] [--json path] [--csv path] {?,dns,ftp,http,isakmp,ntp,rdp,ssh,tls}
+usage: analyze [-h] [-t name] [-r path] [-i path] [-l code] [-g] [--json path] [--csv path] {?,dns,ftp,http,isakmp,ntp,rdp,ssh,tls}
 
 Analyze and summarize the results of specific tools previously run by the scanner of the recon tool suite (i.e. 'scan').
 
@@ -146,6 +146,7 @@ options:
                         path to the root directory that holds the results to be analysed (default: './recon')
   -l code, --language code
                         specify the language in which the analysis should be printed (default: 'en')
+  -g, --group_by_issue  group by issue and list all assets affected by it instead of grouping by asset and listing all its issues
   --json path           in addition to the analysis printed in Markdown to STDOUT, also save the analysis as a JSON document
   --csv path            in addition to the analysis printed in Markdown to STDOUT, also save the analysis as a CSV document
 ```
