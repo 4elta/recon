@@ -266,6 +266,7 @@ patterns = [
   'smtps', # SMTP over TLS (465)
   'snmpd?tls', # SNMP over TLS (10161)
   'telnets', # telnet over TLS (992)
+  'ms-sql-s' # MS-SQL supports TLS
 ]
 
   [tls.scans.nmap]
