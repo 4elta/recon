@@ -205,7 +205,7 @@ patterns = [ 'smb', 'microsoft-ds', 'netbios' ]
   # SMB does not support TLS/STARTTLS; only LDAP can use TLS: https://wiki.samba.org/index.php/Configuring_LDAP_over_SSL_(LDAPS)_on_a_Samba_AD_DC
 
   [smb.scans.nmap]
-  command = 'nmap -sT -sU -Pn -sV -p {port} --script="banner,(nbstat or smb*) and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" {address}'
+  command = 'nmap -sT -sU -Pn -sV -p {port} --script="banner,(nbstat or smb*) and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
 
   [smb.scans.smbclient]
   command = 'smbclient --list={address} --no-pass --command="recurse ON; ls" 2>&1 | tee "{result_file}.log"'
@@ -219,16 +219,16 @@ patterns = [ 'smb', 'microsoft-ds', 'netbios' ]
 patterns = [ 'smtp' ]
 
   [smtp.scans.nmap]
-  command = 'nmap -Pn -sV -p {port} --script="banner,smtp* and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" {address}'
+  command = 'nmap -Pn -sV -p {port} --script="banner,smtp* and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
 
   [smtp.scans.'intrusive,nmap']
-  command = '#nmap -Pn -sV -p {port} --script="banner,smtp* and not (brute or dos or exploit)" -oN "{result_file}.log" {address}'
+  command = '#nmap -Pn -sV -p {port} --script="banner,smtp* and not (brute or dos or exploit)" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
 
 [snmp]
 patterns = [ 'snmp' ]
 
   [snmp.scans.nmap]
-  command = 'nmap -sT -sU -Pn -sV -p {port} --script="banner,snmp* and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" {address}'
+  command = 'nmap -sT -sU -Pn -sV -p {port} --script="banner,snmp* and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
 
   [snmp.scans.onesixtyone]
   command = '#onesixtyone -c /usr/share/seclists/Discovery/SNMP/common-snmp-community-strings-onesixtyone.txt -dd {address} 2>&1 | tee "{result_file}.log"'
