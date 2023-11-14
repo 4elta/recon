@@ -8,7 +8,9 @@ protocol_versions = [ "TLS 1.3" ]
 
 preference = "client"
 
-cipher_suites = [
+[cipher_suites]
+
+'*' = [
   "TLS_AES_128_GCM_SHA256",
   "TLS_AES_256_GCM_SHA384",
   "TLS_CHACHA20_POLY1305_SHA256",

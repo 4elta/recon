@@ -27,6 +27,8 @@ CERTIFICATE_SCHEMA = {
     'not_before': None, # "YYYY-MM-DD hh:mm:ss" UTC
     'not_after': None,
   },
+
+  'lifespan': None
 }
 
 SERVICE_SCHEMA = {
@@ -136,6 +138,7 @@ class Analyzer(AbstractAnalyzer):
         self._analyze_cipher_suites(
           service['cipher_suites'],
           self.recommendations['cipher_suites'],
+          service,
           issues
         )
 
@@ -208,6 +211,7 @@ class Analyzer(AbstractAnalyzer):
     not_after = datetime.datetime.fromisoformat(validity['not_after'])
     livespan = not_after - not_before
     livespan_in_days = int(livespan.total_seconds() / (24 * 60 * 60))
+    certificate['lifespan'] = livespan_in_days
 
     if livespan_in_days > recommendation['lifespan']:
       issues.append(
@@ -262,7 +266,7 @@ class Analyzer(AbstractAnalyzer):
         )
       )
 
-  def _analyze_cipher_suites(self, cipher_suites, recommendation, issues):
+  def _analyze_cipher_suites(self, cipher_suites, recommendation, service, issues):
     if len(cipher_suites) == 0:
       issues.append(
         Issue(
@@ -271,7 +275,38 @@ class Analyzer(AbstractAnalyzer):
       )
       return
 
-    for deviation in list(set(cipher_suites).difference(recommendation)):
+    # build list of recommended cipher suites,
+    # based on whether some conditions are matched.
+    recommended_cipher_suites = []
+    for condition, items in recommendation.items():
+      if condition == '*':
+        recommended_cipher_suites.extend(items)
+        continue
+
+      # cipher suites recommendations could depend on some conditions
+      # (whether or not the server supports certain extensions, etc.).
+      # the scheme for conditions: "<key> <relation> <value>"
+      # e.g. "extensions contains encrypt_then_mac"
+      key, relation, value = condition.split(' ')
+      subject = None
+
+      # currently, only the following keys are supported:
+      if key == 'extensions':
+        subject = service['extensions']
+      elif key == 'certificates.public_key.type':
+        subject = []
+        for cert in service['certificates']:
+          subject.append(cert['public_key']['type'])
+
+      # TODO: implement other keys
+
+      if subject:
+        if relation == 'contains' and value in subject:
+          recommended_cipher_suites.extend(items)
+        elif relation == '!contains' and value not in subject:
+          recommended_cipher_suites.extend(items)
+
+    for deviation in list(set(cipher_suites).difference(recommended_cipher_suites)):
       issues.append(
         Issue(
           "cipher suites: supported",
