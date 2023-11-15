@@ -213,7 +213,7 @@ class Analyzer(AbstractAnalyzer):
     livespan_in_days = int(livespan.total_seconds() / (24 * 60 * 60))
     certificate['lifespan'] = livespan_in_days
 
-    if livespan_in_days > recommendation['lifespan']:
+    if 'lifespan' in recommendation and livespan_in_days > recommendation['lifespan']:
       issues.append(
         Issue(
           "certificate: lifespan",
