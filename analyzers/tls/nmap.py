@@ -204,9 +204,13 @@ class Parser(AbstractParser):
       if cipher_name not in service['cipher_suites']:
         service['cipher_suites'].append(cipher_name)
 
-      key_exchange = service['key_exchange']
+      kex_info_elem = cipher_node.find('./elem[@key="kex_info"]')
+      if kex_info_elem is None:
+        # this element is absent for PSK cipher suites
+        continue
 
-      kex_info = cipher_node.find('./elem[@key="kex_info"]').text
+      kex_info = kex_info_elem.text
+      key_exchange = service['key_exchange']
 
       if re.match(r'(dh|rsa) \d+', kex_info):
         kex_type, kex_bits = kex_info.split(' ')
