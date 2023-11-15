@@ -265,7 +265,8 @@ class Parser(AbstractParser):
           continue
 
   def _parse_public_key(self, description, public_key):
-    key_type, key_bits, _ = description.split(' ')
+    # example description: 'RSA 4096 bits (exponent is 65537)'
+    key_type, key_bits, *_ = description.split(' ')
 
     if key_type == 'EC':
       key_type = 'ECDSA'
