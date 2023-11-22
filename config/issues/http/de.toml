@@ -54,7 +54,7 @@ references = [
   "[Mozilla: HTTP headers: `content-security-policy`](https://developer.mozilla.org/en-US/docs/web/http/headers/content-security-policy)",
 ]
 
-["CSP report-uri deprecated"]
+["CSP `report-uri` deprecated"]
 description = "`content-security-policy`: `report-uri`-Richtlinie ist veraltet"
 recommendations = [ "`content-security-policy`: verwenden Sie `report-to` anstatt `report-uri`" ]
 references = [
