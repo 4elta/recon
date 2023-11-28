@@ -20,6 +20,12 @@ class Parser(AbstractParser):
   def parse_file(self, path):
     super().parse_file(path)
 
+    tokens = path.split(',')
+    self.application_protocol = tokens[0]
+    self.transport_protocol = tokens[1]
+    self.port = tokens[2]
+    self.host = tokens[3]
+
     '''
     # ike-scan --sport=0 --trans='5,2,64221,14' 192.168.42.116
     192.168.42.116	Main Mode Handshake returned HDR=(CKY-R=268db1329ed4fd5f) SA=(Enc=3DES Hash=SHA1 Group=14:modp2048 Auth=Hybrid LifeType=Seconds LifeDuration=28800) VID=09002689dfd6b712 (XAUTH) VID=afcad71368a1f1c96b8696fc77570100 (Dead Peer Detection v1.0)
@@ -49,8 +55,10 @@ class Parser(AbstractParser):
         continue
 
       host = m.group('host')
+      if host != self.host:
+        continue
 
-      identifier = host
+      identifier = f"{self.host}:{self.port} ({self.transport_protocol})"
 
       if identifier not in self.services:
         self.services[identifier] = copy.deepcopy(SERVICE_SCHEMA)
