@@ -62,13 +62,13 @@ In case the service was identified as a web service, the following additional va
 
 The analyzer (i.e. `analyze.py`) provides functionality to parse, analyze and summarize results of specific tools (e.g. `nmap`, `testssl`, `curl`, etc.).
 
-Each service (e.g. HTTP, SSH, TLS, etc.) has its own analyzer "package" (e.g. [`analyzers/http/*`](analyzers/http/), [`analyzers/ssh/*`](analyzers/ssh/),  [`analyzers/tls/*`](analyzers/tls/), etc.).
+Each service (e.g. HTTP, SSH, TLS, etc.) has its own analyzer "package" (e.g. [`analyzers/http/*`](../analyzers/http/), [`analyzers/ssh/*`](../analyzers/ssh/),  [`analyzers/tls/*`](../analyzers/tls/), etc.).
 An analyzer package consists of an analyzer (i.e. `__init__.py`) and at least one parser (i.e. `<tool>.py`; one per tool).
 
 A parser maps the result of a particular tool to a tool-agnostic representation of a service's configuration.
 The representation schema is specified inside the analyzer (i.e. `SERVICE_SCHEMA = {...}`).
 The compiled service configuration is analyzed (by the analyzer) based on some recommendations.
-These recommendations are specified as TOML files (i.e. [`config/recommendations/<service>`](../config/recommendations/)).
+These recommendations are specified as TOML files (i.e. [`config/recommendations/<service>/*`](../config/recommendations/)).
 TOML (or, more generally, a markup language) was chosen because it ensures that the recommendations are human-readable and therefore easier to maintain than code.
 
 Based on a service's configuration (e.g. `'protocol_versions': ["TLS 1", ...],`) and the recommendations, the analyzer derives issues/vulnerabilities.
