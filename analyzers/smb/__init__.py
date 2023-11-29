@@ -10,11 +10,10 @@ from .. import Issue, AbstractAnalyzer
 
 SERVICE_SCHEMA = {
   'address': None,
-  'SMBv1': None,
-  'SMBv2': None,
-  'port': None,
   'preferred_dialect': '3.0',
   'SMBv1_only': None,
+  'smb_dialects': []
+  'smbv1_signing' ; None
   'signing': None, # whether signing is enabled and/or required
   'netbios': None # wether SMB over NetBIOS is accessible
   'os_build': None, # OS Build id
@@ -29,7 +28,7 @@ class Analyzer(AbstractAnalyzer):
   def __init__(self, name, recommendations):
     super().__init__(name, recommendations)
 
-    self.set_parser('enum4linux-ng')
+    self.set_parser('nmap')
 
   def analyze(self, files):
     super().analyze(files)
