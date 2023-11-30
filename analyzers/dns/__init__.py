@@ -17,8 +17,9 @@ SERVICE_SCHEMA = {
   'DNSSEC': None, # whether or not this name server validates DNSSEC
   'ECS': None, # whether or not this name server supports EDNS Client Subnet (ECS)
   'AXFR': None, # whether or not this name server permits AXFR; if it does, this key will hold the DNS zone
-  'info': {}, # misc information (rDNS, domain, `bind.version`, `id.server`, etc)
+  'misc': {}, # misc information (rDNS, domain, `bind.version`, `id.server`, etc)
   'issues': [],
+  'info': []
 }
 
 class Analyzer(AbstractAnalyzer):
@@ -65,7 +66,7 @@ class Analyzer(AbstractAnalyzer):
       if service['AXFR']:
         issues.append(Issue("AXFR"))
 
-      for key, value in service['info'].items():
+      for key, value in service['misc'].items():
         issues.append(
           Issue(
             "additional info",
