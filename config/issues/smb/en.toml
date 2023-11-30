@@ -1,0 +1,14 @@
+["SMB dialect supported"]
+description = "SMB Dialect supported: {version}"
+
+["SMBv1 signing disabled"]
+description = "SMBv1 signing is disabled"
+
+["SMB signing incorrect"]
+description = "SMB singing: {issue}"
+
+["Netbios enabled"]
+description = "Netbios is enabled"
+
+["Netbios Info"]
+description = "Information disclosure through Netbios {info}"
