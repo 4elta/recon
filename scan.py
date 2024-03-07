@@ -22,7 +22,7 @@ try:
 except:
   sys.exit("this script requires the 'rich' module.\nplease install it via 'pip3 install rich'.")
 
-from rich.console import Group
+from rich.console import Console, Group
 from rich.live import Live
 from rich.progress import Progress, SpinnerColumn
 
@@ -45,6 +45,9 @@ JOB_PROGRESS = Progress(
   "[progress.description]{task.description}",
   transient = True,
 )
+
+# error/debug log
+LOG_FILE = None
 
 # <host>:<protocol>:<port>:<service>
 RESCAN_PATTERN = re.compile(r'(?P<host>[^:]+):(?P<protocol>(tcp|udp|\*)):(?P<port>(\d+)|\*):(?P<service>.+)')
@@ -113,8 +116,12 @@ class CommandLog:
         csv.writer(f, delimiter=cls.delimiter, quoting=csv.QUOTE_MINIMAL).writerow(entry)
 
 def log(msg):
-  if VERBOSE:
-    OVERALL_PROGRESS.console.log(msg)
+  if not LOG_FILE:
+    return
+
+  with open(LOG_FILE, 'a') as log_file:
+    console = Console(file=log_file)
+    console.print(msg, soft_wrap=False)
 
 def format(*args, frame_index=1, **kvargs):
   '''
@@ -151,11 +158,11 @@ def create_summary(target: Target):
 
 async def read_command_results(process, command):
   # parse STDOUT
+
   while True:
     line = await process.stdout.readline()
     if line:
       line = str(line.rstrip(), 'utf8', 'ignore')
-      log(line)
 
       for pattern in command.patterns:
         match = re.search(pattern, line)
@@ -168,9 +175,8 @@ async def run_command(command: Command, target: Target):
 
   # make sure that only a specific number of scans are running per target
   async with target.semaphore:
+    log(f"running {command.description}")
     task_ID = JOB_PROGRESS.add_task(f"{command.description}")
-
-    log(command.string)
 
     timestamp_start = time.time()
     return_code = 0
@@ -198,8 +204,10 @@ async def run_command(command: Command, target: Target):
           error_msg = await process.stderr.read()
           error_msg = error_msg.decode().strip()
           OVERALL_PROGRESS.console.print(f"[red]{command.description}: {error_msg}")
+          log(f"{command.description}: {error_msg}")
       except asyncio.exceptions.TimeoutError:
-        OVERALL_PROGRESS.console.print(f"[red]{command.description}: timeout!")
+        OVERALL_PROGRESS.console.print(f"[red]{command.description}: timeout")
+        log(f"{command.description}: timeout")
         return_code = "timeout"
 
     timestamp_completion = time.time()
@@ -281,7 +289,7 @@ def queue_HTTP_service_scan(target: Target, service: Service, scan: Scan):
       continue # with another hostname
 
     description = f"{address}: {scan.service}: {port}: {hostname}: {scan.name}"
-    log(description)
+    log(f"queuing {description}")
 
     scan_ID = (transport_protocol, port, application_protocol, hostname, scan.service, scan.name)
 
@@ -320,7 +328,7 @@ def queue_generic_service_scan(target: Target, service: Service, scan: Scan):
       return # continue with another service of the target
 
     description = f"{address}: {scan.service}: {scan.name}"
-    log(description)
+    log(f"queuing {description}")
 
     scan_ID = (scan.service, scan.name)
 
@@ -337,7 +345,7 @@ def queue_generic_service_scan(target: Target, service: Service, scan: Scan):
       return # continue with another service of the target
 
     description = f"{address}: {scan.service}: {transport_protocol}/{port}: {scan.name}"
-    log(description)
+    log(f"queuing {description}")
 
     scan_ID = (transport_protocol, port, application_protocol, scan.service, scan.name)
 
@@ -355,9 +363,11 @@ def queue_generic_service_scan(target: Target, service: Service, scan: Scan):
   
 async def scan_services(target: Target):
 
-  # extract the target's address from the object
-  # it's referenced like this in the scan configs
+  # extract the target's address from the object.
+  # it's referenced like this (i.e. `{address}`) in the scan configs.
   address = target.address
+
+  log(f"scanning '{address}' ...")
 
   # iterate over the services found to be running on the target
   for service in target.services:
@@ -520,9 +530,6 @@ def parse_result_files(base_directory, result_files, rescan_filters):
   return targets
 
 async def process(args):
-  global VERBOSE
-  VERBOSE = args.verbose
-
   global DRY_RUN
   DRY_RUN = args.dry_run
 
@@ -556,8 +563,12 @@ async def process(args):
     SERVICES_CONFIG = toml.load(f)
 
   base_directory = args.output.resolve()
-  log(f"base directory: '{base_directory}'")
   base_directory.mkdir(exist_ok=True)
+
+  global LOG_FILE
+  LOG_FILE = pathlib.Path(base_directory, 'scan.log')
+
+  log(f"base directory: '{base_directory}'")
 
   CommandLog.init(
     pathlib.Path(base_directory, 'commands.csv'),
@@ -685,12 +696,6 @@ def main():
   )
 
   parser.add_argument(
-    '-v', '--verbose',
-    help = "show additional info including all output of all scans",
-    action = 'store_true'
-  )
-
-  parser.add_argument(
     '-n', '--dry_run',
     help = "do not run any command; just create/update the 'commands.csv' file",
     action = 'store_true'
@@ -723,12 +728,19 @@ def main():
     action = 'store_true'
   )
 
+  loop = asyncio.get_event_loop()
+
   try:
     asyncio.run(
       process(parser.parse_args())
     )
   except KeyboardInterrupt:
-    sys.exit("aborted by user")
+    print("aborted by user")
+    log("aborted by user")
+    for task in asyncio.all_tasks(loop=loop):
+      task.cancel()
+  finally:
+    loop.close()
 
 if __name__ == '__main__':
   main()

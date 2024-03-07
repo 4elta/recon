@@ -88,7 +88,7 @@ Make sure to have a look at the [architecture documentation](documentation/archi
 
 ```text
 % scan -h
-usage: scan [-h] [-i path [path ...]] [-o path] [-c path] [-t number] [-s number] [-m seconds] [-v] [-n] [-r <host>:<protocol>:<port>:<service> [<host>:<protocol>:<port>:<service> ...]] [-y] [-d character] [--ignore_uid]
+usage: scan [-h] [-i path [path ...]] [-o path] [-c path] [-t number] [-s number] [-m seconds] [-n] [-r <host>:<protocol>:<port>:<service> [<host>:<protocol>:<port>:<service> ...]] [-y] [-d character] [--ignore_uid]
 
 Schedule and execute various tools based on the findings of an Nmap service scan.
 
@@ -106,7 +106,6 @@ options:
                         how many scans should be running concurrently on a single target (default: 2)
   -m seconds, --max_time seconds
                         maximum time in seconds each scan is allowed to take (default: 3600)
-  -v, --verbose         show additional info including all output of all scans
   -n, --dry_run         do not run any command; just create/update the 'commands.csv' file
   -r <host>:<protocol>:<port>:<service> [<host>:<protocol>:<port>:<service> ...], --rescan <host>:<protocol>:<port>:<service> [<host>:<protocol>:<port>:<service> ...]
                         re-scan certain hosts/protocols/ports/services and overwrite existing result files; you can use '*' if you cannot or don't want to specify a host/protocol/port/service part
@@ -120,6 +119,7 @@ options:
 After running the scanner, the results directory (e.g. `recon/`) will contain the following files/directories:
 
 * `commands.csv`: contains information about the executed commands (incl. start time, end time and return code)
+* `scan.log`: the debug/error log of the scanner
 * `services.csv`: contains information about the identified services (incl. whether they have been scanned or not)
 * `<IP address>/`: each host has its own directory where the result files of the various tools are stored
   * the result files follow a specific naming scheme: `<service>[,<transport protocol>,<port>,...],<tool>.<ext>`
