@@ -5,6 +5,7 @@
 import argparse
 import asyncio
 import csv
+import inspect
 import json
 import os
 import pathlib
@@ -22,7 +23,7 @@ try:
 except:
   sys.exit("this script requires the 'rich' module.\nplease install it via 'pip3 install rich'.")
 
-from rich.console import Console, Group
+from rich.console import Group
 from rich.live import Live
 from rich.progress import Progress, SpinnerColumn
 
@@ -119,9 +120,10 @@ def log(msg):
   if not LOG_FILE:
     return
 
-  with open(LOG_FILE, 'a') as log_file:
-    console = Console(file=log_file)
-    console.print(msg, soft_wrap=False)
+  with open(LOG_FILE, 'a') as f:
+    task_name = asyncio.current_task().get_name()
+    method_name = inspect.stack()[1].function
+    f.write(f"[{task_name}]\t[{method_name}]\t{msg}\n")
 
 def format(*args, frame_index=1, **kvargs):
   '''
@@ -175,7 +177,7 @@ async def run_command(command: Command, target: Target):
 
   # make sure that only a specific number of scans are running per target
   async with target.semaphore:
-    log(f"running {command.description}")
+    log(f"[{command.description}]\tstarting")
     task_ID = JOB_PROGRESS.add_task(f"{command.description}")
 
     timestamp_start = time.time()
@@ -204,10 +206,10 @@ async def run_command(command: Command, target: Target):
           error_msg = await process.stderr.read()
           error_msg = error_msg.decode().strip()
           OVERALL_PROGRESS.console.print(f"[red]{command.description}: {error_msg}")
-          log(f"{command.description}: {error_msg}")
+          log(f"[{command.description}]\t{error_msg}")
       except asyncio.exceptions.TimeoutError:
         OVERALL_PROGRESS.console.print(f"[red]{command.description}: timeout")
-        log(f"{command.description}: timeout")
+        log(f"[{command.description}]\ttimeout")
         return_code = "timeout"
 
     timestamp_completion = time.time()
@@ -215,6 +217,7 @@ async def run_command(command: Command, target: Target):
     await CommandLog.add_entry([timestamp_start, timestamp_completion, command.host, command.port, command.string, return_code])
     
     JOB_PROGRESS.remove_task(task_ID)
+    log(f"[{command.description}]\tdone")
     #JOB_PROGRESS.console.print(f"[green]{command.description}: finished")
 
 def find_suitable_scans(application_protocol):
@@ -235,7 +238,7 @@ def find_suitable_scans(application_protocol):
 
       for service_pattern in service_patterns:
         if re.search(service_pattern, application_protocol):
-          log(f"application protocol '{application_protocol}' matched '{service_name}' pattern '{service_pattern}'; command '{scan_name}'")
+          #log(f"application protocol '{application_protocol}' matched '{service_name}' pattern '{service_pattern}'; command '{scan_name}'")
           scans.append(
             Scan(
               service_name,
@@ -288,22 +291,22 @@ def queue_HTTP_service_scan(target: Target, service: Service, scan: Scan):
     if result_file_exists(results_directory, file_name):
       continue # with another hostname
 
-    description = f"{address}: {scan.service}: {port}: {hostname}: {scan.name}"
-    log(f"queuing {description}")
-
     scan_ID = (transport_protocol, port, application_protocol, hostname, scan.service, scan.name)
 
     if scan_ID in target.scans:
-      log("[orange]this scan appears to have already been queued")
       continue # with another hostname 
-    else:
-      target.scans[scan_ID] = Command(
-        hostname,
-        port,
-        description,
-        format(scan.command),
-        scan.patterns
-      )
+
+    description = f"{address}: {scan.service}: {port}: {hostname}: {scan.name}"
+
+    log(f"[{description}]\tqueuing")
+
+    target.scans[scan_ID] = Command(
+      hostname,
+      port,
+      description,
+      format(scan.command),
+      scan.patterns
+    )
 
 def queue_generic_service_scan(target: Target, service: Service, scan: Scan):
 
@@ -328,12 +331,10 @@ def queue_generic_service_scan(target: Target, service: Service, scan: Scan):
       return # continue with another service of the target
 
     description = f"{address}: {scan.service}: {scan.name}"
-    log(f"queuing {description}")
 
     scan_ID = (scan.service, scan.name)
 
     if scan_ID in target.scans:
-      log("[orange]this scan should only be run once")
       return # continue with another service of the target
 
   else: # service does not belong to a group that should only be scanned once
@@ -345,13 +346,13 @@ def queue_generic_service_scan(target: Target, service: Service, scan: Scan):
       return # continue with another service of the target
 
     description = f"{address}: {scan.service}: {transport_protocol}/{port}: {scan.name}"
-    log(f"queuing {description}")
 
     scan_ID = (transport_protocol, port, application_protocol, scan.service, scan.name)
 
     if scan_ID in target.scans:
-      log("[orange]this scan appears to have already been queued")
       return # continue with another service of the target
+
+  log(f"[{description}]\tqueuing")
 
   target.scans[scan_ID] = Command(
     address,
@@ -367,7 +368,7 @@ async def scan_services(target: Target):
   # it's referenced like this (i.e. `{address}`) in the scan configs.
   address = target.address
 
-  log(f"scanning '{address}' ...")
+  log(f"[{address}]\tstart")
 
   # iterate over the services found to be running on the target
   for service in target.services:
@@ -398,6 +399,8 @@ async def scan_services(target: Target):
 
   for task in tasks:
     await task
+
+  log(f"[{address}]\tdone")
   
 async def scan_target(target: Target, semaphore: asyncio.Semaphore):
   
@@ -411,9 +414,12 @@ async def scan_target(target: Target, semaphore: asyncio.Semaphore):
   # make sure that only a specific number of targets are scanned in parallel
   async with semaphore:
 
+    log(f"[{target.address}]\tstart")
     await scan_services(target)
 
     JOB_PROGRESS.console.print(f"[bold green]{target.address}: finished")
+    log(f"[{target.address}]\tdone")
+
     OVERALL_PROGRESS.update(OVERALL_TASK, advance=1)
 
 def parse_result_file(base_directory, result_file, targets, unique_services, rescan_filters):
@@ -453,12 +459,11 @@ def parse_result_file(base_directory, result_file, targets, unique_services, res
       port_ID = port.get('portid')
 
       service_tuple = (address, transport_protocol, port_ID)
-      log(f"service {service_tuple}")
 
       if service_tuple in unique_services:
-        log("service already parsed")
         continue
 
+      log(f"service {service_tuple}")
       unique_services.append(service_tuple)
 
       service = port.find('service')
