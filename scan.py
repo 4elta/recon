@@ -177,7 +177,7 @@ async def run_command(command: Command, target: Target):
 
   # make sure that only a specific number of scans are running per target
   async with target.semaphore:
-    log(f"[{command.description}]\tstarting")
+    log(f"[{command.description}]")
     task_ID = JOB_PROGRESS.add_task(f"{command.description}")
 
     timestamp_start = time.time()
@@ -298,7 +298,7 @@ def queue_HTTP_service_scan(target: Target, service: Service, scan: Scan):
 
     description = f"{address}: {scan.service}: {port}: {hostname}: {scan.name}"
 
-    log(f"[{description}]\tqueuing")
+    log(f"[{description}]")
 
     target.scans[scan_ID] = Command(
       hostname,
@@ -352,7 +352,7 @@ def queue_generic_service_scan(target: Target, service: Service, scan: Scan):
     if scan_ID in target.scans:
       return # continue with another service of the target
 
-  log(f"[{description}]\tqueuing")
+  log(f"[{description}]")
 
   target.scans[scan_ID] = Command(
     address,
@@ -368,7 +368,7 @@ async def scan_services(target: Target):
   # it's referenced like this (i.e. `{address}`) in the scan configs.
   address = target.address
 
-  log(f"[{address}]\tstart")
+  log(f"[{address}]")
 
   # iterate over the services found to be running on the target
   for service in target.services:
@@ -414,7 +414,7 @@ async def scan_target(target: Target, semaphore: asyncio.Semaphore):
   # make sure that only a specific number of targets are scanned in parallel
   async with semaphore:
 
-    log(f"[{target.address}]\tstart")
+    log(f"[{target.address}]")
     await scan_services(target)
 
     JOB_PROGRESS.console.print(f"[bold green]{target.address}: finished")
