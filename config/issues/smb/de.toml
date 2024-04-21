@@ -11,4 +11,13 @@ description = "SMB Signierung: {issue}"
 description = "Netbios ist aktiviert"
 
 ["Netbios Info"]
-description = "Informationspreisgabe durch Netbios {info}"
+description = "Mögliche Informationspreisgabe durch Netbios {info}"
+
+["Signing optional"]
+description = "{proto}: Message signing enabled but not required
+
+["Singning disabled but required"]
+description = "{proto}: Message signing is disabled and not required!"
+
+["Singing disabled"]
+description = "{proto}: Message signing is disabled!"

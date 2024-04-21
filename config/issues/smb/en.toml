@@ -2,7 +2,7 @@
 description = "SMB Dialect supported: {version}"
 
 ["SMBv1 signing disabled"]
-description = "SMBv1 signing is disabled"
+description = "SMBv1/CIFS signing is {state} and {}"
 
 ["SMB signing incorrect"]
 description = "SMB singing: {issue}"
@@ -11,4 +11,13 @@ description = "SMB singing: {issue}"
 description = "Netbios is enabled"
 
 ["Netbios Info"]
-description = "Information disclosure through Netbios {info}"
+description = "Possible information disclosure through Netbios {info}"
+
+["Signing optional"]
+description = "{proto}: Message signing enabled but not required"
+
+["Singning disabled but required"]
+description = "{proto}: Message signing is disabled and not required!"
+
+["Singing disabled"]
+description = "{proto}: Message signing is disabled!"

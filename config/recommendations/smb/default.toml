@@ -1,0 +1,13 @@
+# Provide the preferred_dialect as single number without any delimiter.
+# As different systems seem to respond with different formats for the dialect
+# version.
+preferred_dialect = '311'
+
+[CIFS]
+    enabled = true
+    required = true
+
+[SMB2] 
+    enabled = true
+    required = true
+

@@ -10,12 +10,13 @@ from .. import Issue, AbstractAnalyzer
 
 SERVICE_SCHEMA = {
   'address': None,
-  'preferred_dialect': '3.1.1',
-  'SMBv1_only': None,
+  'signing': {},
+  'cifs_signing' : {},
+  'smb2_signing' : {},
   'smb_dialects': [],
-  'smbv1_signing' : None,
-  'smb_signing': None, # whether signing is enabled and/or required
-  'netbios': None, # wether SMB over NetBIOS is accessible
+  'smbv1_signing' : None, # check SMBv1 signing state
+  'smb_signing': None, # check SMBv2 signing state
+  'netbios': None, # check if NetBIOS is accessible
   'os_build': None, # OS Build id
   'nbstat_info': None,
   'os_release': None, # OS Release version
@@ -38,21 +39,15 @@ class Analyzer(AbstractAnalyzer):
     services = self.parser.parse_files(files[self.parser_name])
     self.services = services
 
-    # analyze services based on recommendations
-
     for identifier, service in services.items():
       issues = service['issues']
 
-#      if service['SMBv1'] is True:
-#          issues.append(Issue("SMBv1 is supported"))
-
-#      if service['SMBv2'] is True:
-#          issues.append(Issue("SMBv2 is supported"))
       if service['smb_dialects']:
-        for dialect in service['smb_dialects']:
-          issues.append(Issue("SMB dialect supported",
-                              version = dialect))
-          
+        self._analyze_dialects(service['smb_dialects'], self.recommendations, issues)
+   
+      if service['signing'] != None:
+        self._analyze_signing(service['signing'], self.recommendations, issues)
+         
       if service['smbv1_signing'] is True:
         issues.append(Issue("SMBv1 signing disabled"))            
 
@@ -72,3 +67,59 @@ class Analyzer(AbstractAnalyzer):
 
     return services
 
+  def _analyze_signing(self, protocols, recommendations, issues):
+    for protocol in protocols.keys():
+      signing_enabled = True
+      signing_required = True
+          
+      if protocols[protocol]['enabled'] != recommendations[protocol]['enabled']:
+        signing_enabled = False
+      
+      if protocols[protocol]['required'] != recommendations[protocol]['required']:
+        signing_required = False
+        
+      if "CIFS" in protocol:
+        protocol = "CIFS/SMB1"
+        
+      if signing_enabled and not signing_required:
+        issues.append(
+          Issue(
+            'Signing optional',
+            proto = protocol
+          )
+        )
+      
+      if not signing_enabled and signing_required:
+        issues.append(
+          Issue(
+            'Singning disabled but required',
+            proto = protocol
+          )
+        )
+        
+      if not signing_enabled and not signing_required:
+        issues.append(
+          Issue(
+            'Singing disabled',
+            proto = protocol
+          )
+        )
+
+  def _analyze_dialects(self, dialects, recommendations, issues):
+        for dialect in dialects:
+          if 'NT LM' in dialect:
+            issues.append(
+              Issue(
+                "SMB dialect supported",
+                version = dialect
+              )
+            )
+            continue
+          
+          if dialect < recommendations['preferred_dialect']:
+            issues.append(
+              Issue(
+                 "SMB dialect supported",
+                 version = re.sub(r'(.)', r'\1.', dialect, 2)
+              )
+            )

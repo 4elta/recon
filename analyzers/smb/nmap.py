@@ -27,6 +27,38 @@ class Parser(AbstractParser):
     super().parse_file(path)
 
     '''
+    https://nmap.org/book/nmap-dtd.html
+
+    <nmaprun ...>
+      <host ...>
+        <address addr="192.168.42.1" addrtype="ipv4"/>
+        <address addr="aa:bb:cc:dd:ee:ff" addrtype="mac" vendor="Vendor"/>
+        <hostnames>
+          <hostname name="example.com" type="PTR"/>
+        </hostname>
+        <ports>
+        port protocol="tcp" portid="139">
+                <state state="open" reason="syn-ack" reason_ttl="127"/>
+                <service name="netbios-ssn" product="Microsoft Windows netbios-ssn" ostype="Windows" method="probed" conf="10">
+                    <cpe>cpe:/o:microsoft:windows</cpe>
+                </service>
+                <script id="smb-enum-services" output="ERROR: Script execution failed (use -d to debug)"/>
+            </port>
+        </ports>
+        <hostscript>
+            <script id="smb2-capabilities" output=...>
+            <script id="smb-protocols" output="&#xa;  dialects: &#xa;    NT LM 0.12 (SMBv1) [dangerous, but default]&#xa;    2:0:2&#xa;    2:1:0&#xa;    3:0:0&#xa;    3:0:2&#xa;    3:1:1">
+                <table key="dialects">
+                    <elem>NT LM 0.12 (SMBv1) [dangerous, but default]</elem>
+                    <elem>2:0:2</elem>
+                    <elem>2:1:0</elem>
+                    <elem>3:0:0</elem>
+                    <elem>3:0:2</elem>
+                    <elem>3:1:1</elem>
+                </table>
+            </script>
+            ...
+            </hostscript>
     '''
     try:
       nmaprun_node = defusedxml.ElementTree.parse(path).getroot()
@@ -74,14 +106,13 @@ class Parser(AbstractParser):
         for hscript_node in host_node.iter('hostscript'):
           for script_node in hscript_node.iter('script'):
             script_ID = script_node.get('id')
+ 
             if script_ID == 'smb-protocols':
               self._parse_smb_protocols(script_node, service)
-  #            self._parse_rdp_enum_encryption(script_node, service)
               continue
 
             if script_ID == 'smb2-security-mode':
               self._parse_smb2_security_mode(script_node, service)
-  #            self._parse_rdp_ntlm_info(script_node, service)
               continue
 
             if script_ID == 'smb-security-mode':
@@ -101,20 +132,48 @@ class Parser(AbstractParser):
       key = elem_node.get('key')
       value = elem_node.text
       dialect = value.split(':')[0]
-      if 'LM' in dialect or '2' in dialect:
-        service['smb_dialects'].append(value)
+
+      if 'NT LM' in dialect:
+        service['smb_dialects'].append(value.replace('[dangerous, but default]', ''))
+        continue
+      
+      service['smb_dialects'].append(re.sub('[:.]', '', value))
 
   def _parse_smb2_security_mode(self, script_node, service):
     for elem_node in script_node.iter('elem'):
       key = elem_node.get('key')
       value = elem_node.text
-      if 'not' in value or 'disabled' in value:
-        service['smb_signing'] = value
+
+      if 'enabled and required' in value:
+        service['smb2_signing']['enabled'] = True
+        service['smb2_signing']['required'] = True
+
+      if 'enabled but not required' in value:
+        service['smb2_signing']['enabled'] = True
+        service['smb2_signing']['required'] = False
+
+      if 'disabled!' in value:
+        service['smb2_signing']['enabled'] = False
+        service['smb2_signing']['required'] = True
+
+      if 'disabled and not required!' in value:
+        service['smb2_signing']['enabled'] = False
+        service['smb2_signing']['required'] = False
 
   def _parse_smb_security_mode(self, script_node, service):
     for elem_node in script_node.iter('elem'):
       key = elem_node.get('key')
       value = elem_node.text
+
       if 'message_signing' in key:
+        if 'required' in value:
+          service['cifs_signing']['enabled'] = True
+          service['cifs_signing']['required'] = True
+
+        if 'supported' in value:
+          service['cifs_signing']['enabled'] = True
+          service['cifs_signing']['required'] = False
+
         if 'disabled' in value:
-          service['smbv1_signing'] = True
+          service['cifs_signing']['enabled'] = False
+          service['cifs_signing']['required'] = False
