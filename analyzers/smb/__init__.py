@@ -14,8 +14,6 @@ SERVICE_SCHEMA = {
   'cifs_signing' : {},
   'smb2_signing' : {},
   'smb_dialects': [],
-  'smbv1_signing' : None, # check SMBv1 signing state
-  'smb_signing': None, # check SMBv2 signing state
   'netbios': None, # check if NetBIOS is accessible
   'os_build': None, # OS Build id
   'nbstat_info': None,
@@ -48,13 +46,6 @@ class Analyzer(AbstractAnalyzer):
       if service['signing'] != None:
         self._analyze_signing(service['signing'], self.recommendations, issues)
          
-      if service['smbv1_signing'] is True:
-        issues.append(Issue("SMBv1 signing disabled"))            
-
-      if service['smb_signing']:
-        issues.append(Issue("SMB signing incorrect",
-                            issue = service['smb_signing']))
-
       if service['netbios'] is True:
         issues.append(Issue("Netbios enabled"))
         
