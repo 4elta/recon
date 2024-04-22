@@ -61,18 +61,12 @@ sudo apt install \
   smbclient \
   snmp \
   testssl.sh \
-  whatweb
+  whatweb \
+  enum4linux-ng
 ```
 
 * via git:
   * [nikto](https://github.com/sullo/nikto)
-
-* via [`pipx`](https://github.com/pypa/pipx):
-
-```shell
-pipx install git+https://github.com/cddmp/enum4linux-ng.git
-sudo ln --symbolic $(which enum4linux-ng) /usr/local/bin/enum4linux-ng
-```
 
 ## usage
 
