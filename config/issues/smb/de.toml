@@ -1,23 +1,8 @@
-["SMB dialect supported"]
-description = "SMB Dialekt unterstützt: {version}"
+["protocol supported"]
+description = "{protocol}-Protokoll unterstützt"
 
-["SMBv1 signing disabled"]
-description = "SMBv1 Signierung ist deaktiviert"
+["dialect supported"]
+description = "{protocol}: Dialekt unterstützt: {dialect}"
 
-["SMB signing incorrect"]
-description = "SMB Signierung: {issue}"
-
-["Netbios enabled"]
-description = "Netbios ist aktiviert"
-
-["Netbios Info"]
-description = "Mögliche Informationspreisgabe durch Netbios {info}"
-
-["Signing optional"]
-description = "{proto}: Message signing enabled but not required
-
-["Singning disabled but required"]
-description = "{proto}: Message signing is disabled and not required!"
-
-["Singing disabled"]
-description = "{proto}: Message signing is disabled!"
+["signing"]
+description = "{protocol}: Signatur aktiviert/erforderlich: {enabled}/{required}"

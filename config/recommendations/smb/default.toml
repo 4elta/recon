@@ -1,13 +1,7 @@
-# Provide the preferred_dialect as single number without any delimiter.
-# As different systems seem to respond with different formats for the dialect
-# version.
-preferred_dialect = '311'
+# minimum dialect the server must support
+[dialect.SMB2] = '3.1.1'
 
-[CIFS]
-    enabled = true
-    required = true
-
-[SMB2] 
-    enabled = true
-    required = true
-
+# if a protocol (e.g. SMB/CIFS) is not specified here, the server's configuration regarding signing is interpreted as "incorrect"/"invalid"/"insecure"
+[signing.SMB2]
+enabled = true
+required = true

@@ -37,34 +37,47 @@ class Parser(AbstractParser):
           <hostname name="example.com" type="PTR"/>
         </hostname>
         <ports>
-        port protocol="tcp" portid="139">
-                <state state="open" reason="syn-ack" reason_ttl="127"/>
-                <service name="netbios-ssn" product="Microsoft Windows netbios-ssn" ostype="Windows" method="probed" conf="10">
-                    <cpe>cpe:/o:microsoft:windows</cpe>
-                </service>
-                <script id="smb-enum-services" output="ERROR: Script execution failed (use -d to debug)"/>
-            </port>
+          <port protocol="tcp" portid="139">
+            <state state="open" reason="syn-ack" reason_ttl="127"/>
+            <service name="netbios-ssn" product="Microsoft Windows netbios-ssn" ostype="Windows" method="probed" conf="10">
+              <cpe>cpe:/o:microsoft:windows</cpe>
+            </service>
+            <script id="smb-enum-services" output="ERROR: Script execution failed (use -d to debug)"/>
+          </port>
         </ports>
         <hostscript>
-            <script id="smb2-capabilities" output=...>
-            <script id="smb-protocols" output="&#xa;  dialects: &#xa;    NT LM 0.12 (SMBv1) [dangerous, but default]&#xa;    2:0:2&#xa;    2:1:0&#xa;    3:0:0&#xa;    3:0:2&#xa;    3:1:1">
-                <table key="dialects">
-                    <elem>NT LM 0.12 (SMBv1) [dangerous, but default]</elem>
-                    <elem>2:0:2</elem>
-                    <elem>2:1:0</elem>
-                    <elem>3:0:0</elem>
-                    <elem>3:0:2</elem>
-                    <elem>3:1:1</elem>
-                </table>
-            </script>
+          <script id="smb-protocols">
+            <table key="dialects">
+              <elem>NT LM 0.12 (SMBv1) [dangerous, but default]</elem>
+              <elem>2.0.2</elem>
+              <elem>2.1</elem>
+              <elem>3.0</elem>
+              <elem>3.0.2</elem>
+              <elem>3.1.1</elem>
+            </table>
+          </script>
+          <script id="smb2-security-mode">
+            <table key="3.1.1">
+              <elem>Message signing enabled but not required</elem>
+            </table>
+          </script>
+          <script id="smb-security-mode">
+            <elem key="account_used">guest</elem>
+            <elem key="authentication_level">user</elem>
+            <elem key="challenge_response">supported</elem>
+            <elem key="message_signing">disabled</elem>
+          </script>
+          <script id="nbstat" output="...">
             ...
-            </hostscript>
+          </script>
+          ...
+        </hostscript>
     '''
+
     try:
       nmaprun_node = defusedxml.ElementTree.parse(path).getroot()
-    except defusedxml.ElementTree.ParseError as parse_error:
-      print(f"Could not parse XML file: {parse_error}: {path}")
-      exit(-1)
+    except defusedxml.ElementTree.ParseError as e:
+      sys.exit(f"error parsing file '{path}': {e}")
 
     for host_node in nmaprun_node.iter('host'):
       address = None
@@ -98,82 +111,121 @@ class Parser(AbstractParser):
 
         service['info'] = []
        
-        for sub_node in port_node.iter('service'):
-          service_name = sub_node.get('name')
-          if 'netbios-ssn' in service_name:
-            service['netbios'] = True
+        for script_node in host_node.findall('./hostscript/script'):
+          script_ID = script_node.get('id')
 
-        for hscript_node in host_node.iter('hostscript'):
-          for script_node in hscript_node.iter('script'):
-            script_ID = script_node.get('id')
- 
-            if script_ID == 'smb-protocols':
-              self._parse_smb_protocols(script_node, service)
-              continue
+          if script_ID == 'smb-protocols':
+            self._parse_smb_protocols(script_node, service)
+            continue
 
-            if script_ID == 'smb2-security-mode':
-              self._parse_smb2_security_mode(script_node, service)
-              continue
+          if script_ID == 'smb2-security-mode':
+            self._parse_smb2_security_mode(script_node, service)
+            continue
 
-            if script_ID == 'smb-security-mode':
-              self._parse_smb_security_mode(script_node, service)
-              continue
-            
-            if script_ID == 'nbstat':
-              service['netbios'] = True
-              service['nbstat_info'] = script_node.get('output').replace('\n', ',')
+          if script_ID == 'smb-security-mode':
+            self._parse_smb_security_mode(script_node, service)
+            continue
 
-            if 'smb' in script_ID:
-              service['info'].append(f"Nmap script scan result not parsed: '{script_ID}'")
-              #TODO: implement this
+          if script_ID == 'nbstat':
+            for nbstat in script_node.get('output').replace('\n', ',').split(',')
+              service['info'].append(nbstat.strip())
+            continue
 
-  def _parse_smb_protocols(self,script_node, service):
-    for elem_node in script_node.iter('elem'):
-      key = elem_node.get('key')
+          if 'smb' in script_ID:
+            service['info'].append(f"Nmap script scan result not parsed: '{script_ID}'")
+            #TODO: implement this
+
+  def _parse_smb_protocols(self, script_node, service):
+    '''
+    with SMB/CIFS, the dialect is specified/negotiated via a string (e.g. 'NT LM 0.12'):
+    https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-cifs/25c8c3c9-58fc-4bb8-aa8f-0272dede84c5
+    https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-cifs/80850595-e301-4464-9745-58e4945eb99b
+
+    with SMB2, the dialect is specified/negotiated via an integer (e.g. 0x210 for 2.1; 0x311 for 3.1.1):
+    https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-smb2/fac3655a-7eb5-4337-b0ab-244bbcd014e8
+    '''
+
+    dialect_SMB2_pattern = re.compile(r'(?P<major>\d+).(?P<minor>\d+)(.(?P<patch>\d+))?')
+
+    for elem_node in node.findall('./table[@key="dialects"]/elem'):
       value = elem_node.text
-      dialect = value.split(':')[0]
 
-      if 'NT LM' in dialect:
-        service['smb_dialects'].append(value.replace('[dangerous, but default]', ''))
+      m = dialect_SMB2_pattern.fullmatch(value)
+
+      if not m:
+        service['dialects']['CIFS'].append("NT LM 0.12")
         continue
-      
-      service['smb_dialects'].append(re.sub('[:.]', '', value))
+
+      if m.group('major') in [2, 3]:
+        protocol = "SMB2"
+      else:
+        protocol = "unknown"
+
+      dialect = f"{m.group('major')}.{m.group('minor')}"
+      if m.group('patch'):
+        dialect += f".{m.group('patch')}"
+
+      service['dialects'][protocol].append(dialect)
 
   def _parse_smb2_security_mode(self, script_node, service):
-    for elem_node in script_node.iter('elem'):
-      key = elem_node.get('key')
-      value = elem_node.text
+    # https://nmap.org/nsedoc/scripts/smb2-security-mode.html
 
-      if 'enabled and required' in value:
-        service['smb2_signing']['enabled'] = True
-        service['smb2_signing']['required'] = True
+    elem_node = script_node.find('./table/elem')
+    if not elem_node:
+      return
 
-      if 'enabled but not required' in value:
-        service['smb2_signing']['enabled'] = True
-        service['smb2_signing']['required'] = False
+    value = elem_node.text
 
-      if 'disabled!' in value:
-        service['smb2_signing']['enabled'] = False
-        service['smb2_signing']['required'] = True
+    if 'enabled and required' in value:
+      signing_info = {
+        "enabled" = True,
+        "required" = True
+      }
 
-      if 'disabled and not required!' in value:
-        service['smb2_signing']['enabled'] = False
-        service['smb2_signing']['required'] = False
+    if 'enabled but not required' in value:
+      signing_info = {
+        "enabled" = True,
+        "required" = False
+      }
+
+    if 'disabled and not required!' in value:
+      signing_info = {
+        "enabled" = False,
+        "required" = False
+      }
+
+    if 'disabled!' in value:
+      signing_info = {
+        "enabled" = False,
+        "required" = True
+      }
+
+    service['signing']['SMB2'] = signing_info
 
   def _parse_smb_security_mode(self, script_node, service):
-    for elem_node in script_node.iter('elem'):
+    # https://nmap.org/nsedoc/scripts/smb-security-mode.html
+
+    for elem_node in script_node.iter('./elem'):
       key = elem_node.get('key')
       value = elem_node.text
 
-      if 'message_signing' in key:
+      if key == 'message_signing':
         if 'required' in value:
-          service['cifs_signing']['enabled'] = True
-          service['cifs_signing']['required'] = True
+          signing_info = {
+            "enabled" = True,
+            "required" = True
+          }
 
         if 'supported' in value:
-          service['cifs_signing']['enabled'] = True
-          service['cifs_signing']['required'] = False
+          signing_info = {
+            "enabled" = True,
+            "required" = False
+          }
 
         if 'disabled' in value:
-          service['cifs_signing']['enabled'] = False
-          service['cifs_signing']['required'] = False
+          signing_info = {
+            "enabled" = False,
+            "required" = False
+          }
+
+        service['signing']['CIFS'] = signing_info
