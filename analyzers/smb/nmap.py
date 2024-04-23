@@ -127,7 +127,7 @@ class Parser(AbstractParser):
             continue
 
           if script_ID == 'nbstat':
-            for nbstat in script_node.get('output').replace('\n', ',').split(',')
+            for nbstat in script_node.get('output').replace('\n', ',').split(','):
               service['info'].append(nbstat.strip())
             continue
 
@@ -184,26 +184,26 @@ class Parser(AbstractParser):
 
     if 'enabled and required' in value:
       signing_info = {
-        "enabled" = True,
-        "required" = True
+        "enabled": True,
+        "required": True
       }
 
     if 'enabled but not required' in value:
       signing_info = {
-        "enabled" = True,
-        "required" = False
+        "enabled": True,
+        "required": False
       }
 
     if 'disabled and not required!' in value:
       signing_info = {
-        "enabled" = False,
-        "required" = False
+        "enabled": False,
+        "required": False
       }
 
     if 'disabled!' in value:
       signing_info = {
-        "enabled" = False,
-        "required" = True
+        "enabled": False,
+        "required": True
       }
 
     service['signing']['SMB2'] = signing_info
@@ -218,20 +218,20 @@ class Parser(AbstractParser):
       if key == 'message_signing':
         if 'required' in value:
           signing_info = {
-            "enabled" = True,
-            "required" = True
+            "enabled": True,
+            "required": True
           }
 
         if 'supported' in value:
           signing_info = {
-            "enabled" = True,
-            "required" = False
+            "enabled": True,
+            "required": False
           }
 
         if 'disabled' in value:
           signing_info = {
-            "enabled" = False,
-            "required" = False
+            "enabled": False,
+            "required": False
           }
 
         service['signing']['CIFS'] = signing_info
