@@ -153,6 +153,9 @@ class Parser(AbstractParser):
       m = dialect_SMB2_pattern.fullmatch(value)
 
       if not m:
+        if 'CIFS' not in service['dialects']:
+          service['dialects']['CIFS'] = []
+
         service['dialects']['CIFS'].append("NT LM 0.12")
         continue
 
@@ -160,6 +163,9 @@ class Parser(AbstractParser):
         protocol = "SMB2"
       else:
         protocol = "unknown"
+
+      if protocol not in service['dialects']:
+        service['dialects'][protocol] = []
 
       dialect = f"{m.group('major')}.{m.group('minor')}"
       if m.group('patch'):
