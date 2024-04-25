@@ -4,9 +4,6 @@ description = "{protocol} protocol supported"
 ["dialect supported"]
 description = "{protocol}: dialect supported: {dialect}"
 
-["signing"]
-description = "{protocol}: signing enabled/required: {enabled}/{required}"
-
 ["signing (e:True) (r:True)"]
 description = "{protocol}: signing enabled and required"
 
