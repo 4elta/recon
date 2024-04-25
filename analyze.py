@@ -92,10 +92,8 @@ def analyze_service(service, files, tool=None, recommendations_file=None, group_
   print(f"\nThe following vulnerabilities and/or deviations from the recommended settings (`{recommendations_file}`) have been identified:")
 
   for asset, service in services.items():
-    if not len(service['issues']):
-      continue
-
-    affected_assets[asset] = []
+    if len(service['issues']) or len(service['misc']):
+      affected_assets[asset] = []
 
     for issue in service['issues']:
       issue.format(issue_templates)
@@ -114,6 +112,14 @@ def analyze_service(service, files, tool=None, recommendations_file=None, group_
         issues[issue.description] = []
 
       issues[issue.description].append(asset)
+
+    if 'misc' in service:
+      for m in service['misc']:
+        if m not in issues:
+          issues[m] = []
+
+        affected_assets[asset].append(m)
+        issues[m].append(asset)
 
     # collect additional (debug) information
     if 'info' in service:
