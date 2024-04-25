@@ -154,10 +154,10 @@ class Parser(AbstractParser):
       m = dialect_SMB2_pattern.fullmatch(value)
 
       if not m:
-        if 'CIFS' not in service['dialects']:
-          service['dialects']['CIFS'] = []
+        if 'SMB1/CIFS' not in service['dialects']:
+          service['dialects']['SMB1/CIFS'] = []
 
-        service['dialects']['CIFS'].append("NT LM 0.12")
+        service['dialects']['SMB1/CIFS'].append("NT LM 0.12")
         continue
 
       if m.group('major') in ["2", "3"]:
@@ -211,8 +211,7 @@ class Parser(AbstractParser):
 
   def _parse_smb_security_mode(self, script_node, service):
     # https://nmap.org/nsedoc/scripts/smb-security-mode.html
-
-    for elem_node in script_node.iter('./elem'):
+    for elem_node in script_node.iter('elem'):
       key = elem_node.get('key')
       value = elem_node.text
 
@@ -235,4 +234,4 @@ class Parser(AbstractParser):
             "required": False
           }
 
-        service['signing']['CIFS'] = signing_info
+        service['signing']['SMB1/CIFS'] = signing_info
