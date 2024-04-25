@@ -7,7 +7,8 @@ SERVICE_SCHEMA = {
   'address': None,
   'dialects': {}, # for each protocol (CIFS, SMB2) hold a list of supported dialects
   'signing': {}, # for each protocol (CIFS, SMB2) hold information about 'enabled' and 'required'
-  'info': {}, # misc information (NetBIOS, etc)
+  'misc': [], # information related to the specific host (NetBIOS, etc)
+  'info': [], # info not related to the specific host (i.e. displayed at the end of the analysis)
   'issues': [],
 }
 

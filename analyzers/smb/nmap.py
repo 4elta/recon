@@ -110,6 +110,7 @@ class Parser(AbstractParser):
         service['port'] = port
 
         service['info'] = []
+        service['misc'] = []
        
         for script_node in host_node.findall('./hostscript/script'):
           script_ID = script_node.get('id')
@@ -128,7 +129,7 @@ class Parser(AbstractParser):
 
           if script_ID == 'nbstat':
             for nbstat in script_node.get('output').replace('\n', ',').split(','):
-              service['info'].append(nbstat.strip())
+              service['misc'].append(nbstat.strip())
             continue
 
           if 'smb' in script_ID:
