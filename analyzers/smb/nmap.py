@@ -231,4 +231,4 @@ class Parser(AbstractParser):
             "required": False
           }
 
-        service['signing']['SMB1/CIFS'] = signing_info
+        service['signing']['CIFS'] = signing_info
