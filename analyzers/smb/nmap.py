@@ -159,7 +159,7 @@ class Parser(AbstractParser):
         service['dialects']['CIFS'].append("NT LM 0.12")
         continue
 
-      if m.group('major') in [2, 3]:
+      if m.group('major') in ["2", "3"]:
         protocol = "SMB2"
       else:
         protocol = "unknown"
