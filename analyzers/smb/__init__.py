@@ -31,7 +31,7 @@ class Analyzer(AbstractAnalyzer):
       if service['dialects']:
         self._analyze_dialects(service['dialects'], self.recommendations, issues)
    
-      if service['signing'] != None:
+      if service['signing']:
         self._analyze_signing(service['signing'], self.recommendations, issues)
 
     return services

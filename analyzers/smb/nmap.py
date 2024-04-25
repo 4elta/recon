@@ -177,7 +177,7 @@ class Parser(AbstractParser):
     # https://nmap.org/nsedoc/scripts/smb2-security-mode.html
 
     elem_node = script_node.find('./table/elem')
-    if not elem_node:
+    if elem_node is None:
       return
 
     value = elem_node.text
