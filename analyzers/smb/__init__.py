@@ -39,6 +39,10 @@ class Analyzer(AbstractAnalyzer):
 
   def _analyze_signing(self, signing, recommendations, issues):
     for protocol, signing_info in signing.items():
+      protocol_nice = protocol
+      if protocol == "CIFS":
+        protocol_nice = "SMB1/CIFS"
+
       if (
         protocol not in recommendations['signing']
         or signing_info['enabled'] != recommendations['signing'][protocol]['enabled']
@@ -47,21 +51,25 @@ class Analyzer(AbstractAnalyzer):
         issues.append(
           Issue(
             f"signing (e:{signing_info['enabled']}) (r:{signing_info['required']})",
-            protocol = protocol
+            protocol = protocol_nice
           )
         )
 
   def _analyze_dialects(self, dialects, recommendations, issues):
     for protocol, dialect_list in dialects.items():
+      protocol_nice = protocol
+      if protocol == "CIFS":
+        protocol_nice = "SMB1/CIFS"
+
       if protocol not in recommendations['dialect']:
-        issues.append(Issue("protocol supported", protocol = protocol))
+        issues.append(Issue("protocol supported", protocol = protocol_nice))
 
       for dialect in dialect_list:
         if protocol not in recommendations['dialect'] or dialect < recommendations['dialect'][protocol]:
           issues.append(
             Issue(
               "dialect supported",
-              protocol = protocol,
+              protocol = protocol_nice,
               dialect = dialect
             )
           )

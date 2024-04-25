@@ -151,10 +151,10 @@ class Parser(AbstractParser):
       m = dialect_SMB2_pattern.fullmatch(value)
 
       if not m:
-        if 'SMB1/CIFS' not in service['dialects']:
-          service['dialects']['SMB1/CIFS'] = []
+        if 'CIFS' not in service['dialects']:
+          service['dialects']['CIFS'] = []
 
-        service['dialects']['SMB1/CIFS'].append("NT LM 0.12")
+        service['dialects']['CIFS'].append("NT LM 0.12")
         continue
 
       if m.group('major') in ["2", "3"]:
