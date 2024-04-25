@@ -45,10 +45,8 @@ class Analyzer(AbstractAnalyzer):
       ):
         issues.append(
           Issue(
-            "signing",
-            protocol = protocol,
-            enabled = "✔️" if signing_info['enabled'] else "❌",
-            required = "✔️" if signing_info['required'] else "❌"
+            f"signing (e:{signing_info['enabled']}) (r:{signing_info['required']})",
+            protocol = protocol
           )
         )
 
