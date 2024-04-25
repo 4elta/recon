@@ -147,7 +147,7 @@ class Parser(AbstractParser):
 
     dialect_SMB2_pattern = re.compile(r'(?P<major>\d+).(?P<minor>\d+)(.(?P<patch>\d+))?')
 
-    for elem_node in node.findall('./table[@key="dialects"]/elem'):
+    for elem_node in script_node.findall('./table[@key="dialects"]/elem'):
       value = elem_node.text
 
       m = dialect_SMB2_pattern.fullmatch(value)

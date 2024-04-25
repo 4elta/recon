@@ -28,7 +28,7 @@ class Analyzer(AbstractAnalyzer):
     for identifier, service in services.items():
       issues = service['issues']
 
-      if service['smb_dialects']:
+      if service['dialects']:
         self._analyze_dialects(service['dialects'], self.recommendations, issues)
    
       if service['signing'] != None:
