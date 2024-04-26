@@ -35,8 +35,8 @@ SERVICE_SCHEMA = {
   'NLA': None,
   # Network Level Authentication
 
-  'misc': [],
   'issues': [],
+  'misc': [], # misc information; shown with the host, after all issues
 }
 
 class Analyzer(AbstractAnalyzer):

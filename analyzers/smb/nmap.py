@@ -126,7 +126,10 @@ class Parser(AbstractParser):
 
           if script_ID == 'nbstat':
             for nbstat in script_node.get('output').replace('\n', ',').split(','):
-              service['misc'].append(nbstat.strip())
+              info = re.sub('\s+', ' ', nbstat.strip()) # replace multiple spaces with a single space
+              if info == 'Names:':
+                continue
+              service['misc'].append(info)
             continue
 
           if 'smb' in script_ID:

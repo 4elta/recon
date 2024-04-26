@@ -15,3 +15,6 @@ description = "{protocol}: Signatur nicht aktiviert und nicht erforderlich"
 
 ["signing (e:False) (r:True)"]
 description = "{protocol}: Signatur nicht aktiviert aber erforderlich"
+
+["additional info"]
+description = "zusätzliche Informationen: {info}"

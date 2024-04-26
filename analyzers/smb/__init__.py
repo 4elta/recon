@@ -7,9 +7,9 @@ SERVICE_SCHEMA = {
   'address': None,
   'dialects': {}, # for each protocol (CIFS, SMB2) hold a list of supported dialects
   'signing': {}, # for each protocol (CIFS, SMB2) hold information about 'enabled' and 'required'
-  'misc': [], # information related to the specific host (NetBIOS, etc)
-  'info': [], # info not related to the specific host (i.e. displayed at the end of the analysis)
   'issues': [],
+  'misc': [], # misc information (NetBIOS, etc); shown with the host, after all issues
+  'info': [], # additional (debug) information; shown at the end of the analysis
 }
 
 class Analyzer(AbstractAnalyzer):
@@ -34,6 +34,14 @@ class Analyzer(AbstractAnalyzer):
    
       if service['signing']:
         self._analyze_signing(service['signing'], self.recommendations, issues)
+
+      for info in service['misc']:
+        issues.append(
+          Issue(
+            "additional info",
+            info = info
+          )
+        )
 
     return services
 

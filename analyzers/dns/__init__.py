@@ -17,9 +17,9 @@ SERVICE_SCHEMA = {
   'DNSSEC': None, # whether or not this name server validates DNSSEC
   'ECS': None, # whether or not this name server supports EDNS Client Subnet (ECS)
   'AXFR': None, # whether or not this name server permits AXFR; if it does, this key will hold the DNS zone
-  'misc': {}, # misc information (rDNS, domain, `bind.version`, `id.server`, etc)
   'issues': [],
-  'info': []
+  'misc': {}, # misc information (rDNS, domain, `bind.version`, `id.server`, etc); shown with the host, after all issues
+  'info': [], # additional (debug) information; shown at the end of the analysis
 }
 
 class Analyzer(AbstractAnalyzer):

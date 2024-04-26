@@ -211,7 +211,7 @@ def process(args):
 
   version = None
   requests = []
-  info = []
+  misc = []
   mode_6 = {}
   mode_7 = {}
 
@@ -259,7 +259,7 @@ def process(args):
           break
 
       if response_length:
-        info += data
+        misc += data
         amplification_factor = response_length / len(request)
         print(f"amplification factor: {amplification_factor:.1f}")
         r = {
@@ -295,7 +295,7 @@ def process(args):
           break
 
       if response_length:
-        info += data
+        misc += data
         amplification_factor = response_length / len(request)
         print(f"amplification factor: {amplification_factor:.1f}")
         r = {
@@ -318,7 +318,7 @@ def process(args):
       'port': PORT,
       'version': version,
       'requests': requests,
-      'info': info,
+      'misc': misc,
       'mode_6': mode_6,
       'mode_7': mode_7
     }

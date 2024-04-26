@@ -78,7 +78,7 @@ class Parser(AbstractParser):
                 amplification_factor = "?"
               )
             )
-            service['info'] += self._parse_monlist(script_node)
+            service['misc'] += self._parse_monlist(script_node)
             continue
 
           if script_ID == 'ntp-info':
@@ -89,7 +89,7 @@ class Parser(AbstractParser):
                 amplification_factor = "?"
               )
             )
-            service['info'] += self._parse_info(script_node)
+            service['misc'] += self._parse_info(script_node)
             continue
 
           if 'ntp' in script_ID:
@@ -111,13 +111,13 @@ class Parser(AbstractParser):
     return (f"Nmap script scan result not parsed: 'ntp-monlist'")
 
   def _parse_info(self, info_node):
-    info = []
+    misc = []
 
     for elem_node in info_node.iter('elem'):
       key = elem_node.get('key')
       if key == 'receive time stamp':
         continue
       value = elem_node.text.strip()
-      info.append(f'{key}="{value}"')
+      misc.append(f"`{key}={value}`")
 
-    return info
+    return misc
