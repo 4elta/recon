@@ -123,7 +123,7 @@ After running the scanner, the results directory (e.g. `recon/`) will contain th
 
 ```text
 % analyze -h
-usage: analyze [-h] [-t name] [-r path] [-i path] [-l code] [-g] [--json path] [--csv path] {?,dns,ftp,http,isakmp,ntp,rdp,ssh,tls}
+usage: analyze [-h] [-t name] [-r path] [-i path] [-l code] [-g] [--json path] [--csv path] {?,dns,ftp,http,isakmp,ntp,rdp,smb,ssh,tls}
 
 Analyze and summarize the results of specific tools previously run by the scanner of the recon tool suite (i.e. 'scan').
 
@@ -153,6 +153,7 @@ The following analyzers (and parsers) are currently implemented:
 * ISAKMP/IKE configuration (`ike`)
 * NTP configuration (`ntp`, `nmap`)
 * RDP configuration (`nmap`)
+* SMB configuration (`nmap`)
 * SSH configuration (`nmap`)
 * TLS configuration (`testssl`, `sslscan`, `sslyze`, `nmap`)
 
