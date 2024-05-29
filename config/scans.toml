@@ -16,27 +16,27 @@ password = "password"
 patterns = [ 'amqp' ]
 
   [amqp.scans.nmap]
-  command = 'nmap -Pn -sV -n -p {port} --script="amqp-info" -oN "{result_file}.log" {address}'
+  command = 'nmap -Pn -sV -n -p {port} --script="amqp-info" -oN "{result_file}.log" -oX "{result_file.xml}" {address}'
 
 [cassandra]
 # https://cassandra.apache.org/
 patterns = [ 'apani1' ]
 
   [cassandra.scans.nmap]
-  command = 'nmap -Pn -sV  -p {port} --script="banner,cassandra* and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" {address}'
+  command = 'nmap -Pn -sV  -p {port} --script="banner,cassandra* and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" -oX "{result_file.xml}" {address}'
 
 [cups]
 patterns = [ 'ipp' ]
 
   [cups.scans.nmap]
-  command = 'nmap -Pn -sV -p {port} --script="banner,cups* and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" {address}'
+  command = 'nmap -Pn -sV -p {port} --script="banner,cups* and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" -oX "{result_file.xml}" {address}'
 
 [distcc]
 # https://www.distcc.org/security.html
 patterns = [ 'distccd' ]
 
   [distcc.scans.nmap]
-  command = 'nmap -Pn -sV -p {port} --script="banner,distcc-cve2004-2687" --script-args="distcc-cve2004-2687.cmd=id" -oN "{result_file}.log" {address}'
+  command = 'nmap -Pn -sV -p {port} --script="banner,distcc-cve2004-2687" --script-args="distcc-cve2004-2687.cmd=id" -oN "{result_file}.log" -oX "{result_file.xml}" {address}'
 
 [dns]
 patterns = [ 'domain(-s)?$' ]
@@ -49,13 +49,13 @@ patterns = [ 'domain(-s)?$' ]
 patterns = [ 'finger' ]
 
   [finger.scans.nmap]
-  command = 'nmap -Pn -sV -p {port} --script="banner,finger" -oN "{result_file}.log" {address}'
+  command = 'nmap -Pn -sV -p {port} --script="banner,finger" -oN "{result_file}.log" -oX "{result_file.xml}" {address}'
 
 [ftp]
 patterns = [ 'ftps?(-data)?' ]
 
   [ftp.scans.nmap]
-  command = 'nmap -Pn -v -sV -p {port} --script="banner,ssl-cert,ftp* and not (brute or broadcast or dos or external or fuzzer)" -oX "{result_file}.xml" -oN "{result_file}.log" {address}'
+  command = 'nmap -Pn -v -sV -p {port} --script="banner,ssl-cert,ftp* and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
   patterns = [ 'Anonymous FTP login allowed' ]
 
 [http]
@@ -94,7 +94,7 @@ patterns = [ '^(.+\|)?http' ] # 'http', 'https', '.+|http'
 patterns = [ 'imap(s|(4-ssl))?' ]
 
   [imap.scans.nmap]
-  command = 'nmap -Pn -sV -p {port} --script="banner,imap* and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" {address}'
+  command = 'nmap -Pn -sV -p {port} --script="banner,imap* and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" -oX "{result_file.xml}" {address}'
 
 [isakmp]
 patterns = [ 'isakmp' ]
@@ -103,37 +103,37 @@ patterns = [ 'isakmp' ]
   command = '"{PATH_TO_SCANNERS}/ike.py" {address} --port {port} | tee "{result_file}.log"'
 
   [isakmp.scans.nmap]
-  command = 'nmap -sU -Pn -sV -p {port} --script="banner,ike-version" -oN "{result_file}.log" {address}'
+  command = 'nmap -sU -Pn -sV -p {port} --script="banner,ike-version" -oN "{result_file}.log" -oX "{result_file.xml}" {address}'
 
 [kerberos]
 patterns = [ 'kerberos', 'kpasswd' ]
 
   [kerberos.scans.nmap]
-  command = 'nmap $([[ "{transport_protocol}" == "udp" ]] && echo "-sU") -Pn -sV -p {port} --script="banner,krb5-enum-users" -oN "{result_file}.log" {address}'
+  command = 'nmap $([[ "{transport_protocol}" == "udp" ]] && echo "-sU") -Pn -sV -p {port} --script="banner,krb5-enum-users" -oN "{result_file}.log" -oX "{result_file.xml}" {address}'
 
 [ldap]
 patterns = [ 'ldap' ]
 
   [ldap.scans.nmap]
-  command = 'nmap -Pn -sV -p {port} --script="banner,ldap* and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" {address}'
+  command = 'nmap -Pn -sV -p {port} --script="banner,ldap* and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" -oX "{result_file.xml}" {address}'
 
 [mongodb]
 patterns = [ 'mongod' ]
 
   [mongodb.scans.nmap]
-  command = 'nmap -Pn -sV -p {port} --script="banner,mongodb* and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" {address}'
+  command = 'nmap -Pn -sV -p {port} --script="banner,mongodb* and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" -oX "{result_file.xml}" {address}'
 
 [mysql]
 patterns = [ 'mysql' ]
 
   [mysql.scans.nmap]
-  command = 'nmap -Pn -sV -p {port} --script="banner,mysql* and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" {address}'
+  command = 'nmap -Pn -sV -p {port} --script="banner,mysql* and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" -oX "{result_file.xml}" {address}'
 
 [nfs]
 patterns = [ '^nfs' ]
 
   [nfs.scans.nmap]
-  command = 'nmap -Pn -sV -p {port} --script="banner,(rpcinfo or nfs*) and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" {address}'
+  command = 'nmap -Pn -sV -p {port} --script="banner,(rpcinfo or nfs*) and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" -oX "{result_file.xml}" {address}'
 
   [nfs.scans.showmount]
   command = 'showmount -e {address} | tee "{result_file}.log"'
@@ -142,7 +142,7 @@ patterns = [ '^nfs' ]
 patterns = [ '^nntp', 'snews' ]
 
   [nntp.scans.nmap]
-  command = 'nmap -Pn -sV -p {port} --script="banner,nntp-ntlm-info" -oN "{result_file}.log" {address}'
+  command = 'nmap -Pn -sV -p {port} --script="banner,nntp-ntlm-info" -oN "{result_file}.log" -oX "{result_file.xml}" {address}'
 
 [ntp]
 patterns = [ '^ntp' ]
@@ -157,31 +157,31 @@ patterns = [ '^ntp' ]
 patterns = [ 'oracle' ]
 
   [oracle.scans.nmap]
-  command = 'nmap -Pn -sV -p {port} --script="banner,oracle* and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" {address}'
+  command = 'nmap -Pn -sV -p {port} --script="banner,oracle* and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" -oX "{result_file.xml}" {address}'
 
 [pop3]
 patterns = [ 'pop3' ]
 
   [pop3.scans.nmap]
-  command = 'nmap -Pn -sV -p {port} --script="banner,pop3* and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" {address}'
+  command = 'nmap -Pn -sV -p {port} --script="banner,pop3* and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" -oX "{result_file.xml}" {address}'
 
 [rdp]
 patterns = [ 'ms-wbt-server' ]
 
   [rdp.scans.nmap]
-  command = 'nmap $([[ "{transport_protocol}" == "udp" ]] && echo "-sU") -Pn -sV -p {port} --script="banner,rdp* and not (brute or broadcast or dos or external or fuzzer)" -oX "{result_file}.xml" -oN "{result_file}.log" {address}'
+  command = 'nmap $([[ "{transport_protocol}" == "udp" ]] && echo "-sU") -Pn -sV -p {port} --script="banner,rdp* and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
 
 [rmi]
 patterns = [ 'rmiregistry' ]
 
   [rmi.scans.nmap]
-  command = 'nmap -Pn -sV -p {port} --script="banner,rmi-vuln-classloader,rmi-dumpregistry" -oN "{result_file}.log" {address}'
+  command = 'nmap -Pn -sV -p {port} --script="banner,rmi-vuln-classloader,rmi-dumpregistry" -oN "{result_file}.log" -oX "{result_file.xml}" {address}'
 
 [rpc]
 patterns = [ 'msrpc', 'rpcbind', '^erpc' ]
 
   [rpc.scans.nmap]
-  command = 'nmap -Pn -sV -p {port} --script="banner,msrpc-enum,rpc-grind,rpcinfo" -oN "{result_file}.log" {address}'
+  command = 'nmap -Pn -sV -p {port} --script="banner,msrpc-enum,rpc-grind,rpcinfo" -oN "{result_file}.log" -oX "{result_file.xml}" {address}'
 
   [rpc.scans.rpcinfo]
   command = 'rpcinfo {address} 2>&1 | tee "{result_file}.log"'
@@ -194,7 +194,7 @@ patterns = [ 'msrpc', 'rpcbind', '^erpc' ]
 patterns = [ '^sip', '^ventrilo' ]
 
   [sip.scans.nmap]
-  command = 'nmap -Pn -sV -p {port} --script="banner,sip-enum-users,sip-methods" -oN "{result_file}.log" {address}'
+  command = 'nmap -Pn -sV -p {port} --script="banner,sip-enum-users,sip-methods" -oN "{result_file}.log" -oX "{result_file.xml}" {address}'
 
   [sip.scans.svmap]
   command = 'svmap -p {port} {address} 2>&1 | tee "{result_file}.log"'
@@ -247,7 +247,7 @@ patterns = [ '^ssh' ]
 patterns = [ '^telnet' ]
 
   [telnet.scans.nmap]
-  command = 'nmap -Pn -sV -p {port} --script="banner,telnet-encryption,telnet-ntlm-info" -oN "{result_file}.log" {address}'
+  command = 'nmap -Pn -sV -p {port} --script="banner,telnet-encryption,telnet-ntlm-info" -oN "{result_file}.log" -oX "{result_file.xml}" {address}'
 
 [tls] # services (or service versions) that use TLS by default (i.e. not opportunistic).
 patterns = [
@@ -316,10 +316,10 @@ patterns = [
 patterns = [ 'vnc' ]
 
   [vnc.scans.nmap]
-  command = 'nmap -Pn -sV -p {port} --script="banner,(vnc* or realvnc*) and not (brute or broadcast or dos or external or fuzzer)" --script-args="unsafe=1" -oN "{result_file}.log" {address}'
+  command = 'nmap -Pn -sV -p {port} --script="banner,(vnc* or realvnc*) and not (brute or broadcast or dos or external or fuzzer)" --script-args="unsafe=1" -oN "{result_file}.log" -oX "{result_file.xml}" {address}'
 
 [xmpp]
 patterns = [ 'xmpp' ]
 
   [xmpp.scans.nmap]
-  command = 'nmap -Pn -sV -p {port} --script="banner,xmpp* and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" {address}'
+  command = 'nmap -Pn -sV -p {port} --script="banner,xmpp* and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" -oX "{result_file.xml}" {address}'
