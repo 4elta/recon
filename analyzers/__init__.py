@@ -72,7 +72,10 @@ class AbstractParser:
       return self.services
 
     for path in files[self.file_type]:
-      self.parse_file(path)
+        try:
+          self.parse_file(path)
+        except error as e:
+            sys.exit(f"An error occurred in processing file {path}: {e}")
 
     return self.services
 
