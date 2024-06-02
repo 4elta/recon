@@ -101,13 +101,12 @@ class Parser(AbstractParser):
 
           if script_ID == 'ssh-auth-methods':
             script_output = script_node.get("output")
-            if "ERROR:" in script_output:
-              service['issues'].append(Issue("client authentication method: unknown"))
+            if "ERROR:" in script_output or 'false' in script_output::
+              service['issues'].append(
+                      Issue("client authentication method: unknown"))
             elif 'none_auth' in script_output:
               # https://www.rfc-editor.org/rfc/rfc4252#section-5.2
               service['client_authentication_methods'] = [ 'none' ]
-            elif 'false' in script_output:
-              service['client_authentication_methods'] = [ 'unknown' ]
             else:
               service['client_authentication_methods'] = self._parse_table(script_node.find('table'))
 
