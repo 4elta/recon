@@ -65,6 +65,8 @@ The analyzer (i.e. `analyze.py`) provides functionality to parse, analyze and su
 Each service (e.g. HTTP, SSH, TLS, etc.) has its own analyzer "package" (e.g. [`analyzers/http/*`](../analyzers/http/), [`analyzers/ssh/*`](../analyzers/ssh/),  [`analyzers/tls/*`](../analyzers/tls/), etc.).
 An analyzer package consists of an analyzer (i.e. `__init__.py`) and at least one parser (i.e. `<tool>.py`; one per tool).
 
+![component diagram](analyzer.drawio.png)
+
 A parser maps the result of a particular tool to a tool-agnostic representation of a service's configuration.
 The representation schema is specified inside the analyzer (i.e. `SERVICE_SCHEMA = {...}`).
 The compiled service configuration is analyzed (by the analyzer) based on some recommendations.
