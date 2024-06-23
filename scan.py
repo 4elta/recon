@@ -733,7 +733,7 @@ def main():
     action = 'store_true'
   )
 
-  loop = asyncio.get_event_loop()
+  loop = asyncio.get_running_loop()
 
   try:
     asyncio.run(
