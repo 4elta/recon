@@ -5,12 +5,14 @@
 import argparse
 import asyncio
 import csv
+import functools
 import inspect
 import json
 import os
 import pathlib
 import random
 import re
+import signal
 import string
 import subprocess
 import sys
@@ -121,7 +123,13 @@ def log(msg):
     return
 
   with open(LOG_FILE, 'a') as f:
-    task_name = asyncio.current_task().get_name()
+    current_task = asyncio.current_task()
+
+    if current_task:
+      task_name = current_task.get_name()
+    else:
+      task_name = 'main'
+
     method_name = inspect.stack()[1].function
     f.write(f"[{task_name}]\t[{method_name}]\t{msg}\n")
 
@@ -211,14 +219,18 @@ async def run_command(command: Command, target: Target):
         OVERALL_PROGRESS.console.print(f"[red]{command.description}: timeout")
         log(f"[{command.description}]\ttimeout")
         return_code = "timeout"
+      except asyncio.exceptions.CancelledError:
+        log(f"[{command.description}]\tcancelled")
+        return_code = "cancelled"
 
     timestamp_completion = time.time()
 
     await CommandLog.add_entry([timestamp_start, timestamp_completion, command.host, command.port, command.string, return_code])
     
     JOB_PROGRESS.remove_task(task_ID)
-    log(f"[{command.description}]\tdone")
-    #JOB_PROGRESS.console.print(f"[green]{command.description}: finished")
+
+    if return_code not in ('timeout', 'cancelled'):
+      log(f"[{command.description}]\tdone")
 
 def find_suitable_scans(application_protocol):
 
@@ -647,7 +659,13 @@ async def process(args):
         row = [address, service.transport_protocol, service.port, service.application_protocol, service.scanned]
         csv.writer(f, delimiter=args.delimiter, quoting=csv.QUOTE_MINIMAL).writerow(row)
 
-def main():
+def cancel_tasks(loop):
+  print("aborted by user")
+  log("aborted by user")
+
+  loop.stop()
+
+async def main():
   parser = argparse.ArgumentParser(
     description = "Schedule and execute various tools based on the findings of an Nmap service scan."
   )
@@ -735,17 +753,16 @@ def main():
 
   loop = asyncio.get_running_loop()
 
-  try:
-    asyncio.run(
-      process(parser.parse_args())
+  for signame in ('SIGINT', 'SIGTERM'):
+    loop.add_signal_handler(
+      getattr(signal, signame),
+      functools.partial(cancel_tasks, loop)
     )
-  except KeyboardInterrupt:
-    print("aborted by user")
-    log("aborted by user")
-    for task in asyncio.all_tasks(loop=loop):
-      task.cancel()
-  finally:
-    loop.close()
+
+  await process(parser.parse_args())
 
 if __name__ == '__main__':
-  main()
+  try:
+    asyncio.run(main())
+  except RuntimeError:
+    pass
