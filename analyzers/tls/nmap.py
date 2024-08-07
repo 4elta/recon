@@ -227,14 +227,21 @@ class Parser(AbstractParser):
         kex_methods[kex[0]] = kex[1]
 
     compressor_node = node.find('./table[@key="compressors"]')
-    if compressor_node and compressor_node.find('./elem').text != 'NULL':
+    if compressor_node is not None and compressor_node.find('./elem').text != 'NULL':
       if 'CRIME' not in service['vulnerabilities']:
         service['vulnerabilities'].append('CRIME')
 
     cipher_pref_node = node.find('./elem[@key="cipher preference"]')
-    if cipher_pref_node:
+    if cipher_pref_node is not None:
       cipher_preference = cipher_pref_node.text
+
       #TODO: how to handle the situation where this is different for each protocol version (e.g. TLS 1.2: client; TLS 1.3: server)?
+      # currently, all distinct cipher preferences are given
+      if service['preference'] is None:
+        service['preference'] = cipher_preference
+      elif cipher_preference not in service['preference']:
+        service['preference'] += '/' + cipher_preference
+
 
   def _parse_cipher_suites(self, script_node, service):
     for protocol_table in script_node.findall('./table'):
