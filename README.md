@@ -13,60 +13,45 @@ This allows for an automated and consistent assessment of specific services (i.e
 
 The tools in this suite (i.e. `analyze.py` and `scan.py`) require Python 3.11+.
 
-Install the dependencies ([defusedxml](https://github.com/tiran/defusedxml), [Rich](https://rich.readthedocs.io/en/latest/introduction.html)):
+Install the dependencies ([defusedxml](https://github.com/tiran/defusedxml), [Rich](https://github.com/Textualize/rich)):
 
 ```shell
-sudo apt install python3-defusedxml python3-rich
+sudo apt install --yes \
+  python3-defusedxml \
+  python3-rich
 ```
 
 Install the tool suite:
 
 ```shell
+# this step is optional; change the directory name to your preference
+mkdir --parents $HOME/tools && cd $_
+
 git clone https://github.com/4elta/recon.git
 ```
 
 Make sure that the scripts have the *executable* flag set:
 
 ```shell
-cd recon
-chmod +x analyze.py
-chmod +x scan.py
-chmod +x scanners/*
+chmod +x recon/analyze.py
+chmod +x recon/scan.py
+chmod +x recon/scanners/*
 ```
 
 Add (symbolic links to) the scripts to `/usr/local/bin`.
 Please make sure, that the names for `analyze` and `scan` don't [conflict](https://github.com/4elta/recon/issues/31) with any binaries already installed.
 
 ```shell
-sudo ln --symbolic $(realpath analyze.py) /usr/local/bin/analyze
-sudo ln --symbolic $(realpath scan.py) /usr/local/bin/scan
+sudo ln --symbolic $(realpath recon/analyze.py) /usr/local/bin/analyze
+sudo ln --symbolic $(realpath recon/scan.py) /usr/local/bin/scan
 ```
-
-### additional tools
 
 Based on the scans you are going to run (see [`config/scans.toml`](config/scans.toml)), you might have to install additional tools:
 
-* via `apt`:
-
 ```shell
-sudo apt install \
-  curl \
-  python3-dnspython \
-  python3-impacket \
-  dnsutils \
-  ike-scan \
-  nmap \
-  onesixtyone \
-  seclists \
-  smbclient \
-  snmp \
-  testssl.sh \
-  whatweb \
-  enum4linux-ng
+mkdir --parents $HOME/tools
+recon/install-required-tools.sh $HOME/tools
 ```
-
-* via git:
-  * [nikto](https://github.com/sullo/nikto)
 
 ## usage
 
