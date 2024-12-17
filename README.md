@@ -53,7 +53,7 @@ mkdir --parents $HOME/tools
 recon/install-required-tools.sh $HOME/tools
 ```
 
-the script will install the following additional tools:
+the script will install the following tools:
 
 * [BIND 9](https://www.isc.org/bind/)
 * [curl](https://curl.se/)
