@@ -27,7 +27,7 @@ cd "$tools_directory"
 # --https://cirt.net/Nikto2
 
 sudo apt install --yes libnet-ssleay-perl
-git clone https://github.com/sullo/nikto.git
+git clone --depth 1 https://github.com/sullo/nikto.git
 sudo ln --symbolic $(realpath nikto/program/nikto.pl) /usr/local/bin/nikto
 
 if grep --quiet "^Kali" /etc/issue; then
@@ -43,11 +43,11 @@ else
     python3-yaml \
     smbclient
 
-  git clone https://github.com/cddmp/enum4linux-ng.git
+  git clone --depth 1 https://github.com/cddmp/enum4linux-ng.git
   sudo ln --symbolic $(realpath enum4linux-ng/enum4linux-ng.py) /usr/local/bin/enum4linux-ng
 
   # SecLists
 
-  git clone https://github.com/danielmiessler/SecLists.git
+  git clone --depth 1 https://github.com/danielmiessler/SecLists.git
   sudo ln --symbolic $(realpath SecLists) /usr/share/seclists
 fi
