@@ -42,8 +42,8 @@ Add (symbolic links to) the scripts to `/usr/local/bin`.
 Please make sure, that the names for `analyze` and `scan` don't [conflict](https://github.com/4elta/recon/issues/31) with any binaries already installed.
 
 ```shell
-sudo ln --symbolic $(realpath recon/analyze.py) /usr/local/bin/analyze
-sudo ln --symbolic $(realpath recon/scan.py) /usr/local/bin/scan
+sudo ln --symbolic "$(realpath recon/analyze.py)" /usr/local/bin/analyze
+sudo ln --symbolic "$(realpath recon/scan.py)" /usr/local/bin/scan
 ```
 
 Based on the scans you are going to run (see [`config/scans.toml`](config/scans.toml)), you might have to install additional tools:
