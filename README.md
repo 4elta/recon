@@ -53,6 +53,24 @@ mkdir --parents $HOME/tools
 recon/install-required-tools.sh $HOME/tools
 ```
 
+the script will install the following additional tools:
+
+* [BIND 9](https://www.isc.org/bind/)
+* [curl](https://curl.se/)
+* [enum4linux-ng](https://github.com/cddmp/enum4linux-ng)
+* [IKE scanner](https://github.com/royhills/ike-scan)
+* [Nmap](https://nmap.org/)
+* [Nikto](https://www.cirt.net/Nikto2)
+* [onesixtyone](https://github.com/trailofbits/onesixtyone)
+* Python libraries
+  * [dnspython](https://www.dnspython.org/)
+  * [Impacket](https://github.com/fortra/impacket)
+* [Samba client](https://www.samba.org/samba/docs/current/man-html/smbclient.1.html)
+* [SecLists](https://github.com/danielmiessler/SecLists)
+* [SNMP](https://net-snmp.sourceforge.io/)
+* [testssl.sh](https://testssl.sh/)
+* [WhatWeb](https://morningstarsecurity.com/research/whatweb)
+
 ## usage
 
 1. run your "standard" Nmap port and service scan(s); make sure to use `-sV` and `-oX services.xml` for the service scan
