@@ -115,3 +115,4 @@ else
   [ ! -d "sipvicious" ] && git clone --depth 1 https://github.com/enablesecurity/sipvicious.git || true
   cd sipvicious
   python3 setup.py install
+fi
