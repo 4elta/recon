@@ -21,8 +21,10 @@ if [ "$package_manager" == "apt" ]; then
     ike-scan \
     nfs-common \
     nmap \
+    python3-defusedxml \
     python3-dnspython \
     python3-impacket \
+    python3-rich \
     rpcbind \
     smbclient \
     testssl.sh \
@@ -35,8 +37,10 @@ elif [ "$package_manager" == "pacman" ]; then
     ike-scan \
     nfs-common \
     nmap \
+    python-defusedxml \
     python-dnspython \
     impacket \
+    python-rich \
     rpcbind \
     smbclient \
     testssl \

@@ -13,47 +13,24 @@ This allows for an automated and consistent assessment of specific services (i.e
 
 The tools in this suite (i.e. `analyze.py` and `scan.py`) require Python 3.11+.
 
-Install the dependencies ([defusedxml](https://github.com/tiran/defusedxml), [Rich](https://github.com/Textualize/rich)):
-
-```shell
-sudo apt install --yes \
-  python3-defusedxml \
-  python3-rich
-```
-
-Install the tool suite:
+Clone the git repository:
 
 ```shell
 # this step is optional; change the directory name to your preference
 mkdir --parents $HOME/tools && cd $_
 
 git clone https://github.com/4elta/recon.git
+cd recon
 ```
 
-Make sure that the scripts have the *executable* flag set:
-
-```shell
-chmod +x recon/analyze.py
-chmod +x recon/scan.py
-chmod +x recon/scanners/*
-```
-
-Add (symbolic links to) the scripts to `/usr/local/bin`.
-Please make sure, that the names for `analyze` and `scan` don't [conflict](https://github.com/4elta/recon/issues/31) with any binaries already installed.
-
-```shell
-sudo ln --symbolic "$(realpath recon/analyze.py)" /usr/local/bin/analyze
-sudo ln --symbolic "$(realpath recon/scan.py)" /usr/local/bin/scan
-```
-
-Based on the scans you are going to run (see [`config/scans.toml`](config/scans.toml)), you might have to install additional tools:
+Install the required tools:
 
 ```shell
 mkdir --parents $HOME/tools
-recon/install-required-tools.sh $HOME/tools
+./install-required-tools.sh $HOME/tools
 ```
 
-the script will install the following tools:
+The script will install the following tools:
 
 * [BIND 9](https://www.isc.org/bind/)
 * [curl](https://curl.se/)
@@ -63,14 +40,26 @@ the script will install the following tools:
 * [Nmap](https://nmap.org/)
 * [Nikto](https://www.cirt.net/Nikto2)
 * Python libraries
+  * [defusedxml](https://github.com/tiran/defusedxml)
   * [dnspython](https://www.dnspython.org/)
   * [Impacket](https://github.com/fortra/impacket)
+  * [Rich](https://github.com/Textualize/rich))
 * [RPC support](http://sourceforge.net/projects/rpcbind/)
 * [Samba client](https://www.samba.org/samba/docs/current/man-html/smbclient.1.html)
 * [SecLists](https://github.com/danielmiessler/SecLists)
 * [SIPVicious](https://github.com/EnableSecurity/sipvicious)
 * [testssl.sh](https://testssl.sh/)
 * [WhatWeb](https://morningstarsecurity.com/research/whatweb)
+
+Based on the scan config (i.e. [`config/scans.toml`](config/scans.toml)) you are using, you might have to install additional tools.
+
+Add symbolic links to the scripts to `/usr/local/bin`.
+Please make sure, that the names for `analyze` and `scan` don't [conflict](https://github.com/4elta/recon/issues/31) with any binaries already installed.
+
+```shell
+sudo ln --symbolic "$(realpath analyze.py)" /usr/local/bin/analyze
+sudo ln --symbolic "$(realpath scan.py)" /usr/local/bin/scan
+```
 
 ## usage
 
