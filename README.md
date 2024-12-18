@@ -59,15 +59,16 @@ the script will install the following tools:
 * [curl](https://curl.se/)
 * [enum4linux-ng](https://github.com/cddmp/enum4linux-ng)
 * [IKE scanner](https://github.com/royhills/ike-scan)
+* [NFS support](https://linux-nfs.org/)
 * [Nmap](https://nmap.org/)
 * [Nikto](https://www.cirt.net/Nikto2)
-* [onesixtyone](https://github.com/trailofbits/onesixtyone)
 * Python libraries
   * [dnspython](https://www.dnspython.org/)
   * [Impacket](https://github.com/fortra/impacket)
+* [RPC support](http://sourceforge.net/projects/rpcbind/)
 * [Samba client](https://www.samba.org/samba/docs/current/man-html/smbclient.1.html)
 * [SecLists](https://github.com/danielmiessler/SecLists)
-* [SNMP](https://net-snmp.sourceforge.io/)
+* [SIPVicious](https://github.com/EnableSecurity/sipvicious)
 * [testssl.sh](https://testssl.sh/)
 * [WhatWeb](https://morningstarsecurity.com/research/whatweb)
 

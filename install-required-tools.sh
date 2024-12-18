@@ -19,12 +19,12 @@ if [ "$package_manager" == "apt" ]; then
     curl \
     dnsutils \
     ike-scan \
+    nfs-common \
     nmap \
-    onesixtyone \
     python3-dnspython \
     python3-impacket \
+    rpcbind \
     smbclient \
-    snmp \
     testssl.sh \
     whatweb
 elif [ "$package_manager" == "pacman" ]; then
@@ -33,12 +33,12 @@ elif [ "$package_manager" == "pacman" ]; then
     curl \
     bind \
     ike-scan \
+    nfs-common \
     nmap \
-    onesixtyone \
     python-dnspython \
     impacket \
+    rpcbind \
     smbclient \
-    snmp \
     testssl \
     whatweb
 fi
@@ -106,3 +106,12 @@ if [ ! -d "$file_path" ]; then
     sudo ln --symbolic "$(realpath SecLists)" "$file_path"
   fi
 fi
+
+# SIPVicious
+
+if [ "$package_manager" == "apt" ]; then
+  sudo apt install --yes sipvicious
+else
+  [ ! -d "sipvicious" ] && git clone --depth 1 https://github.com/enablesecurity/sipvicious.git || true
+  cd sipvicious
+  python3 setup.py install
