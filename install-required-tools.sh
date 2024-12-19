@@ -76,6 +76,8 @@ enum4linux_ng=$(command -v "enum4linux-ng") || true
 if [ -z "$enum4linux_ng" ]; then
   if [ "$ID" == "kali" ]; then
     sudo apt install --yes enum4linux-ng
+  elif [ "$ID" == "blackarch" ]; then
+    sudo pacman -S --needed --noconfirm enum4linux-ng
   else
     if [ "$package_manager" == "apt" ]; then
       sudo apt install --yes \
@@ -90,13 +92,13 @@ if [ -z "$enum4linux_ng" ]; then
         python-yaml \
         smbclient
     fi
+
+    [ ! -d "enum4linux-ng" ] && git clone --depth 1 https://github.com/cddmp/enum4linux-ng.git || true
+
+    file_path="/usr/local/bin/enum4linux-ng"
+    [ -f "$file_path" ] && sudo rm "$file_path" || true
+    sudo ln --symbolic "$(realpath enum4linux-ng/enum4linux-ng.py)" "$file_path"
   fi
-
-  [ ! -d "enum4linux-ng" ] && git clone --depth 1 https://github.com/cddmp/enum4linux-ng.git || true
-
-  file_path="/usr/local/bin/enum4linux-ng"
-  [ -f "$file_path" ] && sudo rm "$file_path" || true
-  sudo ln --symbolic "$(realpath enum4linux-ng/enum4linux-ng.py)" "$file_path"
 fi
 
 # SecLists
@@ -105,6 +107,8 @@ file_path="/usr/share/seclists"
 if [ ! -d "$file_path" ]; then
   if [ "$ID" == "kali" ]; then
     sudo apt install --yes seclists
+  elif [ "$ID" == "blackarch" ]; then
+    sudo pacman -S --needed --noconfirm seclists
   else
     [ ! -d "SecLists" ] && git clone --depth 1 https://github.com/danielmiessler/SecLists.git || true
     sudo ln --symbolic "$(realpath SecLists)" "$file_path"
@@ -115,6 +119,8 @@ fi
 
 if [ "$package_manager" == "apt" ]; then
   sudo apt install --yes sipvicious
+elif [ "$ID" == "blackarch" ]; then
+  sudo pacman -S --needed --noconfirm sipvicious
 else
   [ ! -d "sipvicious" ] && git clone --depth 1 https://github.com/enablesecurity/sipvicious.git || true
   cd sipvicious
