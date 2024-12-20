@@ -103,8 +103,9 @@ class Parser(AbstractParser):
             )
             continue
 
-          self.__class__.logger.info(f"Nmap script scan result not parsed: '{script_ID}'")
-          #TODO: parse results
+          if 'http' in script_ID:
+            self.__class__.logger.info(f"Nmap script scan result not parsed: '{script_ID}'")
+            #TODO: parse results
 
   def parse_http_headers(self, script_node, response_headers):
     # strip whitespace characters
