@@ -123,6 +123,7 @@ class Parser(AbstractParser):
             continue
 
           if 'dns' in script_ID:
+            self.__class__.logger.info(f"Nmap script scan result not parsed: '{script_ID}'")
             service['info'].append(f"Nmap script scan result not parsed: '{script_ID}'")
             #TODO: parse results
 

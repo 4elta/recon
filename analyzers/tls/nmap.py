@@ -117,6 +117,7 @@ class Parser(AbstractParser):
             continue
 
           if 'ssl' in script_ID and script_ID not in ('ssl-date', 'ssl-dh-params', ):
+            self.__class__.logger.info(f"Nmap script scan result not parsed: '{script_ID}'")
             service['info'].append(f"Nmap script scan result not parsed: '{script_ID}'")
             #TODO: parse results
 

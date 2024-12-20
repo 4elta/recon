@@ -1,9 +1,11 @@
 import importlib
 import json
+import logging
 import pathlib
 import sys
 
 class Issue(dict):
+  logger = logging.getLogger(__name__)
 
   def __init__(self, id, **values):
     '''
@@ -55,6 +57,8 @@ class Issue(dict):
 
 class AbstractParser:
 
+  logger = logging.getLogger(__name__)
+
   def __init__(self):
     '''
     initialize the parser.
@@ -82,19 +86,27 @@ class AbstractParser:
     this method has to be implemented by each concrete Parser class.
     '''
 
+    self.__class__.logger.info(f"parsing '{path}'")
+
     # extract the application/transport protocol from the filename
     filename = path.split('/')[-1]
     tokens = filename.split(',')
     self.application_protocol = tokens[0]
     self.transport_protocol = tokens[1]
 
+    self.__class__.logger.debug(f"application/transport protocol: '{self.application_protocol}/{self.transport_protocol}'")
+
 class AbstractAnalyzer:
+
+  logger = logging.getLogger(__name__)
 
   def __init__(self, name, recommendations):
     '''
     initialize the analyzer.
     this method may need to be extended by each concrete Analyzer class.
     '''
+
+    self.__class__.logger.debug(f"initializing analyzer '{name}'")
 
     self.name = name
     self.recommendations = recommendations
@@ -105,17 +117,25 @@ class AbstractAnalyzer:
     set the parser that will be used to parse the results.
     '''
 
+    self.__class__.logger.debug(f"setting parser to '{parser_name}'")
+
     module_path = pathlib.Path(
       pathlib.Path(__file__).resolve().parent,
       self.name,
       f'{parser_name}.py'
     )
 
+    self.__class__.logger.debug(f"parser module '{module_path}'")
+
     if not module_path.exists():
+      self.__class__.logger.error("parser does not exist!")
       sys.exit(f"unknown parser '{parser_name}'")
 
     self.parser_name = parser_name
-    module = importlib.import_module(f'{__name__}.{self.name}.{parser_name}')
+
+    module_name = f'{__name__}.{self.name}.{parser_name}'
+    self.__class__.logger.debug(f"importing parser '{module_name}'")
+    module = importlib.import_module(module_name)
     self.parser = module.Parser()
 
   def analyze(self, files):
@@ -125,4 +145,5 @@ class AbstractAnalyzer:
     '''
 
     if self.parser_name not in files:
+      self.__class__.logger.error("nothing to analyze")
       sys.exit("\nnothing to analyze")

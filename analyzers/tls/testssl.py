@@ -42,10 +42,12 @@ class Parser(AbstractParser):
       try:
         results = json.load(f)
       except Exception as e:
+        self.__class__.logger.error("error parsing file!")
         sys.exit(f"error parsing file '{path}'\n\n{e}")
 
     for f in filter(lambda x: x['id'] == 'optimal_proto', results):
       if "doesn't seem to be a TLS/SSL enabled server" in f['finding']:
+        self.__class__.logger.info("nothing to parse: this does not seem to be a TLS enabled server")
         return
 
     for s in filter(lambda x: x['id'] == 'service', results):
