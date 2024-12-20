@@ -83,7 +83,8 @@ class AbstractParser:
     '''
 
     # extract the application/transport protocol from the filename
-    tokens = path.split(',')
+    filename = path.split('/')[-1]
+    tokens = filename.split(',')
     self.application_protocol = tokens[0]
     self.transport_protocol = tokens[1]
 
