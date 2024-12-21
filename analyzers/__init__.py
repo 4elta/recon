@@ -5,6 +5,7 @@ import pathlib
 import sys
 
 class Issue(dict):
+
   logger = logging.getLogger(__name__)
 
   def __init__(self, id, **values):
@@ -76,7 +77,10 @@ class AbstractParser:
       return self.services
 
     for path in files[self.file_type]:
-      self.parse_file(path)
+      try:
+        self.parse_file(path)
+      except error as e:
+        self.__class__.logger.warning("could not parse file!")
 
     return self.services
 
