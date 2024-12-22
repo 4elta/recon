@@ -101,7 +101,18 @@ class Parser(AbstractParser):
 
           if script_ID == 'ssh-auth-methods':
             script_output = script_node.get("output")
-            if "ERROR:" in script_output:
+            if "ERROR:" in script_output or 'Supported authentication methods: false' in script_output:
+              '''
+              the tool's determination of the server's config (i.e. `Supported authentication methods: false`) is,
+              according to the RFC [1], in itself incorrect behaviour (of the tool) and thus already an issue:
+              the tool could not (successfully) determine which client authentication methods the server allows.
+
+              hence, the parser, not the analyzer (if at all), must draw attention to this issue.
+
+              see https://github.com/4elta/recon/pull/66#issuecomment-1935486192
+
+              [1] https://www.rfc-editor.org/rfc/rfc4252#section-5.1
+              '''
               service['issues'].append(Issue("client authentication method: unknown"))
             elif 'none_auth' in script_output:
               # https://www.rfc-editor.org/rfc/rfc4252#section-5.2
