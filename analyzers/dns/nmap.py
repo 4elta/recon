@@ -82,7 +82,7 @@ class Parser(AbstractParser):
         if port_node.find('state').get('state') != 'open':
           continue
 
-        transport_protocol = port_node.get('protocol').upper() # tcp/udp
+        transport_protocol = port_node.get('protocol') # tcp/udp
         port = port_node.get('portid') # port number
 
         identifier = f"{address}:{port} ({transport_protocol})"
@@ -97,10 +97,8 @@ class Parser(AbstractParser):
         service['port'] = port
         service['transport_protocol'] = transport_protocol
 
-        service['info'] = []
-
         if hostname:
-          service['info']['rDNS'] = hostname
+          service['misc']['rDNS'] = hostname
 
         for script_node in port_node.iter('script'):
           script_ID = script_node.get('id')
@@ -121,10 +119,11 @@ class Parser(AbstractParser):
             for elem_node in script_node.iter('elem'):
               elem_key = elem_node.get('key')
               if elem_key.startswith('DNSVersionBindReq'):
-                service['info']['version.bind'] = elem_node.text.splitlines()[-1].strip()
+                service['misc']['version.bind'] = elem_node.text.splitlines()[-1].strip()
             continue
 
           if 'dns' in script_ID:
+            self.__class__.logger.info(f"Nmap script scan result not parsed: '{script_ID}'")
             service['info'].append(f"Nmap script scan result not parsed: '{script_ID}'")
             #TODO: parse results
 

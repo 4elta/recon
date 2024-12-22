@@ -15,3 +15,6 @@ description = "NLA nicht unterstützt: dies könnte Denial-of-Service-Angriffe a
 
 ["information disclosure"]
 description = "Offenlegung von potenziell sensiblen Informationen: `{key}: {value}`"
+
+["additional info"]
+description = "zusätzliche info: {info}"

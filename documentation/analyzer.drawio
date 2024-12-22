@@ -1,0 +1,60 @@
+<mxfile host="app.diagrams.net" modified="2024-06-18T12:19:03.847Z" agent="Mozilla/5.0 (X11; Linux x86_64; rv:127.0) Gecko/20100101 Firefox/127.0" etag="sRWkRbQNIhifDoAZah6o" version="24.5.5" type="device">
+  <diagram id="C5RBs43oDa-KdzZeNtuy" name="Page-1">
+    <mxGraphModel dx="1434" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="WIyWlLk6GJQsqaUBKTNV-0" />
+        <mxCell id="WIyWlLk6GJQsqaUBKTNV-1" parent="WIyWlLk6GJQsqaUBKTNV-0" />
+        <mxCell id="MIrl1xzDkNPtH5zAWvvw-16" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;dashed=1;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
+          <mxGeometry x="100" y="220" width="300" height="260" as="geometry" />
+        </mxCell>
+        <mxCell id="MIrl1xzDkNPtH5zAWvvw-6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="WIyWlLk6GJQsqaUBKTNV-1" source="MIrl1xzDkNPtH5zAWvvw-2" target="MIrl1xzDkNPtH5zAWvvw-5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="MIrl1xzDkNPtH5zAWvvw-10" value="imports &quot;Analyzer&quot;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;" vertex="1" connectable="0" parent="MIrl1xzDkNPtH5zAWvvw-6">
+          <mxGeometry x="0.02" y="-2" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="MIrl1xzDkNPtH5zAWvvw-2" value="&lt;div&gt;analyze.py&lt;br&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Courier New;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
+          <mxGeometry x="190" y="80" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="MIrl1xzDkNPtH5zAWvvw-8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="WIyWlLk6GJQsqaUBKTNV-1" source="MIrl1xzDkNPtH5zAWvvw-5" target="MIrl1xzDkNPtH5zAWvvw-7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="MIrl1xzDkNPtH5zAWvvw-9" value="imports &quot;Parser&quot;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;" vertex="1" connectable="0" parent="MIrl1xzDkNPtH5zAWvvw-8">
+          <mxGeometry x="0.02" y="1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="MIrl1xzDkNPtH5zAWvvw-12" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="WIyWlLk6GJQsqaUBKTNV-1" source="MIrl1xzDkNPtH5zAWvvw-5" target="MIrl1xzDkNPtH5zAWvvw-11">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="MIrl1xzDkNPtH5zAWvvw-14" value="extends &quot;AbstractAnalyzer&quot;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;labelBackgroundColor=default;" vertex="1" connectable="0" parent="MIrl1xzDkNPtH5zAWvvw-12">
+          <mxGeometry x="-0.2087" y="-2" relative="1" as="geometry">
+            <mxPoint x="9" y="-12" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="MIrl1xzDkNPtH5zAWvvw-5" value="&lt;div&gt;analyzers/&amp;lt;service&amp;gt;/__init__.py&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Courier New;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
+          <mxGeometry x="120" y="240" width="260" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="MIrl1xzDkNPtH5zAWvvw-13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="WIyWlLk6GJQsqaUBKTNV-1" source="MIrl1xzDkNPtH5zAWvvw-7" target="MIrl1xzDkNPtH5zAWvvw-11">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="MIrl1xzDkNPtH5zAWvvw-15" value="extends &quot;AbstractParser&quot;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;labelBackgroundColor=default;" vertex="1" connectable="0" parent="MIrl1xzDkNPtH5zAWvvw-13">
+          <mxGeometry x="-0.2261" y="-1" relative="1" as="geometry">
+            <mxPoint x="11" y="-11" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="MIrl1xzDkNPtH5zAWvvw-7" value="&lt;div&gt;analyzers/&amp;lt;service&amp;gt;/&amp;lt;tool&amp;gt;.py&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Courier New;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
+          <mxGeometry x="120" y="400" width="260" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="MIrl1xzDkNPtH5zAWvvw-11" value="&lt;div&gt;analyzers/__init__.py&lt;br&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Courier New;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
+          <mxGeometry x="470" y="320" width="180" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="MIrl1xzDkNPtH5zAWvvw-17" value="&lt;div align=&quot;left&quot;&gt;minimal analyzer package:&lt;/div&gt;&lt;div align=&quot;left&quot;&gt;Analyzer plus at least one Parser&lt;br&gt;&lt;/div&gt;" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=none;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
+          <mxGeometry x="100" y="480" width="190" height="40" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

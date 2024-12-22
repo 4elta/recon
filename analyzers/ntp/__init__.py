@@ -9,8 +9,9 @@ SERVICE_SCHEMA = {
   'public': None,
   'port': None,
   'version': None, # e.g. "4.2.8p15"
-  'info': [],
   'issues': [],
+  'misc': [], # misc information; shown with the host, after all issues
+  'info': [], # additional (debug) information; shown at the end of the analysis
 }
 
 class Analyzer(AbstractAnalyzer):
@@ -49,10 +50,14 @@ class Analyzer(AbstractAnalyzer):
           issues
         )
 
-      '''
-      for info in service['info']:
-        issues.append(f"received data: `{info}`")
-      '''
+      for info in service['misc']:
+        issues.append(
+          Issue(
+            "additional info",
+            info = info
+          )
+        )
+
     return services
 
   def analyze_version(self, version, recommendation, issues):

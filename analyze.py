@@ -4,10 +4,14 @@ import argparse
 import csv
 import importlib
 import json
+import logging
 import pathlib
 import re
 import sys
 import tomllib as toml
+
+#LOGGER = logging.getLogger('recon.analyzer')
+LOGGER = logging.getLogger(__name__)
 
 ANALYZERS_DIR = pathlib.Path(
   pathlib.Path(__file__).resolve().parent,
@@ -16,7 +20,7 @@ ANALYZERS_DIR = pathlib.Path(
 
 SUPPORTED_SERVICES = []
 for path in ANALYZERS_DIR.iterdir():
-  if path.is_dir():
+  if path.is_dir() and not path.name.startswith('__'):
     SUPPORTED_SERVICES.append(path.name)
 
 LANGUAGE = 'en'
@@ -39,7 +43,9 @@ def _group_by_issue(issues):
 
 def analyze_service(service, files, tool=None, recommendations_file=None, group_by_issue=False, json_path=None, csv_path=None):
   if recommendations_file:
+    LOGGER.info(f"user specified recommendations file: '{recommendations_file}'")
     if not recommendations_file.exists():
+      LOGGER.error("the recommendations file does not exist!")
       sys.exit(f"the recommendations file '{recommendations_file}' does not exist!")
   else:
     recommendations_file = pathlib.Path(
@@ -49,12 +55,15 @@ def analyze_service(service, files, tool=None, recommendations_file=None, group_
       service,
       "default.toml"
     )
+    LOGGER.info(f"using default recommendations file: '{recommendations_file}'")
     if not recommendations_file.exists():
+      LOGGER.error("the recommendations file does not exist!")
       sys.exit(f"the default recommendations file '{recommendations_file}' does not exist!")
 
   with open(recommendations_file, 'rb') as f:
     recommendations = toml.load(f)
 
+  LOGGER.debug(f"importing 'analyzers.{service}'")
   module = importlib.import_module(f'analyzers.{service}')
   analyzer = module.Analyzer(service, recommendations)
 
@@ -71,7 +80,9 @@ def analyze_service(service, files, tool=None, recommendations_file=None, group_
     f"{LANGUAGE}.toml"
   )
 
+  LOGGER.info(f"loading issues file '{issues_file}'")
   if not issues_file.exists():
+    LOGGER.error("issues file does not exist!")
     sys.exit(f"the file '{issues_file}' does not exist!")
 
   with open(issues_file, 'rb') as f:
@@ -92,7 +103,7 @@ def analyze_service(service, files, tool=None, recommendations_file=None, group_
   print(f"\nThe following vulnerabilities and/or deviations from the recommended settings (`{recommendations_file}`) have been identified:")
 
   for asset, service in services.items():
-    if not len(service['issues']):
+    if len(service['issues']) == 0:
       continue
 
     affected_assets[asset] = []
@@ -185,6 +196,7 @@ def save_CSV(services, path):
         csv.writer(f, delimiter=delimiter, quoting=csv.QUOTE_MINIMAL).writerow(row)
 
 def process(args):
+
   if not args.input.exists():
     sys.exit(f"the specified directory '{args.input}' does not exist!")
 
@@ -201,10 +213,20 @@ def process(args):
     for service, tools in services.items():
       print(f"* {service} ({', '.join(tools)})")
   else:
+    logging.basicConfig(
+      format = '%(levelname)s: %(message)s',
+      filename = f'analyzer-{args.service}.log',
+      filemode = 'w',
+      encoding = 'utf-8',
+      level = logging.DEBUG
+    )
+
+    LOGGER.debug(f"requested to analyze '{args.service}'")
     files = get_files(args.input, args.service)
 
     global LANGUAGE
     LANGUAGE = args.language
+    LOGGER.debug(f"using language '{LANGUAGE}'")
 
     analyze_service(
       args.service,

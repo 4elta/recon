@@ -231,7 +231,7 @@ def process(args):
 
   global TRANSPORT_PROTOCOL
   TRANSPORT_PROTOCOL = args.transport_protocol
-  print(f"transport protocol: {TRANSPORT_PROTOCOL.upper()}")
+  print(f"transport protocol: {TRANSPORT_PROTOCOL}")
 
   global RETRIES
   RETRIES = args.retries
@@ -262,13 +262,13 @@ def process(args):
     result = {
       'address': address,
       'public': public,
-      'transport_protocol': TRANSPORT_PROTOCOL.upper(),
+      'transport_protocol': TRANSPORT_PROTOCOL,
       'port': PORT,
       'recursive': is_recursive,
       'DNSSEC': validates_DNSSEC,
       'ECS': supports_ECS,
       'AXFR': permits_AXFR,
-      'info': info,
+      'misc': info,
     }
 
     with open(args.json, 'w') as f:

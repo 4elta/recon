@@ -50,7 +50,7 @@ It has access to the following variables (i.e. `{variable}`):
 * `address`: this holds the host's IP address
 * `transport_protocol`: this is either `tcp` or `udp`
 * `port`: this holds the port number where a specific service was found
-* `result_file`: this is the path to where the results are stored (i.e. `/path/to/project/recon/<address>/services/<protocol>,<host information>,<tool name>`)
+* `result_file`: this is the path to where the results are stored (i.e. `/path/to/project/recon/<address>/<service>[,<transport protocol>,<port>,...],<tool>.<ext>`)
 * `application_protocol`: this holds the identified application protocol (e.g. `http`, `ssh`, `smtp`, etc.)
 
 In case the service was identified as a web service, the following additional variables are available:
@@ -58,14 +58,21 @@ In case the service was identified as a web service, the following additional va
 * `hostname`: this holds the host's DNS name, or its IP address
 * `scheme`: this is either `http` or `https`
 
-## analysis
+## analyzer
 
-The analysis component (i.e. `analyze.py`) provides functionality to analyze and summarize results of specific tools.
-The analysis is based on recommendations which are specified as TOML files (i.e. [`config/recommendations/<protocol>`](../config/recommendations/)).
+The analyzer (i.e. `analyze.py`) provides functionality to parse, analyze and summarize results of specific tools (e.g. `nmap`, `testssl`, `curl`, etc.).
+
+Each service (e.g. HTTP, SSH, TLS, etc.) has its own analyzer "package" (e.g. [`analyzers/http/*`](../analyzers/http/), [`analyzers/ssh/*`](../analyzers/ssh/),  [`analyzers/tls/*`](../analyzers/tls/), etc.).
+An analyzer package consists of an analyzer (i.e. `__init__.py`) and at least one parser (i.e. `<tool>.py`; one per tool).
+
+![component diagram](analyzer.drawio.png)
+
+A parser maps the result of a particular tool to a tool-agnostic representation of a service's configuration.
+The representation schema is specified inside the analyzer (i.e. `SERVICE_SCHEMA = {...}`).
+The compiled service configuration is analyzed (by the analyzer) based on some recommendations.
+These recommendations are specified as TOML files (i.e. [`config/recommendations/<service>/*`](../config/recommendations/)).
 TOML (or, more generally, a markup language) was chosen because it ensures that the recommendations are human-readable and therefore easier to maintain than code.
 
-The analysis component consists of at least one analyzer sub-component; one for each protocol.
-Each analyzer sub-component requires a parser that is responsible for mapping/parsing the result of a particular tool to an internal (tool-agnostic) representation of a service's configuration/vulnerabilities.
-
+Based on a service's configuration (e.g. `'protocol_versions': ["TLS 1", ...],`) and the recommendations, the analyzer derives issues/vulnerabilities.
 The issue descriptions (e.g. "protocol supported: TLS 1.0"), recommendations (e.g. "disable support for TLS 1.0") and links to references are stored in a TOML file (i.e. [`config/issues/<service>/<language>.toml`](../config/issues/)).
 This allows easy translation of the information.

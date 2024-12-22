@@ -72,7 +72,7 @@ class Parser(AbstractParser):
         if port_node.find('state').get('state') != 'open':
           continue
 
-        transport_protocol = port_node.get('protocol').upper() # TCP/UDP
+        transport_protocol = port_node.get('protocol') # tcp/udp
         port = port_node.get('portid') # port number
 
         identifier = f"{address}:{port} ({transport_protocol})"
@@ -101,6 +101,7 @@ class Parser(AbstractParser):
             continue
 
           if 'rdp' in script_ID:
+            self.__class__.logger.info(f"Nmap script scan result not parsed: '{script_ID}'")
             service['info'].append(f"Nmap script scan result not parsed: '{script_ID}'")
             #TODO: implement this
 
@@ -141,7 +142,7 @@ class Parser(AbstractParser):
       key = elem_node.get('key')
       value = elem_node.text
 
-      service['info'].append(f"NTLMSSP: `{key}={value}`")
+      service['misc'].append(f"NTLMSSP: `{key}={value}`")
 
       if key in ('DNS_Computer_Name', 'Product_Version'):
         service['issues'].append(

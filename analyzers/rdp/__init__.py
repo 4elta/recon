@@ -36,6 +36,7 @@ SERVICE_SCHEMA = {
   # Network Level Authentication
 
   'issues': [],
+  'misc': [], # misc information; shown with the host, after all issues
 }
 
 class Analyzer(AbstractAnalyzer):
@@ -86,6 +87,14 @@ class Analyzer(AbstractAnalyzer):
       if 'NLA' in self.recommendations:
         if not service['NLA'] and self.recommendations['NLA']:
           issues.append(Issue("no NLA"))
+
+      for info in service['misc']:
+        issues.append(
+          Issue(
+            "additional info",
+            info = info
+          )
+        )
 
     return services
 

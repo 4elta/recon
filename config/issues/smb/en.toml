@@ -1,0 +1,20 @@
+["protocol supported"]
+description = "{protocol} protocol supported"
+
+["dialect supported"]
+description = "{protocol}: dialect supported: {dialect}"
+
+["signing (e:True) (r:True)"]
+description = "{protocol}: signing enabled and required"
+
+["signing (e:True) (r:False)"]
+description = "{protocol}: signing enabled but not required"
+
+["signing (e:False) (r:False)"]
+description = "{protocol}: signing not enabled and not required"
+
+["signing (e:False) (r:True)"]
+description = "{protocol}: signing not enabled but required"
+
+["additional info"]
+description = "additional information: {info}"

@@ -9,6 +9,8 @@
 import argparse
 import itertools
 import os
+import random
+import socket
 import subprocess
 import sys
 import time
@@ -64,6 +66,24 @@ DH_GROUPS = [
   "23", # 2048-bit MODP with 224-bit Prime Order Subgroup
   "24", # 2048-bit MODP with 256-bit Prime Order Subgroup
 ]
+
+def port_in_use(port: int) -> bool:
+  with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+    try:
+      s.bind(('localhost', port))
+      return False
+    except:
+      return True
+
+def exponential_backoff(attempt: int) -> float:
+  '''
+  capped exponential backoff with gaussian jitter.
+  '''
+
+  if attempt >= 10:
+    attempt = 10
+
+  return random.gauss(mu=2**attempt, sigma=attempt*0.5)
 
 def scan_ikev1(trans, target, dest_port, source_port, aggressive=False):
   args = [
@@ -125,8 +145,19 @@ def scan_ikev2(target, dest_port, source_port):
     return True
 
 def process(args):
-  if args.source_port != 0 and os.geteuid() != 0:
+  if args.source_port == 0:
+    args.source_port = random.randrange(49152, 65535) # ephemeral port
+
+  if args.source_port < 1024 and os.geteuid() != 0:
     sys.exit('this script has to be run by the root user (i.e. with "sudo").')
+
+  # make sure the source port is not already used
+  attempt = 0
+  while port_in_use(args.source_port):
+    backoff = exponential_backoff(attempt) * 10
+    print(f"source port {args.source_port} in use: waiting for {backoff} seconds ...")
+    time.sleep(backoff)
+    attempt += 1
 
   for trans in itertools.product(ENCRYPTION_ALGORITHMS, HASH_ALGORITHMS, AUTHENTICATION_METHODS, DH_GROUPS):
     if scan_ikev1(trans, args.target, args.port, args.source_port):
@@ -154,7 +185,7 @@ def main():
 
   parser.add_argument(
     '--source_port',
-    help = f"the source port (default: {SOURCE_PORT}). set to '0' to use a random port number above 1024.",
+    help = f"the source port (default: {SOURCE_PORT}); set to '0' to use a random ephemeral port (i.e. 49152–65535)",
     type = int,
     default = SOURCE_PORT
   )

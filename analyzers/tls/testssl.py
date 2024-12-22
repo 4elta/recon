@@ -42,10 +42,12 @@ class Parser(AbstractParser):
       try:
         results = json.load(f)
       except Exception as e:
+        self.__class__.logger.error("error parsing file!")
         sys.exit(f"error parsing file '{path}'\n\n{e}")
 
     for f in filter(lambda x: x['id'] == 'optimal_proto', results):
       if "doesn't seem to be a TLS/SSL enabled server" in f['finding']:
+        self.__class__.logger.info("nothing to parse: this does not seem to be a TLS enabled server")
         return
 
     for s in filter(lambda x: x['id'] == 'service', results):
@@ -152,7 +154,7 @@ class Parser(AbstractParser):
           service['preference'] = self._parse_preference(f['finding'])
           continue
 
-        if f['id'].startswith('cipher_x'):
+        if re.fullmatch(r'cipher(-tls1_2|3)?_x[0-9a-f]+', f['id']):
           self._parse_cipher_suite(
             f['finding'],
             service['cipher_suites'],
@@ -316,12 +318,23 @@ class Parser(AbstractParser):
       return 'client'
 
   def _parse_cipher_suite(self, description, cipher_suites, key_exchange):
-    #         cipher suite                                      kex
-    # xc02c   TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384           ECDH 253   AESGCM      256
-    # x9f     TLS_DHE_RSA_WITH_AES_256_GCM_SHA384               DH 512     AESGCM      256
+    '''
+    `finding` element in old testssl:
+            cipher suite                                      kex
+    xc02c   TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384           ECDH 253   AESGCM      256
+    x9f     TLS_DHE_RSA_WITH_AES_256_GCM_SHA384               DH 512     AESGCM      256
+
+    `finding` element in testssl 3.2:
+    version   code    cipher suite                                      kex
+    TLSv1.3   x1302   TLS_AES_256_GCM_SHA384                            ECDH 253   AESGCM      256
+    TLSv1.3   x1303   TLS_CHACHA20_POLY1305_SHA256                      ECDH 253   ChaCha20    256
+    TLSv1.3   x1301   TLS_AES_128_GCM_SHA256                            ECDH 253   AESGCM      128
+    '''
+
     session_info = re.split('   +', description)
 
-    #print(description)
+    if session_info[0].startswith('TLSv'):
+      session_info.pop(0)
 
     cipher_suite = session_info[1]
     cipher_suites.append(cipher_suite)

@@ -13,65 +13,52 @@ This allows for an automated and consistent assessment of specific services (i.e
 
 The tools in this suite (i.e. `analyze.py` and `scan.py`) require Python 3.11+.
 
-Install the dependencies ([defusedxml](https://github.com/tiran/defusedxml), [Rich](https://rich.readthedocs.io/en/latest/introduction.html)):
+Clone the git repository:
 
 ```shell
-sudo apt install python3-defusedxml python3-rich
-```
+# this step is optional; change the directory name to your preference
+mkdir --parents $HOME/tools && cd $_
 
-Install the tool suite:
-
-```shell
 git clone https://github.com/4elta/recon.git
+cd recon
 ```
 
-Make sure that the scripts have the *executable* flag set:
+Install the required tools:
 
 ```shell
-cd recon
-chmod +x analyze.py
-chmod +x scan.py
-chmod +x scanners/*
+mkdir --parents $HOME/tools
+./install-required-tools.sh $HOME/tools
 ```
 
-Add (symbolic links to) the scripts to `/usr/local/bin`.
+The script will install the following tools:
+
+* [BIND 9](https://www.isc.org/bind/)
+* [curl](https://curl.se/)
+* [enum4linux-ng](https://github.com/cddmp/enum4linux-ng)
+* [IKE scanner](https://github.com/royhills/ike-scan)
+* [NFS support](https://linux-nfs.org/)
+* [Nmap](https://nmap.org/)
+* [Nikto](https://www.cirt.net/Nikto2)
+* Python libraries
+  * [defusedxml](https://github.com/tiran/defusedxml)
+  * [dnspython](https://www.dnspython.org/)
+  * [Impacket](https://github.com/fortra/impacket)
+  * [Rich](https://github.com/Textualize/rich)
+* [RPC support](http://sourceforge.net/projects/rpcbind/)
+* [Samba client](https://www.samba.org/samba/docs/current/man-html/smbclient.1.html)
+* [SecLists](https://github.com/danielmiessler/SecLists)
+* [SIPVicious](https://github.com/EnableSecurity/sipvicious)
+* [testssl.sh](https://testssl.sh/)
+* [WhatWeb](https://morningstarsecurity.com/research/whatweb)
+
+Based on the scan config (i.e. [`config/scans.toml`](config/scans.toml)) you are using, you might have to install additional tools.
+
+Add symbolic links to the scripts to `/usr/local/bin`.
 Please make sure, that the names for `analyze` and `scan` don't [conflict](https://github.com/4elta/recon/issues/31) with any binaries already installed.
 
 ```shell
-sudo ln --symbolic $(realpath analyze.py) /usr/local/bin/analyze
-sudo ln --symbolic $(realpath scan.py) /usr/local/bin/scan
-```
-
-### additional tools
-
-Based on the scans you are going to run (see [`config/scans.toml`](config/scans.toml)), you might have to install additional tools:
-
-* via `apt`:
-
-```shell
-sudo apt install \
-  curl \
-  python3-dnspython \
-  python3-impacket \
-  dnsutils \
-  ike-scan \
-  nmap \
-  onesixtyone \
-  seclists \
-  smbclient \
-  snmp \
-  testssl.sh \
-  whatweb
-```
-
-* via git:
-  * [nikto](https://github.com/sullo/nikto)
-
-* via [`pipx`](https://github.com/pypa/pipx):
-
-```shell
-pipx install git+https://github.com/cddmp/enum4linux-ng.git
-sudo ln --symbolic $(which enum4linux-ng) /usr/local/bin/enum4linux-ng
+sudo ln --symbolic "$(realpath analyze.py)" /usr/local/bin/analyze
+sudo ln --symbolic "$(realpath scan.py)" /usr/local/bin/scan
 ```
 
 ## usage
@@ -88,7 +75,7 @@ Make sure to have a look at the [architecture documentation](documentation/archi
 
 ```text
 % scan -h
-usage: scan [-h] [-i path [path ...]] [-o path] [-c path] [-t number] [-s number] [-m seconds] [-v] [-n] [-r <host>:<protocol>:<port>:<service> [<host>:<protocol>:<port>:<service> ...]] [-y] [-d character] [--ignore_uid]
+usage: scan [-h] [-i path [path ...]] [-o path] [-c path] [-t number] [-s number] [-m seconds] [-n] [-r <host>:<protocol>:<port>:<service> [<host>:<protocol>:<port>:<service> ...]] [-y] [-d character] [--ignore_uid]
 
 Schedule and execute various tools based on the findings of an Nmap service scan.
 
@@ -106,7 +93,6 @@ options:
                         how many scans should be running concurrently on a single target (default: 2)
   -m seconds, --max_time seconds
                         maximum time in seconds each scan is allowed to take (default: 3600)
-  -v, --verbose         show additional info including all output of all scans
   -n, --dry_run         do not run any command; just create/update the 'commands.csv' file
   -r <host>:<protocol>:<port>:<service> [<host>:<protocol>:<port>:<service> ...], --rescan <host>:<protocol>:<port>:<service> [<host>:<protocol>:<port>:<service> ...]
                         re-scan certain hosts/protocols/ports/services and overwrite existing result files; you can use '*' if you cannot or don't want to specify a host/protocol/port/service part
@@ -120,6 +106,7 @@ options:
 After running the scanner, the results directory (e.g. `recon/`) will contain the following files/directories:
 
 * `commands.csv`: contains information about the executed commands (incl. start time, end time and return code)
+* `scan.log`: the debug/error log of the scanner
 * `services.csv`: contains information about the identified services (incl. whether they have been scanned or not)
 * `<IP address>/`: each host has its own directory where the result files of the various tools are stored
   * the result files follow a specific naming scheme: `<service>[,<transport protocol>,<port>,...],<tool>.<ext>`
@@ -129,7 +116,7 @@ After running the scanner, the results directory (e.g. `recon/`) will contain th
 
 ```text
 % analyze -h
-usage: analyze [-h] [-t name] [-r path] [-i path] [-l code] [-g] [--json path] [--csv path] {?,dns,ftp,http,isakmp,ntp,rdp,ssh,tls}
+usage: analyze [-h] [-t name] [-r path] [-i path] [-l code] [-g] [--json path] [--csv path] {?,dns,ftp,http,isakmp,ntp,rdp,smb,ssh,tls}
 
 Analyze and summarize the results of specific tools previously run by the scanner of the recon tool suite (i.e. 'scan').
 
@@ -159,6 +146,7 @@ The following analyzers (and parsers) are currently implemented:
 * ISAKMP/IKE configuration (`ike`)
 * NTP configuration (`ntp`, `nmap`)
 * RDP configuration (`nmap`)
+* SMB configuration (`nmap`)
 * SSH configuration (`nmap`)
 * TLS configuration (`testssl`, `sslscan`, `sslyze`, `nmap`)
 

@@ -50,10 +50,10 @@ class Parser(AbstractParser):
         if port_node.find('state').get('state') != 'open':
           continue
 
-        transport_protocol = port_node.get('protocol').upper() # tcp/udp
+        transport_protocol = port_node.get('protocol') # tcp/udp
         port = port_node.get('portid') # port number
 
-        identifier = f"{address}:{port}"
+        identifier = f"{address}:{port} ({transport_protocol})"
 
         if identifier in self.services:
           continue
@@ -78,7 +78,7 @@ class Parser(AbstractParser):
                 amplification_factor = "?"
               )
             )
-            service['info'] += self._parse_monlist(script_node)
+            service['misc'] += self._parse_monlist(script_node)
             continue
 
           if script_ID == 'ntp-info':
@@ -89,10 +89,11 @@ class Parser(AbstractParser):
                 amplification_factor = "?"
               )
             )
-            service['info'] += self._parse_info(script_node)
+            service['misc'] += self._parse_info(script_node)
             continue
 
           if 'ntp' in script_ID:
+            self.__class__.logger.info(f"Nmap script scan result not parsed: '{script_ID}'")
             service['info'].append(f"Nmap script scan result not parsed: '{script_ID}'")
             #TODO: implement this
 
@@ -111,13 +112,13 @@ class Parser(AbstractParser):
     return (f"Nmap script scan result not parsed: 'ntp-monlist'")
 
   def _parse_info(self, info_node):
-    info = []
+    misc = []
 
     for elem_node in info_node.iter('elem'):
       key = elem_node.get('key')
       if key == 'receive time stamp':
         continue
       value = elem_node.text.strip()
-      info.append(f'{key}="{value}"')
+      misc.append(f"`{key}={value}`")
 
-    return info
+    return misc

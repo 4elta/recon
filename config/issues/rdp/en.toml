@@ -15,3 +15,6 @@ description = "does not support NLA: this could enable denial-of-service attacks
 
 ["information disclosure"]
 description = "disclosure of potentially sensitive information: `{key}: {value}`"
+
+["additional info"]
+description = "additional info: {info}"
