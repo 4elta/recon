@@ -215,7 +215,7 @@ def process(args):
           pathlib.Path(__file__).resolve().parent,
           "config",
           "templates",
-          f"analysis.{LANGUAGE}.md"
+          f"default.{LANGUAGE}.md"
         )
         LOGGER.info(f"using default template file: '{template_file}'")
         if not template_file.exists():
