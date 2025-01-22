@@ -43,6 +43,7 @@ The script will install the following tools:
   * [defusedxml](https://github.com/tiran/defusedxml)
   * [dnspython](https://www.dnspython.org/)
   * [Impacket](https://github.com/fortra/impacket)
+  * [Jinja](https://github.com/pallets/jinja/)
   * [Rich](https://github.com/Textualize/rich)
 * [RPC support](http://sourceforge.net/projects/rpcbind/)
 * [Samba client](https://www.samba.org/samba/docs/current/man-html/smbclient.1.html)
