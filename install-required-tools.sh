@@ -24,6 +24,7 @@ if [ "$package_manager" == "apt" ]; then
     python3-defusedxml \
     python3-dnspython \
     python3-impacket \
+    python3-jinja2 \
     python3-rich \
     rpcbind \
     smbclient \
@@ -40,6 +41,7 @@ elif [ "$package_manager" == "pacman" ]; then
     python-defusedxml \
     python-dnspython \
     impacket \
+    python-jinja \
     python-rich \
     rpcbind \
     smbclient \

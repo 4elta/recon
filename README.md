@@ -115,13 +115,12 @@ After running the scanner, the results directory (e.g. `recon/`) will contain th
 ### analyzer
 
 ```text
-% analyze -h
-usage: analyze [-h] [-t name] [-r path] [-i path] [-l code] [-g] [--json path] [--csv path] {?,dns,ftp,http,isakmp,ntp,rdp,smb,ssh,tls}
+usage: analyze [-h] [-t name] [-r path] [-i path] [-l code] [-f code] [--template path] {?,dns,ftp,http,isakmp,ntp,rdp,smb,ssh,tls}
 
 Analyze and summarize the results of specific tools previously run by the scanner of the recon tool suite (i.e. 'scan').
 
 positional arguments:
-  {?,dns,ftp,http,isakmp,ntp,rdp,ssh,tls}
+  {?,dns,ftp,http,isakmp,ntp,rdp,smb,ssh,tls}
                         specify the service that should be analyzed. use '?' to list services available for analysis.
 
 options:
@@ -133,9 +132,9 @@ options:
                         path to the root directory that holds the results to be analysed (default: './recon')
   -l code, --language code
                         specify the language in which the analysis should be printed (default: 'en')
-  -g, --group_by_issue  group by issue and list all assets affected by it instead of grouping by asset and listing all its issues
-  --json path           in addition to the analysis printed in Markdown to STDOUT, also save the analysis as a JSON document
-  --csv path            in addition to the analysis printed in Markdown to STDOUT, also save the analysis as a CSV document
+  -f code, --format code
+                        specify the output format of the analysis (choices: ['md', 'json', 'csv']; default: 'md')
+  --template path       path to the Jinja2 template for the analysis; this option overrides '-f/--format'
 ```
 
 The following analyzers (and parsers) are currently implemented:
@@ -155,7 +154,7 @@ The following languages are currently available for the analysis:
 * `en`: English
 * `de`: Deutsch
 
-The analyzer prints its results in Markdown, in the format expected by the [report generator](https://github.com/4elta/report-generator).
+The analyzer can print its results in Markdown, JSON or CSV.
 If you need the analysis in a markup format other than Markdown, just [pipe](https://en.wikipedia.org/wiki/Pipeline_(Unix)) the output of the analyzer to [`pandoc`](https://pandoc.org/) and you are good to go.
 Below is an example of a conversion to `docx`:
 

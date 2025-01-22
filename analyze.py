@@ -3,6 +3,7 @@
 import argparse
 import csv
 import importlib
+import jinja2
 import json
 import logging
 import pathlib
@@ -24,42 +25,10 @@ for path in ANALYZERS_DIR.iterdir():
     SUPPORTED_SERVICES.append(path.name)
 
 LANGUAGE = 'en'
+SUPPORTED_FORMATS = ['md', 'json', 'csv']
 
-def _group_by_asset(assets):
-  for asset, issues in assets.items():
-    print(f"\n## {asset}\n")
 
-    for issue in issues:
-      print(f"* {issue}")
-
-def _group_by_issue(issues):
-  for description, assets in {key:issues[key] for key in sorted(issues.keys())}.items():
-    print(f"\n## {description}")
-
-    print("\nThis issue has been found in the following assets:\n")
-
-    for asset in assets:
-      print(f"* `{asset}`")
-
-def analyze_service(service, files, tool=None, recommendations_file=None, group_by_issue=False, json_path=None, csv_path=None):
-  if recommendations_file:
-    LOGGER.info(f"user specified recommendations file: '{recommendations_file}'")
-    if not recommendations_file.exists():
-      LOGGER.error("the recommendations file does not exist!")
-      sys.exit(f"the recommendations file '{recommendations_file}' does not exist!")
-  else:
-    recommendations_file = pathlib.Path(
-      pathlib.Path(__file__).resolve().parent,
-      "config",
-      "recommendations",
-      service,
-      "default.toml"
-    )
-    LOGGER.info(f"using default recommendations file: '{recommendations_file}'")
-    if not recommendations_file.exists():
-      LOGGER.error("the recommendations file does not exist!")
-      sys.exit(f"the default recommendations file '{recommendations_file}' does not exist!")
-
+def analyze_service(service, files, recommendations_file, tool=None):
   with open(recommendations_file, 'rb') as f:
     recommendations = toml.load(f)
 
@@ -94,14 +63,6 @@ def analyze_service(service, files, tool=None, recommendations_file=None, group_
   references = []
   info = []
 
-  print("\n# evidence\n")
-  print("The following hosts have been analyzed:\n")
-
-  for asset in services.keys():
-    print(f"* `{asset}`")
-
-  print(f"\nThe following vulnerabilities and/or deviations from the recommended settings (`{recommendations_file}`) have been identified:")
-
   for asset, service in services.items():
     if len(service['issues']) == 0:
       continue
@@ -132,37 +93,14 @@ def analyze_service(service, files, tool=None, recommendations_file=None, group_
         if i not in info:
           info.append(i)
 
-  if group_by_issue:
-    _group_by_issue(issues)
-  else:
-    _group_by_asset(affected_assets)
-
-  if len(affected_assets):
-    print("\n# affected assets\n")
-    for asset in affected_assets.keys():
-      print(f"* `{asset}`")
-
-  if len(recommendations):
-    print("\n# recommendations\n")
-    for recommendation in recommendations:
-      print(f"* {recommendation}")
-
-  if len(references):
-    print("\n# references\n")
-    for reference in references:
-      print(f"* {reference}")
-
-  if len(info):
-    print("\n# additional info\n")
-    for i in info:
-      print(f"* {i}")
-
-  if json_path:
-    with open(json_path, 'w') as f:
-      json.dump(services, f, indent=2)
-
-  if csv_path:
-    save_CSV(services, csv_path)
+  return {
+    'services': services,
+    'affected_assets': affected_assets,
+    'issues': issues,
+    'recommendations': recommendations,
+    'references': references,
+    'additional_info': info,
+  }
 
 def get_files(directory, service):
   files = {}
@@ -183,17 +121,16 @@ def get_files(directory, service):
 
   return files
 
-def save_CSV(services, path):
+def render_CSV(services):
   delimiter = ','
   header = ['asset', 'issues']
 
-  with open(path, 'w') as f:
-    csv.writer(f, delimiter=delimiter, quoting=csv.QUOTE_MINIMAL).writerow(header)
+  csv.writer(sys.stdout, delimiter=delimiter, quoting=csv.QUOTE_MINIMAL).writerow(header)
 
-    for identifier, service in services.items():
-      for issue in service['issues']:
-        row = [identifier, issue.description]
-        csv.writer(f, delimiter=delimiter, quoting=csv.QUOTE_MINIMAL).writerow(row)
+  for identifier, service in services.items():
+    for issue in service['issues']:
+      row = [identifier, issue.description]
+      csv.writer(sys.stdout, delimiter=delimiter, quoting=csv.QUOTE_MINIMAL).writerow(row)
 
 def process(args):
 
@@ -228,15 +165,74 @@ def process(args):
     LANGUAGE = args.language
     LOGGER.debug(f"using language '{LANGUAGE}'")
 
-    analyze_service(
+    if args.recommendations:
+      recommendations_file = args.recommendations
+      LOGGER.info(f"user specified recommendations file: '{args.recommendations}'")
+      if not recommendations_file.exists():
+        LOGGER.error("the recommendations file does not exist!")
+        sys.exit(f"the recommendations file '{recommendations_file}' does not exist!")
+    else:
+      recommendations_file = pathlib.Path(
+        pathlib.Path(__file__).resolve().parent,
+        "config",
+        "recommendations",
+        args.service,
+        "default.toml"
+      )
+      LOGGER.info(f"using default recommendations file: '{recommendations_file}'")
+      if not recommendations_file.exists():
+        LOGGER.error("the recommendations file does not exist!")
+        sys.exit(f"the default recommendations file '{recommendations_file}' does not exist!")
+
+    analysis = analyze_service(
       args.service,
       files,
-      tool = args.tool,
-      recommendations_file = args.recommendations,
-      group_by_issue = args.group_by_issue,
-      json_path = args.json,
-      csv_path = args.csv
+      recommendations_file,
+      tool = args.tool
     )
+
+    analysis['recommendations_file'] = recommendations_file
+
+    render_analysis = True
+
+    if args.template:
+      LOGGER.info(f"user specified template file: '{args.template}'")
+      if not args.template.exists():
+        LOGGER.error("the template file does not exist!")
+        sys.exit(f"the specified template file '{args.template}' does not exist!")
+      else:
+        template_file = args.template.resolve()
+    else:
+      LOGGER.info(f"user specified format: '{args.fmt}'")
+      if args.fmt == 'json':
+        render_analysis = False
+        print(json.dumps(analysis['services']))
+      elif args.fmt == 'csv':
+        render_analysis = False
+        render_CSV(analysis['services'])
+      else:
+        template_file = pathlib.Path(
+          pathlib.Path(__file__).resolve().parent,
+          "config",
+          "templates",
+          f"analysis.{LANGUAGE}.md"
+        )
+        LOGGER.info(f"using default template file: '{template_file}'")
+        if not template_file.exists():
+          LOGGER.error("the template file does not exist!")
+          sys.exit(f"the default template file '{template_file}' does not exist!")
+
+    if render_analysis:
+      env = jinja2.Environment(
+        loader = jinja2.FileSystemLoader(template_file.parent),
+        trim_blocks = True,
+        autoescape = False
+      )
+
+      template = env.get_template(template_file.name)
+      rendered_analysis = template.render(analysis).strip()
+
+      print(rendered_analysis)
 
 def main():
   parser = argparse.ArgumentParser(
@@ -278,23 +274,19 @@ def main():
   )
 
   parser.add_argument(
-    '-g', '--group_by_issue',
-    help = "group by issue and list all assets affected by it instead of grouping by asset and listing all its issues",
-    action = 'store_true'
+    '-f', '--format',
+    dest = 'fmt',
+    metavar = 'code',
+    choices = SUPPORTED_FORMATS,
+    default = SUPPORTED_FORMATS[0],
+    help = f"specify the output format of the analysis (choices: {SUPPORTED_FORMATS}; default: '{SUPPORTED_FORMATS[0]}')"
   )
 
   parser.add_argument(
-    '--json',
+    '--template',
     metavar = 'path',
     type = pathlib.Path,
-    help = "in addition to the analysis printed in Markdown to STDOUT, also save the analysis as a JSON document"
-  )
-
-  parser.add_argument(
-    '--csv',
-    metavar = 'path',
-    type = pathlib.Path,
-    help = "in addition to the analysis printed in Markdown to STDOUT, also save the analysis as a CSV document"
+    help = "path to the Jinja2 template for the analysis; this option overrides '-f/--format'"
   )
 
   process(parser.parse_args())
