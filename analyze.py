@@ -7,11 +7,9 @@ import jinja2
 import json
 import logging
 import pathlib
-import re
 import sys
 import tomllib as toml
 
-#LOGGER = logging.getLogger('recon.analyzer')
 LOGGER = logging.getLogger(__name__)
 
 ANALYZERS_DIR = pathlib.Path(
@@ -133,7 +131,6 @@ def render_CSV(services):
       csv.writer(sys.stdout, delimiter=delimiter, quoting=csv.QUOTE_MINIMAL).writerow(row)
 
 def process(args):
-
   if not args.input.exists():
     sys.exit(f"the specified directory '{args.input}' does not exist!")
 
@@ -193,7 +190,7 @@ def process(args):
 
     analysis['recommendations_file'] = recommendations_file
 
-    render_analysis = True
+    template_file = None
 
     if args.template:
       LOGGER.info(f"user specified template file: '{args.template}'")
@@ -205,10 +202,8 @@ def process(args):
     else:
       LOGGER.info(f"user specified format: '{args.fmt}'")
       if args.fmt == 'json':
-        render_analysis = False
         print(json.dumps(analysis['services']))
       elif args.fmt == 'csv':
-        render_analysis = False
         render_CSV(analysis['services'])
       else:
         template_file = pathlib.Path(
@@ -222,7 +217,7 @@ def process(args):
           LOGGER.error("the template file does not exist!")
           sys.exit(f"the default template file '{template_file}' does not exist!")
 
-    if render_analysis:
+    if template_file:
       env = jinja2.Environment(
         loader = jinja2.FileSystemLoader(template_file.parent),
         trim_blocks = True,
