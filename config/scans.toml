@@ -62,7 +62,7 @@ patterns = [ 'ftps?(-data)?' ]
 patterns = [ '^(.+\|)?http' ] # 'http', 'https', '.+|http'
 
   [http.scans.nmap]
-  command = 'nmap -Pn -v -sV -p {port} --script="banner,http* and not (brute or broadcast or dos or external or http-slowloris* or fuzzer)" -oN "{result_file}.log" -oX "{result_file}.xml" {hostname}'
+  command = 'nmap $([[ "{transport_protocol}" == "udp" ]] && echo "-sU") -Pn -v -sV -p {port} --script="banner,http* and not (brute or broadcast or dos or external or http-slowloris* or fuzzer)" -oN "{result_file}.log" -oX "{result_file}.xml" {hostname}'
   patterns = [ '[Ss]erver: ([^\n]+)', 'WebDAV is ENABLED' ]
 
   [http.scans.index]
