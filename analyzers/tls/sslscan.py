@@ -1,12 +1,11 @@
 import copy
 import datetime
-import re
 import sys
 
 try:
   # https://github.com/tiran/defusedxml
   import defusedxml.ElementTree
-except:
+except ImportError:
   sys.exit("this script requires the 'defusedxml' module.\nplease install it via 'pip3 install defusedxml'.")
 
 from .. import Issue, AbstractParser
