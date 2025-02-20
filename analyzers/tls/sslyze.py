@@ -1,6 +1,5 @@
 import copy
 import json
-import re
 
 from .. import Issue, AbstractParser
 from . import CERTIFICATE_SCHEMA, SERVICE_SCHEMA

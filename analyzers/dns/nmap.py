@@ -1,10 +1,10 @@
 import copy
-import re
 
 try:
   # https://github.com/tiran/defusedxml
   import defusedxml.ElementTree
-except:
+except ImportError:
+  import sys
   sys.exit("this script requires the 'defusedxml' module.\nplease install it via 'pip3 install defusedxml'.")
 
 from .. import AbstractParser
