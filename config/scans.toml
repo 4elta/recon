@@ -66,14 +66,14 @@ patterns = [ '^(.+\|)?http' ] # 'http', 'https', '.+|http'
   patterns = [ '[Ss]erver: ([^\n]+)', 'WebDAV is ENABLED' ]
 
   [http.scans.index]
-  command = 'curl --silent --insecure --max-time 10 {scheme}://{hostname}:{port}/ 2>&1 | tee --append "{result_file}.html"'
+  command = 'curl --silent --insecure --max-time 10 $([[ "{transport_protocol}" == "udp" ]] && echo "--http3") {scheme}://{hostname}:{port}/ 2>&1 | tee "{result_file}.html"'
 
   [http.scans.curl]
-  command = 'curl --silent --verbose --insecure --show-error --max-time 10 {scheme}://{hostname}:{port}/ 2>&1 | tee --append "{result_file}.log"'
+  command = 'curl --silent --verbose --insecure --show-error --max-time 10 $([[ "{transport_protocol}" == "udp" ]] && echo "--http3") {scheme}://{hostname}:{port}/ 2>&1 | tee "{result_file}.log"'
   patterns = [ '(?i)Powered by [^\n]+', '[Ss]erver: [^\n]+' ]
 
   [http.scans.'robots.txt']
-  command = 'curl --silent --include --insecure --show-error --max-time 10 {scheme}://{hostname}:{port}/robots.txt 2>&1 | tee "{result_file}.log"'
+  command = 'curl --silent --include --insecure --show-error --max-time 10 $([[ "{transport_protocol}" == "udp" ]] && echo "--http3") {scheme}://{hostname}:{port}/robots.txt 2>&1 | tee "{result_file}.log"'
 
   [http.scans.cewl]
   command = '#cewl --depth 3 --min_word_length 5 --write "{result_file}.log" {scheme}://{hostname}:{port}'
