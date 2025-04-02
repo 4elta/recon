@@ -45,7 +45,7 @@ patterns = [ 'domain(-s)?$' ]
   command = '"{PATH_TO_SCANNERS}/nase.py" --port {port} --transport_protocol {transport_protocol} --json "{result_file}.json" {address} 2>&1 | tee "{result_file}.log"'
 
 [finger]
-# https://datatracker.ietf.org/doc/html/rfc1288#section-3.2
+# https://www.rfc-editor.org/info/rfc1288 (section 3.2)
 patterns = [ 'finger' ]
 
   [finger.scans.nmap]
@@ -255,18 +255,22 @@ patterns = [
   # the scanner prepends the tunnel info to the application protocol: '<tunnel>|<application protocol>'
   '^ssl\|', '^tls\|',
   'https', # HTTP over TLS (443/tcp)
+  'dicom-tls', # DICOM over TLS (2762)
   'domain-s', # DNS over TLS/DTLS/QUIC (853/tcp)
   'ftps', # FTP over TLS (990)
   'imaps|(4-ssl)', # IMAP over TLS (993/585)
   'ircs(-u)?', # IRC over TLS (994/6697)
   'ldaps', # LDAP over TLS (636)
+  'secure-mqtt', # Message Queuing Telemetry Transport (MQTT) supports TLS (883): https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Network_Connections
+  'ntske', # Network Time Security Key Establishment (NTS-KE) uses TLS (4460): https://www.rfc-editor.org/info/rfc8915
+  'ms-sql-s', # MS-SQL supports TLS (1433)
+  'radsec', # RADIUS over TLS (2083): https://www.rfc-editor.org/info/rfc6614
   'snews', # NNTP over TLS (563)
   'pop3s', # POP3 over TLS (995)
   'sip-tls', # SIP over TLS (5061)
   'smtps', # SMTP over TLS (465)
   'snmpd?tls', # SNMP over TLS (10161)
   'telnets', # telnet over TLS (992)
-  'ms-sql-s' # MS-SQL supports TLS
 ]
 
   [tls.scans.nmap]
@@ -281,21 +285,26 @@ patterns = [
   [tls.scans.testssl]
   command = 'testssl --ip one --nodns min --mapping no-openssl --warnings off --connect-timeout 60 --openssl-timeout 60 --logfile "{result_file}.log" --jsonfile "{result_file}.json" {hostname}:{port}'
 
-[tls_misc] # services that support opportunistic TLS (e.g. STARTTLS) or use TLS in some other form
+[tls_misc]
+# services that support opportunistic TLS (e.g. STARTTLS) or use TLS in some other form
+# https://www.rfc-editor.org/info/rfc7435
 patterns = [
   'apani1', # Cassandra supports TLS: https://cassandra.apache.org/doc/4.1/cassandra/configuration/cass_yaml_file.html#server_encryption_options
   'ipp', # CUPS supports TLS: https://www.cups.org/doc/encryption.html
   'ircu?$', # IRC supports STARTTLS: https://ircv3.net/specs/deprecated/tls
-  'ftp(-data)?', # FTP supports STARTTLS: https://datatracker.ietf.org/doc/html/rfc4217
-  'imap', # IMAP supports STARTTLS: https://datatracker.ietf.org/doc/html/rfc2595
-  'ldap', # LDAP supports STARTTLS: https://datatracker.ietf.org/doc/html/rfc2830
+  'ftp(-data)?', # FTP supports STARTTLS: https://www.rfc-editor.org/info/rfc4217
+  'imap', # IMAP supports STARTTLS: https://www.rfc-editor.org/info/rfc2595
+  'ldap', # LDAP supports STARTTLS: https://www.rfc-editor.org/info/rfc2830
   'mongod', # MongoDB supports TLS: https://www.mongodb.com/docs/v6.0/core/security-transport-encryption/
-  'mysql', # MySQL supports TLS: https://dev.mysql.com/doc/refman/8.0/en/encrypted-connection-protocols-ciphers.html
-  'nntp', # NNTP supports STARTTLS: https://datatracker.ietf.org/doc/html/rfc4642#section-2
-  'oracle', # Oracle DB supports TLS: https://docs.oracle.com/en/database/oracle/oracle-database/19/dbseg/configuring-secure-sockets-layer-authentication.html
-  'pop3', # POP3 supports STARTTLS: https://datatracker.ietf.org/doc/html/rfc2595
   'ms-wbt-server', # RDP supports TLS
-  'smtp', # SMTP supports STARTTLS: https://datatracker.ietf.org/doc/html/rfc3207
+  'mysql', # MySQL supports TLS: https://dev.mysql.com/doc/refman/8.0/en/encrypted-connection-protocols-ciphers.html
+  'nntp', # NNTP supports STARTTLS: https://www.rfc-editor.org/info/rfc4642
+  'oracle', # Oracle DB supports TLS: https://docs.oracle.com/en/database/oracle/oracle-database/19/dbseg/configuring-secure-sockets-layer-authentication.html
+  'pop3', # POP3 supports STARTTLS: https://www.rfc-editor.org/info/rfc2595
+  'radius', # RADIUS/1.1 supports TLS: https://datatracker.ietf.org/doc/draft-ietf-radext-radiusv11/11/
+  'postgresql', # PostgreSQL supports 'SSLRequest': https://www.postgresql.org/docs/current/protocol-flow.html#PROTOCOL-FLOW-SSL
+  'sieve', # ManageSieve supports STARTTLS: https://www.rfc-editor.org/info/rfc5804
+  'smtp', # SMTP supports STARTTLS: https://www.rfc-editor.org/info/rfc3207
   'vnc', # TigerVNC supports TLS: https://github.com/TigerVNC/tigervnc/wiki/Secure-your-connection
   'xmpp', # XMPP supports TLS: https://xmpp.org/extensions/inbox/xtls.html
 ]
