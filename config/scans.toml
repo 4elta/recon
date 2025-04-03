@@ -301,7 +301,7 @@ patterns = [
   'nntp', # NNTP supports STARTTLS: https://www.rfc-editor.org/info/rfc4642
   'oracle', # Oracle DB supports TLS: https://docs.oracle.com/en/database/oracle/oracle-database/19/dbseg/configuring-secure-sockets-layer-authentication.html
   'pop3', # POP3 supports STARTTLS: https://www.rfc-editor.org/info/rfc2595
-  'radius', # RADIUS/1.1 supports TLS: https://datatracker.ietf.org/doc/draft-ietf-radext-radiusv11/11/
+  'radius$', # RADIUS/1.1 supports TLS: https://datatracker.ietf.org/doc/draft-ietf-radext-radiusv11/11/
   'postgresql', # PostgreSQL supports 'SSLRequest': https://www.postgresql.org/docs/current/protocol-flow.html#PROTOCOL-FLOW-SSL
   'sieve', # ManageSieve supports STARTTLS: https://www.rfc-editor.org/info/rfc5804
   'smtp', # SMTP supports STARTTLS: https://www.rfc-editor.org/info/rfc3207
