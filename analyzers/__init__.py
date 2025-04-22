@@ -79,8 +79,8 @@ class AbstractParser:
     for path in files[self.file_type]:
       try:
         self.parse_file(path)
-      except error as e:
-        self.__class__.logger.warning("could not parse file!")
+      except Exception as e:
+        self.__class__.logger.warning(f"could not parse file: {e}")
 
     return self.services
 
