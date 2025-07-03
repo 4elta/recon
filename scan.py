@@ -275,7 +275,10 @@ def result_file_exists(results_directory, file_name):
     log(f"'{results_directory}/{file_name}.*' exists and we must not overwrite them.")
     return True
 
-def queue_HTTP_service_scan(target: Target, service: Service, scan: Scan):
+def queue_service_scan_hostname(target: Target, service: Service, scan: Scan):
+  '''
+  queue a scan of a service that recognizes the concept of a hostname in contrast/addition to an IP address (e.g. HTTP, TLS)
+  '''
 
   results_directory = target.directory
 
@@ -320,7 +323,10 @@ def queue_HTTP_service_scan(target: Target, service: Service, scan: Scan):
       scan.patterns
     )
 
-def queue_generic_service_scan(target: Target, service: Service, scan: Scan):
+def queue_service_scan_address(target: Target, service: Service, scan: Scan):
+  '''
+  queue a scan of a service that does not recognize the concept of a hostname
+  '''
 
   results_directory = target.directory
 
@@ -397,9 +403,9 @@ async def scan_services(target: Target):
     # iterate over each suitable scan
     for scan in suitable_scans:
       if scan.service in ('http', 'tls'):
-        queue_HTTP_service_scan(target, service, scan)
+        queue_service_scan_hostname(target, service, scan)
       else:
-        queue_generic_service_scan(target, service, scan)
+        queue_service_scan_address(target, service, scan)
 
   tasks = []
   for scan_ID, command in target.scans.items():
