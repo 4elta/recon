@@ -679,7 +679,7 @@ async def main():
   parser.add_argument(
     '-i', '--input',
     metavar = 'path',
-    help = "the result file(s) of the Nmap service scan (default: 'services.xml')",
+    help = "path to the result file(s) of the Nmap service scan (default: 'services.xml')",
     type = pathlib.Path,
     nargs = '+',
     default = 'services.xml'
@@ -688,7 +688,7 @@ async def main():
   parser.add_argument(
     '-o', '--output',
     metavar = 'path',
-    help = "where the results are stored (default: './recon')",
+    help = "path to where the results are stored (default: './recon')",
     type = pathlib.Path,
     default = './recon'
   )
@@ -703,7 +703,7 @@ async def main():
   parser.add_argument(
     '-t', '--concurrent_targets',
     metavar = 'number',
-    help = "how many targets should be scanned concurrently (default: 3)",
+    help = "number of targets that should be scanned concurrently (default: 3)",
     type = int,
     default = 3
   )
@@ -711,7 +711,7 @@ async def main():
   parser.add_argument(
     '-s', '--concurrent_scans',
     metavar = 'number',
-    help = "how many scans should be running concurrently on a single target (default: 2)",
+    help = "number of scans that should be running concurrently on a single target (default: 2)",
     type = int,
     default = 2
   )
@@ -753,7 +753,7 @@ async def main():
 
   parser.add_argument(
     '--ignore_uid',
-    help = "ignore the warning about potentially lacking permissions.",
+    help = "ignore the warning about potentially lacking permissions",
     action = 'store_true'
   )
 

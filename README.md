@@ -82,26 +82,24 @@ Schedule and execute various tools based on the findings of an Nmap service scan
 
 options:
   -h, --help            show this help message and exit
-  -i path [path ...], --input path [path ...]
-                        the result file(s) of the Nmap service scan (default: 'services.xml')
-  -o path, --output path
-                        where the results are stored (default: './recon')
-  -c path, --config path
-                        path to the scan configuration file (default: '/path/to/recon/config/scans.toml')
-  -t number, --concurrent_targets number
-                        how many targets should be scanned concurrently (default: 3)
-  -s number, --concurrent_scans number
-                        how many scans should be running concurrently on a single target (default: 2)
-  -m seconds, --max_time seconds
+  -i, --input path [path ...]
+                        path to the result file(s) of the Nmap service scan (default: 'services.xml')
+  -o, --output path     path to where the results are stored (default: './recon')
+  -c, --config path     path to the scan configuration file (default: '/path/to/recon/config/scans.toml')
+  -t, --concurrent_targets number
+                        number of targets that should be scanned concurrently (default: 3)
+  -s, --concurrent_scans number
+                        number of scans that should be running concurrently on a single target (default: 2)
+  -m, --max_time seconds
                         maximum time in seconds each scan is allowed to take (default: 3600)
   -n, --dry_run         do not run any command; just create/update the 'commands.csv' file
-  -r <host>:<protocol>:<port>:<service> [<host>:<protocol>:<port>:<service> ...], --rescan <host>:<protocol>:<port>:<service> [<host>:<protocol>:<port>:<service> ...]
+  -r, --rescan <host>:<protocol>:<port>:<service> [<host>:<protocol>:<port>:<service> ...]
                         re-scan certain hosts/protocols/ports/services and overwrite existing result files; you can use '*' if you cannot or don't want to specify a host/protocol/port/service part
   -y, --overwrite_results
                         overwrite existing result files
-  -d character, --delimiter character
+  -d, --delimiter character
                         character used to delimit columns in the 'commands.csv' and 'services.csv' files (default: ',')
-  --ignore_uid          ignore the warning about potentially lacking permissions.
+  --ignore_uid          ignore the warning about potentially lacking permissions
 ```
 
 After running the scanner, the results directory (e.g. `recon/`) will contain the following files/directories:
@@ -116,20 +114,20 @@ After running the scanner, the results directory (e.g. `recon/`) will contain th
 ### analyzer
 
 ```text
+% analyze -h
 usage: analyze [-h] [-s code] [-t name] [-r path] [-i path] [-l code] [-f code] [--template path] [-o path]
 
 Analyze and summarize the results of specific tools previously run by the scanner of the recon tool suite (i.e. 'scan').
 
 options:
   -h, --help            show this help message and exit
-  -s, --service code    specify the service that should be analyzed
-  -t, --tool name       specify the tool whose results are to be parsed
+  -s, --service code    service that should be analyzed
+  -t, --tool name       tool whose results are to be parsed
   -r, --recommendations path
-                        path to the recommendations document (default:
-                        '/path/to/recon/config/recommendations/<service>/default.toml')
+                        path to the recommendations document (default: '/path/to/recon/config/recommendations/<service>/default.toml')
   -i, --input path      path to the root directory that holds the results to be analysed (default: './recon')
-  -l, --language code   specify the language in which the analysis should be printed (default: 'en')
-  -f, --format code     specify the output format of the analysis (choices: ['md', 'json', 'csv']; default: 'md')
+  -l, --language code   language in which the analysis should be printed (default: 'en')
+  -f, --format code     format of the analysis (choices: ['md', 'json', 'csv']; default: 'md')
   --template path       path to the Jinja2 template for the analysis; this option overrides '-f/--format'
   -o, --output path     path to the directory where the analysis result(s) will be saved
 ```
