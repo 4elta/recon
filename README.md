@@ -116,26 +116,22 @@ After running the scanner, the results directory (e.g. `recon/`) will contain th
 ### analyzer
 
 ```text
-usage: analyze [-h] [-t name] [-r path] [-i path] [-l code] [-f code] [--template path] {?,dns,ftp,http,isakmp,ntp,rdp,smb,ssh,tls}
+usage: analyze [-h] [-s code] [-t name] [-r path] [-i path] [-l code] [-f code] [--template path] [-o path]
 
 Analyze and summarize the results of specific tools previously run by the scanner of the recon tool suite (i.e. 'scan').
 
-positional arguments:
-  {?,dns,ftp,http,isakmp,ntp,rdp,smb,ssh,tls}
-                        specify the service that should be analyzed. use '?' to list services available for analysis.
-
 options:
   -h, --help            show this help message and exit
-  -t name, --tool name  specify the tool whose results are to be parsed
-  -r path, --recommendations path
-                        path to the recommendations document (default: '/path/to/recon/config/recommendations/<service>/default.toml')
-  -i path, --input path
-                        path to the root directory that holds the results to be analysed (default: './recon')
-  -l code, --language code
-                        specify the language in which the analysis should be printed (default: 'en')
-  -f code, --format code
-                        specify the output format of the analysis (choices: ['md', 'json', 'csv']; default: 'md')
+  -s, --service code    specify the service that should be analyzed
+  -t, --tool name       specify the tool whose results are to be parsed
+  -r, --recommendations path
+                        path to the recommendations document (default:
+                        '/path/to/recon/config/recommendations/<service>/default.toml')
+  -i, --input path      path to the root directory that holds the results to be analysed (default: './recon')
+  -l, --language code   specify the language in which the analysis should be printed (default: 'en')
+  -f, --format code     specify the output format of the analysis (choices: ['md', 'json', 'csv']; default: 'md')
   --template path       path to the Jinja2 template for the analysis; this option overrides '-f/--format'
+  -o, --output path     path to the directory where the analysis result(s) will be saved
 ```
 
 The following analyzers (and parsers) are currently implemented:

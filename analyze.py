@@ -3,6 +3,7 @@
 import argparse
 import csv
 import importlib
+import io
 import jinja2
 import json
 import logging
@@ -91,14 +92,17 @@ def analyze_service(service, files, recommendations_file, tool=None):
         if i not in info:
           info.append(i)
 
-  return {
-    'services': services,
-    'affected_assets': affected_assets,
-    'issues': issues,
-    'recommendations': recommendations,
-    'references': references,
-    'additional_info': info,
-  }
+  return (
+    analyzer.parser_name,
+    {
+      'services': services,
+      'affected_assets': affected_assets,
+      'issues': issues,
+      'recommendations': recommendations,
+      'references': references,
+      'additional_info': info,
+    }
+  )
 
 def get_files(directory, service):
   files = {}
@@ -123,40 +127,72 @@ def render_CSV(services):
   delimiter = ','
   header = ['asset', 'issues']
 
-  csv.writer(sys.stdout, delimiter=delimiter, quoting=csv.QUOTE_MINIMAL).writerow(header)
+  output = io.StringIO()
+
+  csv.writer(output, delimiter=delimiter, quoting=csv.QUOTE_MINIMAL).writerow(header)
 
   for identifier, service in services.items():
     for issue in service['issues']:
       row = [identifier, issue.description]
-      csv.writer(sys.stdout, delimiter=delimiter, quoting=csv.QUOTE_MINIMAL).writerow(row)
+      csv.writer(output, delimiter=delimiter, quoting=csv.QUOTE_MINIMAL).writerow(row)
+
+  rendered_analysis = output.getvalue()
+
+  output.close()
+
+  return rendered_analysis
 
 def process(args):
   if not args.input.exists():
     sys.exit(f"the specified directory '{args.input}' does not exist!")
 
-  if args.service == '?':
+  if args.service is None:
     services = {}
     for service in SUPPORTED_SERVICES:
       files = get_files(args.input, service)
       if len(files):
         services[service] = files.keys()
 
-    print("scan results relating to the following services are available for analysis.")
-    print("the name of the scanner is shown in parenthesis.\n")
+    if len(services) == 0:
+      sys.exit("no scan results available for analysis.")
 
-    for service, tools in services.items():
-      print(f"* {service} ({', '.join(tools)})")
-  else:
+    if args.output is None:
+      print("scan results relating to the following services are available for analysis.")
+      print("the name of the scanner is shown in parenthesis.\n")
+
+      for service, tools in services.items():
+        print(f"* {service} ({', '.join(tools)})")
+
+      print("\nif you want to batch analyze all services and save the results, specify an output directory (i.e. '--output').")
+      return
+
+  selected_services = [ args.service ]
+  output_directory = None
+  analysis_file = None
+
+  if args.output:
+    output_directory = args.output.resolve()
+    output_directory.mkdir(exist_ok=True)
+
+  if args.service is None and args.output:
+    # in batch mode it does not make sense to specify these options:
+    args.tool = None
+    args.recommendations = None
+    args.template = None
+
+    selected_services = services.keys()
+
+  for selected_service in selected_services:
     logging.basicConfig(
       format = '%(levelname)s: %(message)s',
-      filename = f'analyzer-{args.service}.log',
+      filename = f'analyzer-{selected_service}.log',
       filemode = 'w',
       encoding = 'utf-8',
       level = logging.DEBUG
     )
 
-    LOGGER.debug(f"requested to analyze '{args.service}'")
-    files = get_files(args.input, args.service)
+    LOGGER.debug(f"requested to analyze '{selected_service}'")
+    files = get_files(args.input, selected_service)
 
     global LANGUAGE
     LANGUAGE = args.language
@@ -173,7 +209,7 @@ def process(args):
         pathlib.Path(__file__).resolve().parent,
         "config",
         "recommendations",
-        args.service,
+        selected_service,
         "default.toml"
       )
       LOGGER.info(f"using default recommendations file: '{recommendations_file}'")
@@ -181,12 +217,18 @@ def process(args):
         LOGGER.error("the recommendations file does not exist!")
         sys.exit(f"the default recommendations file '{recommendations_file}' does not exist!")
 
-    analysis = analyze_service(
-      args.service,
+    parser_name, analysis = analyze_service(
+      selected_service,
       files,
       recommendations_file,
       tool = args.tool
     )
+
+    if output_directory:
+      analysis_file = pathlib.Path(
+        output_directory,
+        f"{selected_service},{parser_name}.{args.fmt}"
+      )
 
     analysis['recommendations_file'] = recommendations_file
 
@@ -202,9 +244,9 @@ def process(args):
     else:
       LOGGER.info(f"user specified format: '{args.fmt}'")
       if args.fmt == 'json':
-        print(json.dumps(analysis['services']))
+        rendered_analysis = json.dumps(analysis['services'])
       elif args.fmt == 'csv':
-        render_CSV(analysis['services'])
+        rendered_analysis = render_CSV(analysis['services'])
       else:
         template_file = pathlib.Path(
           pathlib.Path(__file__).resolve().parent,
@@ -217,17 +259,21 @@ def process(args):
           LOGGER.error("the template file does not exist!")
           sys.exit(f"the default template file '{template_file}' does not exist!")
 
-    if template_file:
-      env = jinja2.Environment(
-        loader = jinja2.FileSystemLoader(template_file.parent),
-        trim_blocks = True,
-        autoescape = False
-      )
+      if template_file:
+        env = jinja2.Environment(
+          loader = jinja2.FileSystemLoader(template_file.parent),
+          trim_blocks = True,
+          autoescape = False
+        )
 
-      template = env.get_template(template_file.name)
-      rendered_analysis = template.render(analysis).strip()
+        template = env.get_template(template_file.name)
+        rendered_analysis = template.render(analysis).strip()
 
-      print(rendered_analysis)
+      if analysis_file:
+        with open(analysis_file, 'w') as f:
+          f.write(rendered_analysis)
+      else:
+        print(rendered_analysis)
 
 def main():
   parser = argparse.ArgumentParser(
@@ -235,9 +281,10 @@ def main():
   )
 
   parser.add_argument(
-    'service',
-    choices = ['?'] + sorted(SUPPORTED_SERVICES),
-    help = "specify the service that should be analyzed. use '?' to list services available for analysis."
+    '-s', '--service',
+    metavar = 'code',
+    choices = sorted(SUPPORTED_SERVICES),
+    help = "specify the service that should be analyzed"
   )
 
   parser.add_argument(
@@ -282,6 +329,13 @@ def main():
     metavar = 'path',
     type = pathlib.Path,
     help = "path to the Jinja2 template for the analysis; this option overrides '-f/--format'"
+  )
+
+  parser.add_argument(
+    '-o', '--output',
+    metavar = 'path',
+    type = pathlib.Path,
+    help = "path to the directory where the analysis result(s) will be saved"
   )
 
   process(parser.parse_args())
