@@ -129,12 +129,10 @@ class AbstractAnalyzer:
       f'{parser_name}.py'
     )
 
-    self.__class__.logger.debug(f"parser module '{module_path}'")
-
     if not module_path.exists():
-      self.__class__.logger.error("parser does not exist!")
-      sys.exit(f"unknown parser '{parser_name}'")
+      raise RuntimeError(f"parser '{parser_name}' does not exist")
 
+    self.__class__.logger.debug(f"parser module '{module_path}'")
     self.parser_name = parser_name
 
     module_name = f'{__name__}.{self.name}.{parser_name}'
@@ -150,4 +148,4 @@ class AbstractAnalyzer:
 
     if self.parser_name not in files:
       self.__class__.logger.error("nothing to analyze")
-      sys.exit("\nnothing to analyze")
+      raise Warning("nothing to analyze")

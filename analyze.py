@@ -2,6 +2,7 @@
 
 import argparse
 import csv
+import datetime
 import importlib
 import io
 import jinja2
@@ -146,65 +147,121 @@ def process(args):
   if not args.input.exists():
     sys.exit(f"the specified directory '{args.input}' does not exist!")
 
-  if args.service is None:
-    services = {}
-    for service in SUPPORTED_SERVICES:
-      files = get_files(args.input, service)
-      if len(files):
-        services[service] = files.keys()
+  services = {}
+  for service in SUPPORTED_SERVICES:
+    files = get_files(args.input, service)
+    if len(files):
+      services[service] = files.keys()
 
-    if len(services) == 0:
-      sys.exit("no scan results available for analysis.")
+  if len(services) == 0:
+    sys.exit("no scan results available for analysis.")
 
-    if args.output is None:
-      print("scan results relating to the following services are available for analysis.")
-      print("the name of the scanner is shown in parenthesis.\n")
+  if not args.service and not args.output:
+    print("scan results relating to the following services are available for analysis.")
+    print("the name of the scanner is shown in parenthesis.\n")
 
-      for service, tools in services.items():
-        print(f"* {service} ({', '.join(tools)})")
+    for service, tools in services.items():
+      print(f"* {service} ({', '.join(tools)})")
 
-      print("\nif you want to batch analyze all services and save the results, specify an output directory (i.e. '--output').")
-      return
+    if args.tool:
+      tools_filter = 'the specified tool'
+    else:
+      tools_filter = 'all tools'
 
-  selected_services = [ args.service ]
+    print(f"\nif you want to batch analyze the results from {tools_filter}, for all services, specify an output directory ('-o').")
+    return
+
+  timestamp = datetime.datetime.now().replace(microsecond=0).isoformat()
+
+  logging.basicConfig(
+    format = '%(levelname)s: %(message)s',
+    filename = f'analyzer_{timestamp}.log',
+    filemode = 'w',
+    encoding = 'utf-8',
+    level = logging.DEBUG
+  )
+
   output_directory = None
   analysis_file = None
+  batch_mode = False
 
   if args.output:
     output_directory = args.output.resolve()
+    LOGGER.debug(f"user specified output directory: '{output_directory}'")
     output_directory.mkdir(exist_ok=True)
 
-  if args.service is None and args.output:
-    # in batch mode it does not make sense to specify these options:
-    args.tool = None
+  selected_services = {}
+
+  if args.service:
+    if args.service not in services.keys():
+      sys.exit("nothing to analyze")
+
+    selected_services = {args.service: [args.tool]}
+
+    if not args.tool and args.output:
+      selected_services = {args.service: services[args.service]}
+      batch_mode = True
+  elif args.output:
+    # in this mode it does not make sense to specify this option:
     args.recommendations = None
-    args.template = None
 
-    selected_services = services.keys()
+    selected_services = services
+    batch_mode = True
 
-  for selected_service in selected_services:
-    logging.basicConfig(
-      format = '%(levelname)s: %(message)s',
-      filename = f'analyzer-{selected_service}.log',
-      filemode = 'w',
-      encoding = 'utf-8',
-      level = logging.DEBUG
-    )
+  if batch_mode:
+    LOGGER.debug("batch mode")
 
-    LOGGER.debug(f"requested to analyze '{selected_service}'")
+  global LANGUAGE
+  LANGUAGE = args.language
+  LOGGER.debug(f"using language '{LANGUAGE}'")
+
+  if args.recommendations:
+    recommendations_file = args.recommendations
+    LOGGER.debug(f"user specified recommendations file: '{args.recommendations}'")
+    if not recommendations_file.exists():
+      LOGGER.error("the recommendations file does not exist!")
+      sys.exit(f"the recommendations file '{recommendations_file}' does not exist!")
+
+  template_file = None
+
+  if args.template:
+    LOGGER.debug(f"user specified template file: '{args.template}'")
+    if not args.template.exists():
+      LOGGER.error("the template file does not exist!")
+      sys.exit(f"the specified template file '{args.template}' does not exist!")
+    else:
+      template_file = args.template.resolve()
+  else:
+    LOGGER.debug(f"using output format: '{args.fmt}'")
+    if args.fmt not in ('json', 'csv'):
+      template_file = pathlib.Path(
+        pathlib.Path(__file__).resolve().parent,
+        "config",
+        "templates",
+        f"default.{LANGUAGE}.md"
+      )
+      LOGGER.debug(f"using default template file: '{template_file}'")
+      if not template_file.exists():
+        LOGGER.error("the template file does not exist!")
+        sys.exit(f"the default template file '{template_file}' does not exist!")
+
+    if template_file:
+      env = jinja2.Environment(
+        loader = jinja2.FileSystemLoader(template_file.parent),
+        trim_blocks = True,
+        autoescape = False
+      )
+
+      template = env.get_template(template_file.name)
+
+  for selected_service, tools in selected_services.items():
+    if args.tool and args.tool not in tools:
+      continue
+
+    LOGGER.debug(f"analyzing '{selected_service}'")
     files = get_files(args.input, selected_service)
 
-    global LANGUAGE
-    LANGUAGE = args.language
-    LOGGER.debug(f"using language '{LANGUAGE}'")
-
-    if args.recommendations:
-      recommendations_file = args.recommendations
-      LOGGER.info(f"user specified recommendations file: '{args.recommendations}'")
-      if not recommendations_file.exists():
-        LOGGER.error("the recommendations file does not exist!")
-        sys.exit(f"the recommendations file '{recommendations_file}' does not exist!")
-    else:
+    if not args.recommendations:
       recommendations_file = pathlib.Path(
         pathlib.Path(__file__).resolve().parent,
         "config",
@@ -215,59 +272,50 @@ def process(args):
       LOGGER.info(f"using default recommendations file: '{recommendations_file}'")
       if not recommendations_file.exists():
         LOGGER.error("the recommendations file does not exist!")
-        sys.exit(f"the default recommendations file '{recommendations_file}' does not exist!")
+        if batch_mode:
+          continue
+        else:
+          sys.exit(f"the default recommendations file '{recommendations_file}' does not exist!")
 
-    parser_name, analysis = analyze_service(
-      selected_service,
-      files,
-      recommendations_file,
-      tool = args.tool
-    )
+    for tool in tools:
+      if args.tool and tool != args.tool:
+        continue
 
-    if output_directory:
-      analysis_file = pathlib.Path(
-        output_directory,
-        f"{selected_service},{parser_name}.{args.fmt}"
-      )
+      LOGGER.debug(f"using parser '{tool}'")
 
-    analysis['recommendations_file'] = recommendations_file
-
-    template_file = None
-
-    if args.template:
-      LOGGER.info(f"user specified template file: '{args.template}'")
-      if not args.template.exists():
-        LOGGER.error("the template file does not exist!")
-        sys.exit(f"the specified template file '{args.template}' does not exist!")
-      else:
-        template_file = args.template.resolve()
-    else:
-      LOGGER.info(f"user specified format: '{args.fmt}'")
-      if args.fmt == 'json':
-        rendered_analysis = json.dumps(analysis['services'])
-      elif args.fmt == 'csv':
-        rendered_analysis = render_CSV(analysis['services'])
-      else:
-        template_file = pathlib.Path(
-          pathlib.Path(__file__).resolve().parent,
-          "config",
-          "templates",
-          f"default.{LANGUAGE}.md"
+      try:
+        parser_name, analysis = analyze_service(
+          selected_service,
+          files,
+          recommendations_file,
+          tool = tool
         )
-        LOGGER.info(f"using default template file: '{template_file}'")
-        if not template_file.exists():
-          LOGGER.error("the template file does not exist!")
-          sys.exit(f"the default template file '{template_file}' does not exist!")
+      except RuntimeError as ex:
+        LOGGER.error(ex)
+        if batch_mode:
+          print(ex, file=sys.stderr)
+          continue
+        else:
+          sys.exit(ex)
+      except Warning as w:
+        LOGGER.warn(w)
+        print(w, file=sys.stderr)
+        continue
+
+      if output_directory:
+        analysis_file = pathlib.Path(
+          output_directory,
+          f"{selected_service},{parser_name}.{args.fmt}"
+        )
+
+      analysis['recommendations_file'] = recommendations_file
 
       if template_file:
-        env = jinja2.Environment(
-          loader = jinja2.FileSystemLoader(template_file.parent),
-          trim_blocks = True,
-          autoescape = False
-        )
-
-        template = env.get_template(template_file.name)
         rendered_analysis = template.render(analysis).strip()
+      elif args.fmt == 'json':
+        rendered_analysis = json.dumps(analysis['services']).strip()
+      elif args.fmt == 'csv':
+        rendered_analysis = render_CSV(analysis['services']).strip()
 
       if analysis_file:
         with open(analysis_file, 'w') as f:
@@ -290,7 +338,7 @@ def main():
   parser.add_argument(
     '-t', '--tool',
     metavar = 'name',
-    help = "tool whose results are to be parsed"
+    help = "tool whose results should be parsed"
   )
 
   parser.add_argument(
