@@ -28,16 +28,14 @@ LANGUAGE = 'en'
 SUPPORTED_FORMATS = ['md', 'json', 'csv']
 
 
-def analyze_service(service, files, recommendations_file, tool=None):
+def analyze_service(service, files, recommendations_file, tool):
   with open(recommendations_file, 'rb') as f:
     recommendations = toml.load(f)
 
   LOGGER.debug(f"importing 'analyzers.{service}'")
   module = importlib.import_module(f'analyzers.{service}')
   analyzer = module.Analyzer(service, recommendations)
-
-  if tool:
-    analyzer.set_parser(tool)
+  analyzer.set_parser(tool)
 
   services = analyzer.analyze(files)
 
@@ -49,7 +47,7 @@ def analyze_service(service, files, recommendations_file, tool=None):
     f"{LANGUAGE}.toml"
   )
 
-  LOGGER.info(f"loading issues file '{issues_file}'")
+  LOGGER.debug(f"loading issues file '{issues_file}'")
   if not issues_file.exists():
     LOGGER.error("issues file does not exist!")
     sys.exit(f"the file '{issues_file}' does not exist!")
@@ -93,17 +91,14 @@ def analyze_service(service, files, recommendations_file, tool=None):
         if i not in info:
           info.append(i)
 
-  return (
-    analyzer.parser_name,
-    {
-      'services': services,
-      'affected_assets': affected_assets,
-      'issues': issues,
-      'recommendations': recommendations,
-      'references': references,
-      'additional_info': info,
-    }
-  )
+  return {
+    'services': services,
+    'affected_assets': affected_assets,
+    'issues': issues,
+    'recommendations': recommendations,
+    'references': references,
+    'additional_info': info,
+  }
 
 def get_files(directory, service):
   files = {}
@@ -171,7 +166,23 @@ def process(args):
     print(f"\nif you want to batch analyze the results from {tools_filter}, for all services, specify an output directory ('-o').")
     return
 
-  timestamp = datetime.datetime.now().replace(microsecond=0).isoformat()
+  if args.config:
+    config_file_path = args.config
+    if not config_file_path.exists():
+      sys.exit(f"the specified configuration file '{config_file_path}' does not exist!")
+  else:
+    config_file_path = pathlib.Path(
+      pathlib.Path(__file__).resolve().parent,
+      "config",
+      "analyzer.toml"
+    )
+    if not config_file_path.exists():
+      sys.exit(f"the default configuration file '{config_file_path}' does not exist!")
+
+  with open(config_file_path, 'rb') as f:
+    config = toml.load(f)
+
+  timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
   logging.basicConfig(
     format = '%(levelname)s: %(message)s',
@@ -187,7 +198,7 @@ def process(args):
 
   if args.output:
     output_directory = args.output.resolve()
-    LOGGER.debug(f"user specified output directory: '{output_directory}'")
+    LOGGER.info(f"user specified output directory: '{output_directory}'")
     output_directory.mkdir(exist_ok=True)
 
   selected_services = {}
@@ -213,11 +224,11 @@ def process(args):
 
   global LANGUAGE
   LANGUAGE = args.language
-  LOGGER.debug(f"using language '{LANGUAGE}'")
+  LOGGER.info(f"using language '{LANGUAGE}'")
 
   if args.recommendations:
     recommendations_file = args.recommendations
-    LOGGER.debug(f"user specified recommendations file: '{args.recommendations}'")
+    LOGGER.info(f"user specified recommendations file: '{args.recommendations}'")
     if not recommendations_file.exists():
       LOGGER.error("the recommendations file does not exist!")
       sys.exit(f"the recommendations file '{recommendations_file}' does not exist!")
@@ -225,14 +236,14 @@ def process(args):
   template_file = None
 
   if args.template:
-    LOGGER.debug(f"user specified template file: '{args.template}'")
+    LOGGER.info(f"user specified template file: '{args.template}'")
     if not args.template.exists():
       LOGGER.error("the template file does not exist!")
       sys.exit(f"the specified template file '{args.template}' does not exist!")
     else:
       template_file = args.template.resolve()
   else:
-    LOGGER.debug(f"using output format: '{args.fmt}'")
+    LOGGER.info(f"using output format: '{args.fmt}'")
     if args.fmt not in ('json', 'csv'):
       template_file = pathlib.Path(
         pathlib.Path(__file__).resolve().parent,
@@ -240,7 +251,7 @@ def process(args):
         "templates",
         f"default.{LANGUAGE}.md"
       )
-      LOGGER.debug(f"using default template file: '{template_file}'")
+      LOGGER.info(f"using default template file: '{template_file}'")
       if not template_file.exists():
         LOGGER.error("the template file does not exist!")
         sys.exit(f"the default template file '{template_file}' does not exist!")
@@ -258,7 +269,7 @@ def process(args):
     if args.tool and args.tool not in tools:
       continue
 
-    LOGGER.debug(f"analyzing '{selected_service}'")
+    LOGGER.info(f"analyzing '{selected_service}'")
     files = get_files(args.input, selected_service)
 
     if not args.recommendations:
@@ -281,34 +292,40 @@ def process(args):
       if args.tool and tool != args.tool:
         continue
 
-      LOGGER.debug(f"using parser '{tool}'")
+      if not tool:
+        tool = config['default_parser'][selected_service]
+        LOGGER.info(f"using default parser '{tool}'")
+      else:
+        LOGGER.info(f"using parser '{tool}'")
 
       try:
-        parser_name, analysis = analyze_service(
+        analysis = analyze_service(
           selected_service,
           files,
           recommendations_file,
           tool = tool
         )
-      except RuntimeError as ex:
-        LOGGER.error(ex)
+      except RuntimeError as error:
+        LOGGER.error(error)
         if batch_mode:
-          print(ex, file=sys.stderr)
+          print(error, file=sys.stderr)
           continue
         else:
-          sys.exit(ex)
-      except Warning as w:
-        LOGGER.warn(w)
-        print(w, file=sys.stderr)
+          sys.exit(error)
+      except Warning as warning:
+        LOGGER.warn(warning)
+        print(warning, file=sys.stderr)
         continue
 
       if output_directory:
         analysis_file = pathlib.Path(
           output_directory,
-          f"{selected_service},{parser_name}.{args.fmt}"
+          f"{selected_service},{tool}.{args.fmt}"
         )
 
       analysis['recommendations_file'] = recommendations_file
+
+      LOGGER.info("rendering analysis")
 
       if template_file:
         rendered_analysis = template.render(analysis).strip()
@@ -318,6 +335,7 @@ def process(args):
         rendered_analysis = render_CSV(analysis['services']).strip()
 
       if analysis_file:
+        LOGGER.debug(f"writing analysis to '{analysis_file}'")
         with open(analysis_file, 'w') as f:
           f.write(rendered_analysis)
       else:
@@ -326,6 +344,13 @@ def process(args):
 def main():
   parser = argparse.ArgumentParser(
     description = "Analyze and summarize the results of specific tools previously run by the scanner of the recon tool suite (i.e. 'scan')."
+  )
+
+  parser.add_argument(
+    '-c', '--config',
+    metavar = 'path',
+    type = pathlib.Path,
+    help = "path to the analyzer configuration file (default: '/path/to/recon/config/analyzer.toml')"
   )
 
   parser.add_argument(

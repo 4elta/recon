@@ -26,11 +26,6 @@ SERVICE_SCHEMA = {
 
 class Analyzer(AbstractAnalyzer):
 
-  def __init__(self, name, recommendations):
-    super().__init__(name, recommendations)
-
-    self.set_parser('ike')
-
   def analyze(self, files):
     super().analyze(files)
 

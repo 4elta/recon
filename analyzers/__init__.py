@@ -107,12 +107,12 @@ class AbstractAnalyzer:
   def __init__(self, name, recommendations):
     '''
     initialize the analyzer.
-    this method may need to be extended by each concrete Analyzer class.
     '''
 
     self.__class__.logger.debug(f"initializing analyzer '{name}'")
 
     self.name = name
+    self.parser_name = None
     self.recommendations = recommendations
     self.services = []
 
@@ -146,6 +146,10 @@ class AbstractAnalyzer:
     this method has to be extended by each concrete Analyzer class
     '''
 
+    if not self.parser_name:
+      self.__class__.logger.error("parser not configured!")
+      raise RuntimeError("parser not configured")
+
     if self.parser_name not in files:
-      self.__class__.logger.error("nothing to analyze")
+      self.__class__.logger.warn("nothing to analyze")
       raise Warning("nothing to analyze")

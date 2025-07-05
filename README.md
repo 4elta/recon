@@ -85,7 +85,7 @@ options:
   -i, --input path [path ...]
                         path to the result file(s) of the Nmap service scan (default: 'services.xml')
   -o, --output path     path to where the results are stored (default: './recon')
-  -c, --config path     path to the scan configuration file (default: '/path/to/recon/config/scans.toml')
+  -c, --config path     path to the scanner configuration file (default: '/path/to/recon/config/scanner.toml')
   -t, --concurrent_targets number
                         number of targets that should be scanned concurrently (default: 3)
   -s, --concurrent_scans number
@@ -115,12 +115,13 @@ After running the scanner, the results directory (e.g. `recon/`) will contain th
 
 ```text
 % analyze -h
-usage: analyze [-h] [-s code] [-t name] [-r path] [-i path] [-l code] [-f code] [--template path] [-o path]
+usage: analyze [-h] [-c path] [-s code] [-t name] [-r path] [-i path] [-l code] [-f code] [--template path] [-o path]
 
 Analyze and summarize the results of specific tools previously run by the scanner of the recon tool suite (i.e. 'scan').
 
 options:
   -h, --help            show this help message and exit
+  -c, --config path     path to the analyzer configuration file (default: '/path/to/recon/config/analysis.toml')
   -s, --service code    service that should be analyzed
   -t, --tool name       tool whose results are to be parsed
   -r, --recommendations path

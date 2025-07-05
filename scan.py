@@ -576,7 +576,7 @@ async def process(args):
     config_file_path = pathlib.Path(
       pathlib.Path(__file__).resolve().parent,
       "config",
-      "scans.toml"
+      "scanner.toml"
     )
     if not config_file_path.exists():
       sys.exit(f"the default configuration file '{config_file_path}' does not exist!")
@@ -696,7 +696,7 @@ async def main():
   parser.add_argument(
     '-c', '--config',
     metavar = 'path',
-    help = "path to the scan configuration file (default: '/path/to/recon/config/scans.toml')",
+    help = "path to the scanner configuration file (default: '/path/to/recon/config/scanner.toml')",
     type = pathlib.Path
   )
 
