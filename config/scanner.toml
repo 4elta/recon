@@ -1,0 +1,334 @@
+# the variables defined in this group can be used in `command` declarations.
+# e.g. command = 'echo "hello {username} from {domain}! your password is {password}" > "{result_file}.log"'
+['*']
+domain = "example.com"
+username = "user"
+password = "password"
+
+# documentation on the Nmap Script Engine:
+# https://nmap.org/nsedoc/
+
+# well-known port list:
+# https://nmap.org/book/nmap-services.html
+# /usr/share/nmap/nmap-services
+[amqp]
+# https://www.rabbitmq.com/networking.html
+patterns = [ 'amqp' ]
+
+  [amqp.scans.nmap]
+  command = 'nmap -Pn -sV -n -p {port} --script="amqp-info" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+
+[cassandra]
+# https://cassandra.apache.org/
+patterns = [ 'apani1' ]
+
+  [cassandra.scans.nmap]
+  command = 'nmap -Pn -sV  -p {port} --script="banner,cassandra* and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+
+[cups]
+patterns = [ 'ipp' ]
+
+  [cups.scans.nmap]
+  command = 'nmap -Pn -sV -p {port} --script="banner,cups* and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+
+[distcc]
+# https://www.distcc.org/security.html
+patterns = [ 'distccd' ]
+
+  [distcc.scans.nmap]
+  command = 'nmap -Pn -sV -p {port} --script="banner,distcc-cve2004-2687" --script-args="distcc-cve2004-2687.cmd=id" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+
+[dns]
+patterns = [ 'domain(-s)?$' ]
+
+  [dns.scans.nase]
+  command = '"{PATH_TO_SCANNERS}/nase.py" --port {port} --transport_protocol {transport_protocol} --json "{result_file}.json" {address} 2>&1 | tee "{result_file}.log"'
+
+[finger]
+# https://www.rfc-editor.org/info/rfc1288 (section 3.2)
+patterns = [ 'finger' ]
+
+  [finger.scans.nmap]
+  command = 'nmap -Pn -sV -p {port} --script="banner,finger" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+
+[ftp]
+patterns = [ 'ftps?(-data)?' ]
+
+  [ftp.scans.nmap]
+  command = 'nmap -Pn -v -sV -p {port} --script="banner,ssl-cert,ftp* and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+  patterns = [ 'Anonymous FTP login allowed' ]
+
+[http]
+patterns = [ '^(.+\|)?http' ] # 'http', 'https', '.+|http'
+
+  [http.scans.nmap]
+  command = 'nmap $([[ "{transport_protocol}" == "udp" ]] && echo "-sU") -Pn -v -sV -p {port} --script="banner,http* and not (brute or broadcast or dos or external or http-slowloris* or fuzzer)" -oN "{result_file}.log" -oX "{result_file}.xml" {hostname}'
+  patterns = [ '[Ss]erver: ([^\n]+)', 'WebDAV is ENABLED' ]
+
+  [http.scans.index]
+  command = 'curl --silent --insecure --max-time 10 $([[ "{transport_protocol}" == "udp" ]] && echo "--http3") {scheme}://{hostname}:{port}/ 2>&1 | tee "{result_file}.html"'
+
+  [http.scans.curl]
+  command = 'curl --silent --verbose --insecure --show-error --max-time 10 $([[ "{transport_protocol}" == "udp" ]] && echo "--http3") {scheme}://{hostname}:{port}/ 2>&1 | tee "{result_file}.log"'
+  patterns = [ '(?i)Powered by [^\n]+', '[Ss]erver: [^\n]+' ]
+
+  [http.scans.'robots.txt']
+  command = 'curl --silent --include --insecure --show-error --max-time 10 $([[ "{transport_protocol}" == "udp" ]] && echo "--http3") {scheme}://{hostname}:{port}/robots.txt 2>&1 | tee "{result_file}.log"'
+
+  [http.scans.cewl]
+  command = '#cewl --depth 3 --min_word_length 5 --write "{result_file}.log" {scheme}://{hostname}:{port}'
+
+  [http.scans.nikto]
+  command = '[[ "{transport_protocol}" == "tcp" ]] && nikto -ask no -Cgidirs all -host {hostname} -port {port} -nointeractive -Format json -output "{result_file}.json" 2>&1 | tee "{result_file}.log"'
+
+  [http.scans.feroxbuster]
+  command = '#feroxbuster --insecure --quiet --depth 1 --extensions txt,html,php,asp,aspx,jsp --wordlist /usr/share/seclists/Discovery/Web-Content/common.txt --url {scheme}://{hostname}:{port}/ 2>&1 | tee "{result_file}.log"'
+
+  [http.scans.gobuster]
+  command = '#gobuster dir --url {scheme}://{hostname}:{port}/ --wordlist /usr/share/seclists/Discovery/Web-Content/common.txt --no-progress --no-tls-validation --expanded --extensions "txt,html,php,asp,aspx,jsp" 2>&1 | tee "{result_file}.log"'
+
+  [http.scans.whatweb]
+  command = '[[ "{transport_protocol}" == "tcp" ]] && whatweb --aggression=3 --no-errors --log-verbose="{result_file}.log" --log-json="{result_file}.json" {scheme}://{hostname}:{port}'
+
+[imap]
+patterns = [ 'imap(s|(4-ssl))?' ]
+
+  [imap.scans.nmap]
+  command = 'nmap -Pn -sV -p {port} --script="banner,imap* and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+
+[isakmp]
+patterns = [ 'isakmp' ]
+
+  [isakmp.scans.ike]
+  command = '"{PATH_TO_SCANNERS}/ike.py" {address} --port {port} | tee "{result_file}.log"'
+
+  [isakmp.scans.nmap]
+  command = 'nmap -sU -Pn -sV -p {port} --script="banner,ike-version" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+
+[kerberos]
+patterns = [ 'kerberos', 'kpasswd' ]
+
+  [kerberos.scans.nmap]
+  command = 'nmap $([[ "{transport_protocol}" == "udp" ]] && echo "-sU") -Pn -sV -p {port} --script="banner,krb5-enum-users" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+
+[ldap]
+patterns = [ 'ldap' ]
+
+  [ldap.scans.nmap]
+  command = 'nmap -Pn -sV -p {port} --script="banner,ldap* and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+
+[mongodb]
+patterns = [ 'mongod' ]
+
+  [mongodb.scans.nmap]
+  command = 'nmap -Pn -sV -p {port} --script="banner,mongodb* and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+
+[mysql]
+patterns = [ 'mysql' ]
+
+  [mysql.scans.nmap]
+  command = 'nmap -Pn -sV -p {port} --script="banner,mysql* and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+
+[nfs]
+patterns = [ '^nfs' ]
+
+  [nfs.scans.nmap]
+  command = 'nmap -Pn -sV -p {port} --script="banner,(rpcinfo or nfs*) and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+
+  [nfs.scans.showmount]
+  command = 'showmount -e {address} | tee "{result_file}.log"'
+
+[nntp]
+patterns = [ '^nntp', 'snews' ]
+
+  [nntp.scans.nmap]
+  command = 'nmap -Pn -sV -p {port} --script="banner,nntp-ntlm-info" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+
+[ntp]
+patterns = [ '^ntp' ]
+
+  [ntp.scans.nmap]
+  command = 'nmap $([[ "{transport_protocol}" == "udp" ]] && echo "-sU") -Pn -sV -p {port} --script="banner,ntp-info,ntp-monlist" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+
+  [ntp.scans.ntp]
+  command = '"{PATH_TO_SCANNERS}/ntp.py" --port {port} --json "{result_file}.json" {address} 2>&1 | tee "{result_file}.log"'
+
+[oracle]
+patterns = [ 'oracle' ]
+
+  [oracle.scans.nmap]
+  command = 'nmap -Pn -sV -p {port} --script="banner,oracle* and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+
+[pop3]
+patterns = [ 'pop3' ]
+
+  [pop3.scans.nmap]
+  command = 'nmap -Pn -sV -p {port} --script="banner,pop3* and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+
+[rdp]
+patterns = [ 'ms-wbt-server' ]
+
+  [rdp.scans.nmap]
+  command = 'nmap $([[ "{transport_protocol}" == "udp" ]] && echo "-sU") -Pn -sV -p {port} --script="banner,rdp* and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+
+[rmi]
+patterns = [ 'rmiregistry' ]
+
+  [rmi.scans.nmap]
+  command = 'nmap -Pn -sV -p {port} --script="banner,rmi-vuln-classloader,rmi-dumpregistry" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+
+[rpc]
+patterns = [ 'msrpc', 'rpcbind', '^erpc' ]
+
+  [rpc.scans.nmap]
+  command = 'nmap -Pn -sV -p {port} --script="banner,msrpc-enum,rpc-grind,rpcinfo" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+
+  [rpc.scans.rpcinfo]
+  command = 'rpcinfo {address} 2>&1 | tee "{result_file}.log"'
+  patterns = [ 'nfs' ]
+
+  [rpc.scans.rpcdump]
+  command = 'impacket-rpcdump -port {port} {address} 2>&1 | tee "{result_file}.log"'
+
+[sip]
+patterns = [ '^sip', '^ventrilo' ]
+
+  [sip.scans.nmap]
+  command = 'nmap -Pn -sV -p {port} --script="banner,sip-enum-users,sip-methods" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+
+  [sip.scans.svmap]
+  command = 'svmap -p {port} {address} 2>&1 | tee "{result_file}.log"'
+
+[smb]
+patterns = [ 'smb', 'microsoft-ds', 'netbios' ]
+
+  # SMB does not support TLS/STARTTLS; only LDAP can use TLS: https://wiki.samba.org/index.php/Configuring_LDAP_over_SSL_(LDAPS)_on_a_Samba_AD_DC
+
+  [smb.scans.nmap]
+  command = 'nmap $([[ "{transport_protocol}" == "udp" ]] && echo "-sU") -Pn -sV -p {port} --script="banner,(nbstat or smb*) and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+
+  [smb.scans.smbclient]
+  command = 'smbclient --list={address} --no-pass --command="recurse ON; ls" 2>&1 | tee "{result_file}.log"'
+  run_once = true
+
+  [smb.scans.'enum4linux-ng']
+  command = 'enum4linux-ng -As -oJ "{result_file}" {address} 2>&1 | tee "{result_file}.log"'
+  run_once = true
+
+[smtp]
+patterns = [ 'smtp' ]
+
+  [smtp.scans.nmap]
+  command = 'nmap -Pn -sV -p {port} --script="banner,smtp* and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+
+  [smtp.scans.'intrusive,nmap']
+  command = '#nmap -Pn -sV -p {port} --script="banner,smtp* and not (brute or dos or exploit)" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+
+[snmp]
+patterns = [ 'snmp' ]
+
+  [snmp.scans.nmap]
+  command = 'nmap $([[ "{transport_protocol}" == "udp" ]] && echo "-sU") -Pn -sV -p {port} --script="banner,snmp* and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+
+  [snmp.scans.onesixtyone]
+  command = '#onesixtyone -c /usr/share/seclists/Discovery/SNMP/common-snmp-community-strings-onesixtyone.txt -dd {address} 2>&1 | tee "{result_file}.log"'
+
+  [snmp.scans.snmpwalk]
+  command = '#declare -a OIDs=(1.3.6.1.2.1.25.1.6.0 1.3.6.1.2.1.25.4.2.1.2 1.3.6.1.2.1.25.4.2.1.4 1.3.6.1.2.1.25.2.3.1.4 1.3.6.1.2.1.25.6.3.1.2 1.3.6.1.4.1.77.1.2.25 1.3.6.1.2.1.6.13.1.3); for OID in "${{OIDs[@]}}"; do snmpwalk -c public -v 1 {address} $OID 2>&1 | tee --append "{result_file}.log"; echo "scanned OID $OID"; done; snmpwalk -c public -v 1 {address} 2>&1 | tee --append "{result_file}.log"'
+  patterns = [ '^scanned OID (\d+.)*\d+' ]
+
+[ssh]
+patterns = [ '^ssh' ]
+
+  [ssh.scans.nmap]
+  command = 'nmap -Pn -sV -p {port} --script="banner,sshv1,ssh2-enum-algos,ssh-hostkey,ssh-auth-methods" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+
+[telnet]
+patterns = [ '^telnet' ]
+
+  [telnet.scans.nmap]
+  command = 'nmap -Pn -sV -p {port} --script="banner,telnet-encryption,telnet-ntlm-info" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+
+[tls] # services (or service versions) that use TLS by default (i.e. not opportunistic).
+patterns = [
+  # sometimes, Nmap identifies HTTPS as 'http' tunneled through `ssl`.
+  # the scanner prepends the tunnel info to the application protocol: '<tunnel>|<application protocol>'
+  '^ssl\|', '^tls\|',
+  'https', # HTTP over TLS (443/tcp)
+  'dicom-tls', # DICOM over TLS (2762)
+  'domain-s', # DNS over TLS/DTLS/QUIC (853/tcp)
+  'ftps', # FTP over TLS (990)
+  'imaps|(4-ssl)', # IMAP over TLS (993/585)
+  'ircs(-u)?', # IRC over TLS (994/6697)
+  'ldaps', # LDAP over TLS (636)
+  'secure-mqtt', # Message Queuing Telemetry Transport (MQTT) supports TLS (883): https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Network_Connections
+  'ntske', # Network Time Security Key Establishment (NTS-KE) uses TLS (4460): https://www.rfc-editor.org/info/rfc8915
+  'ms-sql-s', # MS-SQL supports TLS (1433)
+  'radsec', # RADIUS over TLS (2083): https://www.rfc-editor.org/info/rfc6614
+  'snews', # NNTP over TLS (563)
+  'pop3s', # POP3 over TLS (995)
+  'sip-tls', # SIP over TLS (5061)
+  'smtps', # SMTP over TLS (465)
+  'snmpd?tls', # SNMP over TLS (10161)
+  'telnets', # telnet over TLS (992)
+]
+
+  [tls.scans.nmap]
+  command = 'nmap $([[ "{transport_protocol}" == "udp" ]] && echo "-sU") -Pn -sV -p {port} --script="banner,ssl* and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" -oX "{result_file}.xml" {hostname}'
+
+  [tls.scans.sslscan]
+  command = '#sslscan --show-certificate --ocsp --show-sigs --xml="{result_file}.xml" {hostname}:{port} 2>&1 | tee "{result_file}.log"'
+
+  [tls.scans.sslyze]
+  command = '#sslyze --json_out "{result_file}.json" {hostname}:{port} 2>&1 | tee "{result_file}.log"'
+
+  [tls.scans.testssl]
+  command = 'testssl --ip one --nodns min --mapping no-openssl --warnings off --connect-timeout 60 --openssl-timeout 60 --logfile "{result_file}.log" --jsonfile "{result_file}.json" {hostname}:{port}'
+
+[tls_misc]
+# services that support opportunistic TLS (e.g. STARTTLS) or use TLS in some other form
+# https://www.rfc-editor.org/info/rfc7435
+patterns = [
+  'apani1', # Cassandra supports TLS: https://cassandra.apache.org/doc/4.1/cassandra/configuration/cass_yaml_file.html#server_encryption_options
+  'ipp', # CUPS supports TLS: https://www.cups.org/doc/encryption.html
+  'ircu?$', # IRC supports STARTTLS: https://ircv3.net/specs/deprecated/tls
+  'ftp(-data)?', # FTP supports STARTTLS: https://www.rfc-editor.org/info/rfc4217
+  'imap', # IMAP supports STARTTLS: https://www.rfc-editor.org/info/rfc2595
+  'ldap', # LDAP supports STARTTLS: https://www.rfc-editor.org/info/rfc2830
+  'mongod', # MongoDB supports TLS: https://www.mongodb.com/docs/v6.0/core/security-transport-encryption/
+  'ms-wbt-server', # RDP supports TLS
+  'mysql', # MySQL supports TLS: https://dev.mysql.com/doc/refman/8.0/en/encrypted-connection-protocols-ciphers.html
+  'nntp', # NNTP supports STARTTLS: https://www.rfc-editor.org/info/rfc4642
+  'oracle', # Oracle DB supports TLS: https://docs.oracle.com/en/database/oracle/oracle-database/19/dbseg/configuring-secure-sockets-layer-authentication.html
+  'pop3', # POP3 supports STARTTLS: https://www.rfc-editor.org/info/rfc2595
+  'radius$', # RADIUS/1.1 supports TLS: https://datatracker.ietf.org/doc/draft-ietf-radext-radiusv11/11/
+  'postgresql', # PostgreSQL supports 'SSLRequest': https://www.postgresql.org/docs/current/protocol-flow.html#PROTOCOL-FLOW-SSL
+  'sieve', # ManageSieve supports STARTTLS: https://www.rfc-editor.org/info/rfc5804
+  'smtp', # SMTP supports STARTTLS: https://www.rfc-editor.org/info/rfc3207
+  'vnc', # TigerVNC supports TLS: https://github.com/TigerVNC/tigervnc/wiki/Secure-your-connection
+  'xmpp', # XMPP supports TLS: https://xmpp.org/extensions/inbox/xtls.html
+]
+
+  [tls_misc.scans.nmap]
+  command = 'nmap $([[ "{transport_protocol}" == "udp" ]] && echo "-sU") -Pn -sV -p {port} --script="banner,ssl* and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+
+  [tls_misc.scans.sslscan]
+  command = '#echo "ftp imap irc ldap pop3 smtp mysql xmpp" | grep --quiet "{application_protocol}" && sslscan --show-certificate --show-sigs --starttls-$(echo {application_protocol} | sed -E "s:irc.*:irc:") --xml="{result_file}.xml" {address}:{port} 2>&1 | tee "{result_file}.log"'
+
+  [tls_misc.scans.sslyze]
+  command = '#echo "smtp, xmpp, xmpp_server, pop3, imap, ftp, ldap, ms-wbt-server, postgres" | grep --quiet "{application_protocol}" && sslyze --starttls $(echo {application_protocol} | sed "s:ms-wbt-server:rdp:") --json_out "{result_file}.json" {address}:{port} 2>&1 | tee "{result_file}.log"'
+
+  [tls_misc.scans.testssl]
+  command = 'echo "ftp, smtp, pop3, imap, xmpp, telnet, ldap, irc, lmtp, nntp, postgres, mysql" | grep --quiet "{application_protocol}" && testssl --ip one --nodns min --mapping no-openssl --warnings off --connect-timeout 60 --openssl-timeout 60 --starttls $(echo {application_protocol} | sed -E "s:irc.*:irc:") --logfile "{result_file}.log" --jsonfile "{result_file}.json" {address}:{port}'
+
+[vnc]
+patterns = [ 'vnc' ]
+
+  [vnc.scans.nmap]
+  command = 'nmap -Pn -sV -p {port} --script="banner,(vnc* or realvnc*) and not (brute or broadcast or dos or external or fuzzer)" --script-args="unsafe=1" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+
+[xmpp]
+patterns = [ 'xmpp' ]
+
+  [xmpp.scans.nmap]
+  command = 'nmap -Pn -sV -p {port} --script="banner,xmpp* and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
