@@ -17,34 +17,38 @@ PORT      STATE  SERVICE  VERSION
 In the example above, Nmap reported an SSH and HTTP service (with TLS) on the host.
 So the scanner might run an Nmap script scan targeting SSH, and Nikto and `testssl.sh` targeting HTTP and TLS.
 
-The selection of tools, and the parameters used for each, can be specified in a [TOML](https://toml.io/en/) configuration file.
-Below is an example for such a file:
+The selection of tools, and the parameters used for each, is specified in a [TOML](https://toml.io/en/) configuration file.
+Below is an example configuration that results in the default one (i.e. `config/scanner.toml`) being ignored:
 
 ```toml
-[http]
+merge_strategy = 'overwrite'
+
+[services]
+
+[services.http]
 patterns = [ 'http' ]
 
-  [http.scans.nikto]
+  [services.http.scans.nikto]
   command = 'nikto -ask no -Cgidirs all -host {hostname} -port {port} -nointeractive -Format xml -output "{result_file}.xml" 2>&1 | tee "{result_file}.log"'
 
-[ssh]
+[services.ssh]
 patterns = [ '^ssh' ]
 
-  [ssh.scans.nmap]
+  [services.ssh.scans.nmap]
   command = 'nmap -Pn -sV -p {port} --script="banner,ssh2-enum-algos,ssh-hostkey,ssh-auth-methods" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
 
-[tls]
+[services.tls]
 patterns = [ 'https', '^ssl\|', '^tls\|' ]
 
-  [tls.scans.testssl]
+  [services.tls.scans.testssl]
   command = 'testssl --ip one --nodns min --mapping no-openssl --warnings off --connect-timeout 60 --openssl-timeout 60 --logfile "{result_file}.log" --jsonfile "{result_file}.json" {hostname}:{port}'
 ```
 
-Scan commands are grouped by the name of the protocol/service (e.g. `[http]`, `[ssh]` or `[tls]`).
+Scan commands are grouped by the name of the protocol/service (e.g. `[services.http]`, `[services.ssh]` or `[services.tls]`).
 The `patterns` array specifies the regular expressions on which the service's name (as identified by Nmap; e.g. `https`) is matched against.
 As soon as a single entry matches, all commands in this group will be scheduled/executed.
 
-Each scan command at least needs a header (i.e. `[<protocol>.scans.<tool name>]`) and the actual command (i.e. `command = '...'`).
+Each scan command at least needs a header (i.e. `[services.<protocol>.scans.<tool name>]`) and the actual command (i.e. `command = '...'`).
 It has access to the following variables (i.e. `{variable}`):
 
 * `address`: this holds the host's IP address

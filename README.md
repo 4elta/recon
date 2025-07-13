@@ -52,7 +52,7 @@ The script will install the following tools:
 * [testssl.sh](https://testssl.sh/)
 * [WhatWeb](https://morningstarsecurity.com/research/whatweb)
 
-Based on the scan config (i.e. [`config/scans.toml`](config/scans.toml)) you are using, you might have to install additional tools.
+Based on the scan config (i.e. [`config/scanner.toml`](config/scanner.toml)) you are using, you might have to install additional tools.
 
 Add symbolic links to the scripts to `/usr/local/bin`.
 Please make sure, that the names for `analyze` and `scan` don't [conflict](https://github.com/4elta/recon/issues/31) with any binaries already installed.
@@ -76,7 +76,7 @@ Make sure to have a look at the [architecture documentation](documentation/archi
 
 ```text
 % scan -h
-usage: scan [-h] [-i path [path ...]] [-o path] [-c path] [-t number] [-s number] [-m seconds] [-n] [-r <host>:<protocol>:<port>:<service> [<host>:<protocol>:<port>:<service> ...]] [-y] [-d character] [--ignore_uid]
+usage: scan [-h] [-i path [path ...]] [-o path] [-c path [path ...]] [-t number] [-s number] [-m seconds] [-n] [-r <host>:<protocol>:<port>:<service> [<host>:<protocol>:<port>:<service> ...]] [-y] [-d character] [--ignore_uid]
 
 Schedule and execute various tools based on the findings of an Nmap service scan.
 
@@ -85,7 +85,8 @@ options:
   -i, --input path [path ...]
                         path to the result file(s) of the Nmap service scan (default: 'services.xml')
   -o, --output path     path to where the results are stored (default: './recon')
-  -c, --config path     path to the scanner configuration file (default: '/path/to/recon/config/scanner.toml')
+  -c, --config path [path ...]
+                        path to the scanner configuration file(s); see '/path/to/recon/config/scanner.toml'
   -t, --concurrent_targets number
                         number of targets that should be scanned concurrently (default: 3)
   -s, --concurrent_scans number
@@ -105,7 +106,8 @@ options:
 After running the scanner, the results directory (e.g. `recon/`) will contain the following files/directories:
 
 * `commands.csv`: contains information about the executed commands (incl. start time, end time and return code)
-* `scan.log`: the debug/error log of the scanner
+* `config_<YYYY-mm-dd_HH-MM-SS>.json`: the scan configuration used for the scan
+* `scanner_<YYYY-mm-dd_HH-MM-SS>.log`: the debug/error log of the scanner
 * `services.csv`: contains information about the identified services (incl. whether they have been scanned or not)
 * `<IP address>/`: each host has its own directory where the result files of the various tools are stored
   * the result files follow a specific naming scheme: `<service>[,<transport protocol>,<port>,...],<tool>.<ext>`

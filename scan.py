@@ -5,6 +5,7 @@
 import argparse
 import asyncio
 import csv
+import datetime
 import functools
 import inspect
 import json
@@ -149,9 +150,9 @@ def format(*args, frame_index=1, **kvargs):
   vals.update(frame.f_locals)
   vals.update(kvargs)
 
-  # add the variables from the general service group
-  if '*' in SERVICES_CONFIG:
-    vals.update(SERVICES_CONFIG['*'])
+  # add global variables from the config
+  if 'globals' in CONFIG:
+    vals.update(CONFIG['globals'])
 
   return string.Formatter().vformat(' '.join(args), args, vals)
 
@@ -237,10 +238,7 @@ def find_suitable_scans(application_protocol):
   scans = []
   
   # iterate over each service scan configuration
-  for service_name, service_config in SERVICES_CONFIG.items():
-    if service_name == '*': # ignore the general service group
-      continue
-
+  for service_name, service_config in CONFIG['services'].items():
     service_patterns = service_config['patterns'] if 'patterns' in service_config else ['.+']
 
     # iterate over each scan of a specific service config
@@ -552,6 +550,78 @@ def parse_result_files(base_directory, result_files, rescan_filters):
 
   return targets
 
+def load_config(config_files):
+  config = None
+
+  # default configuration file
+  config_file_path = pathlib.Path(
+    pathlib.Path(__file__).resolve().parent,
+    "config",
+    "scanner.toml"
+  )
+
+  log(f"loading default configuration file '{config_file_path}' ...")
+
+  if not config_file_path.exists():
+    log("the file does not exist")
+    sys.exit("the default configuration file does not exist!")
+
+  with open(config_file_path, 'rb') as f:
+    config = toml.load(f)
+
+  if not config_files:
+    return config
+
+  # user-specified configuration files
+  for config_file_path in config_files:
+    log(f"loading config '{config_file_path}'")
+
+    if not config_file_path.exists():
+      log(f"the specified configuration file does not exist")
+      continue
+
+    with open(config_file_path, 'rb') as f:
+      new_config = toml.load(f)
+
+    if 'merge_strategy' in new_config and new_config['merge_strategy'] == 'overwrite':
+      # overwrite config
+      log("overriding config ...")
+      config = new_config
+    else:
+      log("merging config ...")
+      # https://peps.python.org/pep-0584/
+
+      if 'globals' in new_config:
+        config['globals'] |= new_config['globals']
+
+      if 'services' in new_config:
+        for service_name, service_config in new_config['services'].items():
+          if service_name not in config['services']:
+            config['services'][service_name] = service_config
+            continue
+
+          if 'patterns' in service_config:
+            config['services'][service_name]['patterns']= service_config['patterns']
+
+          if 'scans' not in service_config:
+            continue
+
+          for scan_name, scan_config in service_config['scans'].items():
+            if scan_name not in config['services'][service_name]['scans']:
+              config['services'][service_name]['scans'][scan_name] = scan_config
+              continue
+
+            if 'patterns' in scan_config:
+              config['services'][service_name]['scans'][scan_name]['patterns'] = scan_config['patterns']
+
+            if 'command' in scan_config:
+              config['services'][service_name]['scans'][scan_name]['command'] = scan_config['command']
+
+            if 'run_once' in scan_config:
+              config['services'][service_name]['scans'][scan_name]['run_once'] = scan_config['run_once']
+
+  return config
+
 async def process(args):
   global DRY_RUN
   DRY_RUN = args.dry_run
@@ -568,30 +638,29 @@ async def process(args):
   # limit the number of concurrently scanned targets
   concurrent_targets = asyncio.Semaphore(args.concurrent_targets)
 
-  if args.config:
-    config_file_path = args.config
-    if not config_file_path.exists():
-      sys.exit(f"the specified configuration file '{config_file_path}' does not exist!")
-  else:
-    config_file_path = pathlib.Path(
-      pathlib.Path(__file__).resolve().parent,
-      "config",
-      "scanner.toml"
-    )
-    if not config_file_path.exists():
-      sys.exit(f"the default configuration file '{config_file_path}' does not exist!")
-
-  global SERVICES_CONFIG
-  with open(config_file_path, 'rb') as f:
-    SERVICES_CONFIG = toml.load(f)
-
   base_directory = args.output.resolve()
   base_directory.mkdir(exist_ok=True)
 
+  timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+
   global LOG_FILE
-  LOG_FILE = pathlib.Path(base_directory, 'scan.log')
+  LOG_FILE = pathlib.Path(
+    base_directory,
+    f'scanner__{timestamp}.log'
+  )
 
   log(f"base directory: '{base_directory}'")
+
+  global CONFIG
+  CONFIG = load_config(args.config)
+
+  config_file = pathlib.Path(
+    base_directory,
+    f'config_{timestamp}.json'
+  )
+
+  with open(config_file, 'w') as f:
+    json.dump(CONFIG, f, indent=4)
 
   CommandLog.init(
     pathlib.Path(base_directory, 'commands.csv'),
@@ -696,8 +765,9 @@ async def main():
   parser.add_argument(
     '-c', '--config',
     metavar = 'path',
-    help = "path to the scanner configuration file (default: '/path/to/recon/config/scanner.toml')",
-    type = pathlib.Path
+    help = "path to the scanner configuration file(s); see '/path/to/recon/config/scanner.toml'",
+    type = pathlib.Path,
+    nargs = '+'
   )
 
   parser.add_argument(
