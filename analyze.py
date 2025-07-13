@@ -152,11 +152,10 @@ def process(args):
     sys.exit("no scan results available for analysis.")
 
   if not args.service and not args.output:
-    print("scan results relating to the following services are available for analysis.")
-    print("the name of the scanner is shown in parenthesis.\n")
+    print("scan results relating to the following services (along with the scan name) are available for analysis:\n")
 
     for service, tools in services.items():
-      print(f"* {service} ({', '.join(tools)})")
+      print(f"* {service}: {', '.join(tools)}")
 
     if args.tool:
       tools_filter = 'the specified tool'

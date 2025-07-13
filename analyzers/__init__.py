@@ -121,6 +121,9 @@ class AbstractAnalyzer:
     set the parser that will be used to parse the results.
     '''
 
+    # clean parser name of additional info (eg "nmap (authenticated)", etc)
+    parser_name = parser_name.split()[0]
+
     self.__class__.logger.debug(f"setting parser to '{parser_name}'")
 
     module_path = pathlib.Path(
