@@ -121,8 +121,8 @@ class AbstractAnalyzer:
     set the parser that will be used to parse the results.
     '''
 
-    # clean parser name of additional info (eg "nmap (authenticated)", etc)
-    parser_name = parser_name.split()[0]
+    # clean parser name of additional info (eg "nmap#authenticated", etc)
+    parser_name = parser_name.split('#')[0]
 
     self.__class__.logger.debug(f"setting parser to '{parser_name}'")
 
@@ -153,6 +153,6 @@ class AbstractAnalyzer:
       self.__class__.logger.error("parser not configured!")
       raise RuntimeError("parser not configured")
 
-    if self.parser_name not in files:
+    if not files:
       self.__class__.logger.warn("nothing to analyze")
       raise Warning("nothing to analyze")

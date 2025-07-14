@@ -30,7 +30,7 @@ class Analyzer(AbstractAnalyzer):
     super().analyze(files)
 
     # parse result files
-    services = self.parser.parse_files(files[self.parser_name])
+    services = self.parser.parse_files(files)
     self.services = services
 
     # analyze services based on recommendations

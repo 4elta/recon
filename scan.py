@@ -646,7 +646,7 @@ async def process(args):
   global LOG_FILE
   LOG_FILE = pathlib.Path(
     base_directory,
-    f'scanner__{timestamp}.log'
+    f'scanner_{timestamp}.log'
   )
 
   log(f"base directory: '{base_directory}'")

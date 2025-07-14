@@ -100,22 +100,25 @@ def analyze_service(service, files, recommendations_file, tool):
     'additional_info': info,
   }
 
-def get_files(directory, service):
+def get_files(directory, service, scan_name_filter=None):
   files = {}
 
   for path in directory.glob(f'*/{service}*'):
     suffix = path.suffix[1:]
     stem = path.stem # the final path component, w/o its suffix
-    tool = stem.split(',')[-1]
+    scan_name = stem.split(',')[-1]
 
-    if tool not in files:
-      files[tool] = {}
+    if scan_name_filter and scan_name_filter != scan_name:
+      continue
 
-    if suffix not in files[tool]:
-      files[tool][suffix] = []
+    if scan_name not in files:
+      files[scan_name] = {}
 
-    if path not in files[tool][suffix]:
-      files[tool][suffix].append(str(path))
+    if suffix not in files[scan_name]:
+      files[scan_name][suffix] = []
+
+    if path not in files[scan_name][suffix]:
+      files[scan_name][suffix].append(str(path))
 
   return files
 
@@ -151,19 +154,8 @@ def process(args):
   if len(services) == 0:
     sys.exit("no scan results available for analysis.")
 
-  if not args.service and not args.output:
-    print("scan results relating to the following services (along with the scan name) are available for analysis:\n")
-
-    for service, tools in services.items():
-      print(f"* {service}: {', '.join(tools)}")
-
-    if args.tool:
-      tools_filter = 'the specified tool'
-    else:
-      tools_filter = 'all tools'
-
-    print(f"\nif you want to batch analyze the results from {tools_filter}, for all services, specify an output directory ('-o').")
-    return
+  if args.service and args.service not in services.keys():
+    sys.exit("nothing to analyze")
 
   if args.config:
     config_file_path = args.config
@@ -181,6 +173,57 @@ def process(args):
   with open(config_file_path, 'rb') as f:
     config = toml.load(f)
 
+  selected_tags = []
+  if args.name:
+    selected_tags = args.name.split('#')
+    args.name = selected_tags.pop(0)
+
+  potential_analyses = {}
+  number_of_potential_analyses = 0
+  for service, scan_names in services.items():
+    if args.service and service != args.service:
+      continue
+
+    default_parser = config['default_parser'][service]
+
+    for scan_name in scan_names:
+      # split the tags from the scan name name
+      tags = scan_name.split('#')
+      cleaned_scan_name = tags.pop(0)
+
+      if args.name and args.name != cleaned_scan_name:
+        continue
+
+      if args.service and not args.name and default_parser != cleaned_scan_name:
+        continue
+
+      if args.name and not selected_tags and tags:
+        continue
+
+      # make sure that all selected tags are present in this scan name's tags
+      intersection = [t for t in selected_tags if t in tags]
+      if selected_tags != intersection:
+        continue
+
+      if service not in potential_analyses:
+        potential_analyses[service] = []
+
+      if scan_name not in potential_analyses[service]:
+        potential_analyses[service].append(scan_name)
+        number_of_potential_analyses += 1
+
+  if number_of_potential_analyses == 0:
+    sys.exit("nothing to analyze")
+
+  if number_of_potential_analyses > 1 and not args.output:
+    print("scan results relating to the following services (along with the name of the tool/scan) are available for analysis:\n")
+
+    for service, scan_names in dict(sorted(potential_analyses.items())).items():
+      print(f"* {service}: {', '.join(sorted(scan_names))}")
+
+    print(f"\nif you want to batch analyze these results, specify an output directory ('-o').")
+    return
+
   timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
   logging.basicConfig(
@@ -193,33 +236,20 @@ def process(args):
 
   output_directory = None
   analysis_file = None
-  batch_mode = False
+  batch_mode = (args.output and number_of_potential_analyses > 1)
+
+  if batch_mode:
+    LOGGER.debug("batch mode")
 
   if args.output:
     output_directory = args.output.resolve()
     LOGGER.info(f"user specified output directory: '{output_directory}'")
     output_directory.mkdir(exist_ok=True)
 
-  selected_services = {}
-
-  if args.service:
-    if args.service not in services.keys():
-      sys.exit("nothing to analyze")
-
-    selected_services = {args.service: [args.tool]}
-
-    if not args.tool and args.output:
-      selected_services = {args.service: services[args.service]}
-      batch_mode = True
-  elif args.output:
-    # in this mode it does not make sense to specify this option:
+  if not args.service:
+    if args.recommendations:
+      LOGGER.info("no service selected: ignoring recommendation file")
     args.recommendations = None
-
-    selected_services = services
-    batch_mode = True
-
-  if batch_mode:
-    LOGGER.debug("batch mode")
 
   global LANGUAGE
   LANGUAGE = args.language
@@ -264,45 +294,39 @@ def process(args):
 
       template = env.get_template(template_file.name)
 
-  for selected_service, tools in selected_services.items():
-    if args.tool and args.tool not in tools:
-      continue
-
-    LOGGER.info(f"analyzing '{selected_service}'")
-    files = get_files(args.input, selected_service)
+  for service, scan_names in potential_analyses.items():
+    LOGGER.info(f"analyzing service '{service}' ...")
 
     if not args.recommendations:
       recommendations_file = pathlib.Path(
         pathlib.Path(__file__).resolve().parent,
         "config",
         "recommendations",
-        selected_service,
+        service,
         "default.toml"
       )
+
       LOGGER.info(f"using default recommendations file: '{recommendations_file}'")
+
       if not recommendations_file.exists():
         LOGGER.error("the recommendations file does not exist!")
         if batch_mode:
           continue
         else:
-          sys.exit(f"the default recommendations file '{recommendations_file}' does not exist!")
+          sys.exit(f"the recommendations file does not exist!")
 
-    for tool in tools:
-      if args.tool and tool != args.tool:
-        continue
+    for scan_name in scan_names:
+      LOGGER.info(f"selecting tool/scan '{scan_name}' ...")
 
-      if not tool:
-        tool = config['default_parser'][selected_service]
-        LOGGER.info(f"using default parser '{tool}'")
-      else:
-        LOGGER.info(f"using parser '{tool}'")
+      files = get_files(args.input, service, scan_name)[scan_name]
 
       try:
+        LOGGER.info("start analysis ...")
         analysis = analyze_service(
-          selected_service,
+          service,
           files,
           recommendations_file,
-          tool = tool
+          scan_name
         )
       except RuntimeError as error:
         LOGGER.error(error)
@@ -312,19 +336,19 @@ def process(args):
         else:
           sys.exit(error)
       except Warning as warning:
-        LOGGER.warn(warning)
+        LOGGER.warning(warning)
         print(warning, file=sys.stderr)
         continue
 
       if output_directory:
         analysis_file = pathlib.Path(
           output_directory,
-          f"{selected_service},{tool}.{args.fmt}"
+          f"{service},{scan_name}.{args.fmt}"
         )
 
       analysis['recommendations_file'] = recommendations_file
 
-      LOGGER.info("rendering analysis")
+      LOGGER.debug("rendering analysis ...")
 
       if template_file:
         rendered_analysis = template.render(analysis).strip()
@@ -334,11 +358,12 @@ def process(args):
         rendered_analysis = render_CSV(analysis['services']).strip()
 
       if analysis_file:
-        LOGGER.debug(f"writing analysis to '{analysis_file}'")
+        LOGGER.info(f"writing analysis to '{analysis_file}' ...")
         with open(analysis_file, 'w') as f:
           f.write(rendered_analysis)
       else:
         print(rendered_analysis)
+
 
 def main():
   parser = argparse.ArgumentParser(
@@ -360,9 +385,9 @@ def main():
   )
 
   parser.add_argument(
-    '-t', '--tool',
+    '-n', '--name',
     metavar = 'name',
-    help = "tool whose results should be parsed"
+    help = "name of the tool/scan whose results should be parsed"
   )
 
   parser.add_argument(
