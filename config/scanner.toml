@@ -1,7 +1,8 @@
 # the default config is always loaded first.
 # user-provided configs are loaded next, in the order they are specified on the command line.
 # normally, config files are merged:
-# globals and service configs (service patterns, command, command patterns, run-once flag) defined in a later config overwrite those with the same name from previous configs.
+# globals and service configs (service patterns, command, command patterns, run-once flag)
+# defined in a later config overwrite those with the same name from previous configs.
 # if you want to completely overwrite previous configs, provide the following in your config:
 # merge_strategy = 'overwrite'
 

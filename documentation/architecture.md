@@ -21,7 +21,12 @@ The selection of tools, and the parameters used for each, is specified in a [TOM
 Below is an example configuration that results in the default one (i.e. `config/scanner.toml`) being ignored:
 
 ```toml
+# ignore default configuration
 merge_strategy = 'overwrite'
+
+[globals]
+username = 'user'
+password = 'pa$Sw0rd'
 
 [services]
 
@@ -30,6 +35,9 @@ patterns = [ 'http' ]
 
   [services.http.scans.nikto]
   command = 'nikto -ask no -Cgidirs all -host {hostname} -port {port} -nointeractive -Format xml -output "{result_file}.xml" 2>&1 | tee "{result_file}.log"'
+  
+  [services.http.scans.'some-tool#authenticated']
+  command = 'some-tool -u "{username}" -p "{password}" ...'
 
 [services.ssh]
 patterns = [ '^ssh' ]
@@ -44,13 +52,15 @@ patterns = [ 'https', '^ssl\|', '^tls\|' ]
   command = 'testssl --ip one --nodns min --mapping no-openssl --warnings off --connect-timeout 60 --openssl-timeout 60 --logfile "{result_file}.log" --jsonfile "{result_file}.json" {hostname}:{port}'
 ```
 
-Scan commands are grouped by the name of the protocol/service (e.g. `[services.http]`, `[services.ssh]` or `[services.tls]`).
+Scans are grouped by the name of the protocol/service (e.g. `[services.http]`, `[services.ssh]` or `[services.tls]`).
 The `patterns` array specifies the regular expressions on which the service's name (as identified by Nmap; e.g. `https`) is matched against.
-As soon as a single entry matches, all commands in this group will be scheduled/executed.
+As soon as a single entry matches, all scans in this group will be scheduled/executed.
 
-Each scan command at least needs a header (i.e. `[services.<protocol>.scans.<tool name>]`) and the actual command (i.e. `command = '...'`).
-It has access to the following variables (i.e. `{variable}`):
+Each scan at least needs a header (i.e. `[services.<protocol>.scans.<scan name>]`) and a command (i.e. `command = '...'`).
+The scan name can contain tags (e.g. `some-tool#authenticated`).
+The command can make use of the following variables (i.e. `{variable}`):
 
+* all variables defined in the `[globals]` group
 * `address`: this holds the host's IP address
 * `transport_protocol`: this is either `tcp` or `udp`
 * `port`: this holds the port number where a specific service was found
@@ -59,7 +69,7 @@ It has access to the following variables (i.e. `{variable}`):
 
 In case the service was identified as a web service, the following additional variables are available:
 
-* `hostname`: this holds the host's DNS name, or its IP address
+* `hostname`: this holds either the host's DNS name or, as a fallback, its IP address
 * `scheme`: this is either `http` or `https`
 
 ## analyzer
