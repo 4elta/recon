@@ -117,7 +117,7 @@ After running the scanner, the results directory (e.g. `recon/`) will contain th
 
 ```text
 % analyze -h
-usage: analyze [-h] [-c path] [-s code] [-t name] [-r path] [-i path] [-l code] [-f code] [--template path] [-o path]
+usage: analyze [-h] [-c path] [-s code] [-n name] [-r path] [-i path] [-l code] [-f code] [--template path] [-o path]
 
 Analyze and summarize the results of specific tools previously run by the scanner of the recon tool suite (i.e. 'scan').
 
@@ -125,7 +125,7 @@ options:
   -h, --help            show this help message and exit
   -c, --config path     path to the analyzer configuration file (default: '/path/to/recon/config/analysis.toml')
   -s, --service code    service that should be analyzed
-  -t, --tool name       tool whose results are to be parsed
+  -n, --name name       name of the tool/scan whose results should be parsed
   -r, --recommendations path
                         path to the recommendations document (default: '/path/to/recon/config/recommendations/<service>/default.toml')
   -i, --input path      path to the root directory that holds the results to be analysed (default: './recon')

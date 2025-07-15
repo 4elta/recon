@@ -4,6 +4,17 @@ import logging
 import pathlib
 import sys
 
+def parse_scan_name(scan_name):
+  '''
+  parse the name of a tool/scan (e.g. 'tool#some#tag')
+  and extract its name ('tool') and tags ('some', 'tag')
+  '''
+
+  tags = scan_name.split('#')
+  cleaned_scan_name = tags.pop(0)
+
+  return (cleaned_scan_name, tags)
+
 class Issue(dict):
 
   logger = logging.getLogger(__name__)
@@ -92,11 +103,26 @@ class AbstractParser:
 
     self.__class__.logger.info(f"parsing '{path}'")
 
-    # extract the application/transport protocol from the filename
+    '''
+    filename structure for most of the scans:
+    <app protocol>,<transport protocol>,<port>,<scan name>.<ext>
+
+    filename structure for scans of web services (HTTP, TLS):
+    <app protocol>,<transport protocol>,<port>,<hostname>,<scan name>.<ext>
+
+    filename structure for scans of services running on multiple ports (eg SMB):
+    <app protocol>,<scan name>.<ext>
+    '''
+
     filename = path.split('/')[-1]
     tokens = filename.split(',')
+
     self.application_protocol = tokens[0]
-    self.transport_protocol = tokens[1]
+
+    if len(tokens) > 2:
+      self.transport_protocol = tokens[1]
+    else:
+      self.transport_protocol = '_'
 
     self.__class__.logger.debug(f"application/transport protocol: '{self.application_protocol}/{self.transport_protocol}'")
 
@@ -121,8 +147,7 @@ class AbstractAnalyzer:
     set the parser that will be used to parse the results.
     '''
 
-    # clean parser name of additional info (eg "nmap#authenticated", etc)
-    parser_name = parser_name.split('#')[0]
+    parser_name, _ = parse_scan_name(parser_name)
 
     self.__class__.logger.debug(f"setting parser to '{parser_name}'")
 

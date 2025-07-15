@@ -12,6 +12,8 @@ import pathlib
 import sys
 import tomllib as toml
 
+import analyzers
+
 LOGGER = logging.getLogger(__name__)
 
 ANALYZERS_DIR = pathlib.Path(
@@ -175,8 +177,7 @@ def process(args):
 
   selected_tags = []
   if args.name:
-    selected_tags = args.name.split('#')
-    args.name = selected_tags.pop(0)
+    args.name, selected_tags = analyzers.parse_scan_name(args.name)
 
   potential_analyses = {}
   number_of_potential_analyses = 0
@@ -187,9 +188,7 @@ def process(args):
     default_parser = config['default_parser'][service]
 
     for scan_name in scan_names:
-      # split the tags from the scan name name
-      tags = scan_name.split('#')
-      cleaned_scan_name = tags.pop(0)
+      cleaned_scan_name, tags = analyzers.parse_scan_name(scan_name)
 
       if args.name and args.name != cleaned_scan_name:
         continue
