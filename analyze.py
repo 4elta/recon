@@ -380,11 +380,11 @@ def main():
     '-s', '--service',
     metavar = 'code',
     choices = sorted(SUPPORTED_SERVICES),
-    help = "service that should be analyzed"
+    help = f"service that should be analyzed (choices: {sorted(SUPPORTED_SERVICES)})"
   )
 
   parser.add_argument(
-    '-n', '--name',
+    '-S', '--scan',
     metavar = 'name',
     help = "name of the tool/scan whose results should be parsed"
   )
@@ -408,7 +408,7 @@ def main():
     '-l', '--language',
     metavar = 'code',
     default = LANGUAGE,
-    help = f"language in which the analysis should be printed (default: '{LANGUAGE}')"
+    help = f"language of the analysis (default: '{LANGUAGE}')"
   )
 
   parser.add_argument(
@@ -417,7 +417,7 @@ def main():
     metavar = 'code',
     choices = SUPPORTED_FORMATS,
     default = SUPPORTED_FORMATS[0],
-    help = f"format of the analysis (choices: {SUPPORTED_FORMATS}; default: '{SUPPORTED_FORMATS[0]}')"
+    help = f"format of the analysis (choices: {sorted(SUPPORTED_FORMATS)}; default: '{SUPPORTED_FORMATS[0]}')"
   )
 
   parser.add_argument(

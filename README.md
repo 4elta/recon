@@ -117,20 +117,20 @@ After running the scanner, the results directory (e.g. `recon/`) will contain th
 
 ```text
 % analyze -h
-usage: analyze [-h] [-c path] [-s code] [-n name] [-r path] [-i path] [-l code] [-f code] [--template path] [-o path]
+usage: analyze [-h] [-c path] [-s code] [-S name] [-r path] [-i path] [-l code] [-f code] [--template path] [-o path]
 
 Analyze and summarize the results of specific tools previously run by the scanner of the recon tool suite (i.e. 'scan').
 
 options:
   -h, --help            show this help message and exit
   -c, --config path     path to the analyzer configuration file (default: '/path/to/recon/config/analysis.toml')
-  -s, --service code    service that should be analyzed
-  -n, --name name       name of the tool/scan whose results should be parsed
+  -s, --service code    service that should be analyzed (choices: ['dns', 'ftp', 'http', 'isakmp', 'ntp', 'rdp', 'smb', 'ssh', 'tls'])
+  -S, --scan name       name of the tool/scan whose results should be parsed
   -r, --recommendations path
                         path to the recommendations document (default: '/path/to/recon/config/recommendations/<service>/default.toml')
   -i, --input path      path to the root directory that holds the results to be analysed (default: './recon')
-  -l, --language code   language in which the analysis should be printed (default: 'en')
-  -f, --format code     format of the analysis (choices: ['md', 'json', 'csv']; default: 'md')
+  -l, --language code   language of the analysis (default: 'en')
+  -f, --format code     format of the analysis (choices: ['csv', 'json', 'md']; default: 'md')
   --template path       path to the Jinja2 template for the analysis; this option overrides '-f/--format'
   -o, --output path     path to the directory where the analysis result(s) will be saved
 ```
