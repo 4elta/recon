@@ -176,8 +176,8 @@ def process(args):
     config = toml.load(f)
 
   selected_tags = []
-  if args.name:
-    args.name, selected_tags = analyzers.parse_scan_name(args.name)
+  if args.scan:
+    args.scan, selected_tags = analyzers.parse_scan_name(args.scan)
 
   potential_analyses = {}
   number_of_potential_analyses = 0
@@ -190,13 +190,13 @@ def process(args):
     for scan_name in scan_names:
       cleaned_scan_name, tags = analyzers.parse_scan_name(scan_name)
 
-      if args.name and args.name != cleaned_scan_name:
+      if args.scan and args.scan != cleaned_scan_name:
         continue
 
-      if args.service and not args.name and default_parser != cleaned_scan_name:
+      if args.service and not args.scan and default_parser != cleaned_scan_name:
         continue
 
-      if args.name and not selected_tags and tags:
+      if args.scan and not selected_tags and tags:
         continue
 
       # make sure that all selected tags are present in this scan name's tags

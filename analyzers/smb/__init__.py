@@ -48,12 +48,11 @@ class Analyzer(AbstractAnalyzer):
 
       if (
         protocol not in recommendations['signing']
-        or signing_info['enabled'] != recommendations['signing'][protocol]['enabled']
         or signing_info['required'] != recommendations['signing'][protocol]['required']
       ):
         issues.append(
           Issue(
-            f"signing (e:{signing_info['enabled']}) (r:{signing_info['required']})",
+            f"signing r:{signing_info['required']}",
             protocol = protocol_nice
           )
         )

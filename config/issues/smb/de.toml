@@ -4,17 +4,20 @@ description = "{protocol}-Protokoll unterstützt"
 ["dialect supported"]
 description = "{protocol}: Dialekt unterstützt: {dialect}"
 
-["signing (e:True) (r:True)"]
-description = "{protocol}: Signatur aktiviert und erforderlich"
+["signing r:True"]
+description = "{protocol}: Signatur erforderlich"
 
-["signing (e:True) (r:False)"]
-description = "{protocol}: Signatur aktiviert aber nicht erforderlich"
+["signing r:False"]
+description = "{protocol}: Signatur nicht erforderlich"
 
-["signing (e:False) (r:False)"]
-description = "{protocol}: Signatur nicht aktiviert und nicht erforderlich"
+["null session allowed"]
+description = "Null-Session erlaubt"
 
-["signing (e:False) (r:True)"]
-description = "{protocol}: Signatur nicht aktiviert aber erforderlich"
+["anonymous access"]
+description = "anonymer Zugriff erlaubt"
+
+["info leak"]
+description = "Klartextspeicherung sensibler Informationen: `{info}`"
 
 ["additional info"]
 description = "zusätzliche Informationen: {info}"
