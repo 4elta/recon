@@ -1,5 +1,5 @@
 # allowed authentication methods:
-# null, password, Kerberos, NTLM hash, non-existing user
+# anonymous, password, Kerberos, NTLM hash, non-existing user
 authentications = [ 'password', 'Kerberos' ]
 
 [dialect]
@@ -7,10 +7,9 @@ authentications = [ 'password', 'Kerberos' ]
 SMB2 = '3.1.1'
 
 [signing]
-# The "signing enabled" registry setting for SMB2+ client and SMB2+ Server is ignored.
+# if a protocol (e.g. CIFS, SMB2) is not specified here, the server's configuration regarding signing is interpreted as "incorrect"/"invalid"/"insecure"
+
 # SMB2 signing is controlled solely by being required or not.
 # https://techcommunity.microsoft.com/blog/filecab/configure-smb-signing-with-confidence/2418102
-
-# if a protocol (e.g. SMB/CIFS) is not specified here, the server's configuration regarding signing is interpreted as "incorrect"/"invalid"/"insecure"
 
 SMB2 = {required = true}
