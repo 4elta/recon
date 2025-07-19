@@ -1,8 +1,14 @@
 ["protocol supported"]
-description = "{protocol} protocol supported"
+description = "{protocol}: protocol supported"
 
 ["dialect supported"]
 description = "{protocol}: dialect supported: {dialect}"
+
+["protocol not supported"]
+description = "{protocol}: not supported"
+
+["dialect not supported"]
+description = "{protocol}: dialect not supported: {dialect}"
 
 ["signing r:True"]
 description = "{protocol}: signing required"

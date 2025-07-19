@@ -13,6 +13,11 @@ SERVICE_SCHEMA = {
   'info': [], # additional (debug) information; shown at the end of the analysis
 }
 
+PROTOCOL_NICE = {
+  'CIFS': "SMB1/CIFS",
+  'SMB2': "SMB2"
+}
+
 class Analyzer(AbstractAnalyzer):
 
   def analyze(self, files):
@@ -44,12 +49,52 @@ class Analyzer(AbstractAnalyzer):
 
     return services
 
+  def _analyze_dialects(self, dialects, recommendations, issues):
+    # look for missing protocols/dialects support
+    for protocol, dialect in recommendations['dialect'].items():
+      if protocol not in dialects:
+        issues.append(
+          Issue(
+            "protocol not supported",
+            protocol = PROTOCOL_NICE[protocol]
+          )
+        )
+        continue
+
+      if dialect not in dialects[protocol]:
+        issues.append(
+          Issue(
+            "dialect not supported",
+            protocol = PROTOCOL_NICE[protocol],
+            dialect = dialect
+          )
+        )
+
+    # look for protocols/dialects that should not be supported
+    for protocol, dialect_list in dialects.items():
+      if protocol not in recommendations['dialect']:
+        issues.append(
+          Issue(
+            "protocol supported",
+            protocol = PROTOCOL_NICE[protocol]
+          )
+        )
+
+      for dialect in dialect_list:
+        if (
+          protocol not in recommendations['dialect']
+          or dialect < recommendations['dialect'][protocol]
+        ):
+          issues.append(
+            Issue(
+              "dialect supported",
+              protocol = PROTOCOL_NICE[protocol],
+              dialect = dialect
+            )
+          )
+
   def _analyze_signing(self, signing, recommendations, issues):
     for protocol, signing_info in signing.items():
-      protocol_nice = protocol
-      if protocol == "CIFS":
-        protocol_nice = "SMB1/CIFS"
-
       if (
         protocol not in recommendations['signing']
         or signing_info['required'] != recommendations['signing'][protocol]['required']
@@ -57,28 +102,9 @@ class Analyzer(AbstractAnalyzer):
         issues.append(
           Issue(
             f"signing r:{signing_info['required']}",
-            protocol = protocol_nice
+            protocol = PROTOCOL_NICE[protocol]
           )
         )
-
-  def _analyze_dialects(self, dialects, recommendations, issues):
-    for protocol, dialect_list in dialects.items():
-      protocol_nice = protocol
-      if protocol == "CIFS":
-        protocol_nice = "SMB1/CIFS"
-
-      if protocol not in recommendations['dialect']:
-        issues.append(Issue("protocol supported", protocol = protocol_nice))
-
-      for dialect in dialect_list:
-        if protocol not in recommendations['dialect'] or dialect < recommendations['dialect'][protocol]:
-          issues.append(
-            Issue(
-              "dialect supported",
-              protocol = protocol_nice,
-              dialect = dialect
-            )
-          )
 
   def _analyze_access(self, access, recommendations, issues):
     for a in access:
