@@ -7,6 +7,7 @@ SERVICE_SCHEMA = {
   'address': None,
   'dialects': {}, # for each protocol (CIFS, SMB2) hold a list of supported dialects
   'signing': {}, # for each protocol (CIFS, SMB2) hold information about 'enabled' and 'required'
+  'access': [], # anonymous, password, Kerberos, NTLM hash, non-existing user
   'issues': [],
   'misc': [], # misc information (NetBIOS, etc); shown with the host, after all issues
   'info': [], # additional (debug) information; shown at the end of the analysis
@@ -29,6 +30,9 @@ class Analyzer(AbstractAnalyzer):
    
       if service['signing']:
         self._analyze_signing(service['signing'], self.recommendations, issues)
+
+      if service['access']:
+        self._analyze_access(service['access'], self.recommendations, issues)
 
       for info in service['misc']:
         issues.append(
@@ -75,3 +79,17 @@ class Analyzer(AbstractAnalyzer):
               dialect = dialect
             )
           )
+
+  def _analyze_access(self, access, recommendations, issues):
+    for a in access:
+      if a not in recommendations['authentications']:
+        if a in ['anonymous', 'non-existing user']:
+          issues.append(Issue(f'improper access control: {a}'))
+        else:
+          issues.append(
+            Issue(
+              'improper access control',
+              authentication = a
+            )
+          )
+

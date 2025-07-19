@@ -10,11 +10,14 @@ description = "{protocol}: signing required"
 ["signing r:False"]
 description = "{protocol}: signing not required"
 
-["null session allowed"]
-description = "null session allowed"
+["improper access control: anonymous"]
+description = "improper access control: null session"
 
-["anonymous access"]
-description = "anonymous access allowed"
+["improper access control: non-existing user"]
+description = "improper access control: non-existing user"
+
+["improper access control"]
+description = "improper access control: {authentication}"
 
 ["info leak"]
 description = "cleartext storage of sensitive information: `{info}`"

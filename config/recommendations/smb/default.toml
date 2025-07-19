@@ -1,3 +1,7 @@
+# allowed authentication methods:
+# null, password, Kerberos, NTLM hash, non-existing user
+authentications = [ 'password', 'Kerberos' ]
+
 [dialect]
 # minimum protocol and dialect the server must support
 SMB2 = '3.1.1'
@@ -10,4 +14,3 @@ SMB2 = '3.1.1'
 # if a protocol (e.g. SMB/CIFS) is not specified here, the server's configuration regarding signing is interpreted as "incorrect"/"invalid"/"insecure"
 
 SMB2 = {required = true}
-
