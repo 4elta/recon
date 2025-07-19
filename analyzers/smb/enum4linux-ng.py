@@ -197,7 +197,11 @@ class Parser(AbstractParser):
 
   def _parse_shares(self, shares, service):
     for k, share in shares.items():
-      if share['access']['mapping'] != 'ok':
+      if (
+        'access' not in share
+        or 'mapping' not in share['access']
+        or share['access']['mapping'] != 'ok'
+      ):
         continue
 
       info = f"SMB share `{k}`"
