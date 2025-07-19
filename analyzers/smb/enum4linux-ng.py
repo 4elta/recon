@@ -204,7 +204,7 @@ class Parser(AbstractParser):
       ):
         continue
 
-      info = f"SMB share `{k}`"
+      info = f"SMB share: `{k}`"
       if share['comment']:
         info += f" ({share['comment']})"
 
