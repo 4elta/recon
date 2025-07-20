@@ -7,7 +7,8 @@ SERVICE_SCHEMA = {
   'address': None,
   'dialects': {}, # for each protocol (CIFS, SMB2) hold a list of supported dialects
   'signing': {}, # for each protocol (CIFS, SMB2) hold information about 'enabled' and 'required'
-  'access': [], # anonymous, password, Kerberos, NTLM hash, non-existing user
+  'access': [], # password, Kerberos, NTLM hash, guest, anonymous
+  # https://sensepost.com/blog/2024/guest-vs-null-session-on-windows/
   'issues': [],
   'misc': [], # misc information (NetBIOS, etc); shown with the host, after all issues
   'info': [], # additional (debug) information; shown at the end of the analysis
@@ -109,7 +110,7 @@ class Analyzer(AbstractAnalyzer):
   def _analyze_access(self, access, recommendations, issues):
     for a in access:
       if a not in recommendations['authentications']:
-        if a in ['anonymous', 'non-existing user']:
+        if a in ['anonymous', 'guest']:
           issues.append(Issue(f'improper access control: {a}'))
         else:
           issues.append(

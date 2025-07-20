@@ -1,6 +1,7 @@
-# allowed authentication methods:
-# anonymous, password, Kerberos, NTLM hash, non-existing user
+# allowed authentication methods
 authentications = [ 'password', 'Kerberos' ]
+# potential values:
+# password, Kerberos, NTLM hash, guest, anonymous
 
 [dialect]
 # minimum protocol and dialect the server must support

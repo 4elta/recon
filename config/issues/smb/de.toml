@@ -19,8 +19,8 @@ description = "{protocol}: Signatur nicht erforderlich"
 ["improper access control: anonymous"]
 description = "unsichere Zugriffskontrolle: Null-Session"
 
-["improper access control: non-existing user"]
-description = "unsichere Zugriffskontrolle: nichtexistierender Benutzer"
+["improper access control: guest"]
+description = "unsichere Zugriffskontrolle: Gast-Benutzer"
 
 ["improper access control"]
 description = "unsichere Zugriffskontrolle: {authentication}"

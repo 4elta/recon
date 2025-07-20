@@ -166,9 +166,6 @@ class Parser(AbstractParser):
         continue
 
       match session:
-        case 'null':
-          service['access'].append('anonymous')
-          break
         case 'password':
           service['access'].append('password')
           break
@@ -178,8 +175,14 @@ class Parser(AbstractParser):
         case 'nthash':
           service['access'].append('NTLM hash')
           break
+
+        # guest vs. null session
+        # https://sensepost.com/blog/2024/guest-vs-null-session-on-windows/
         case 'random_user':
-          service['access'].append('non-existing user')
+          service['access'].append('guest')
+          break
+        case 'null':
+          service['access'].append('anonymous')
           break
 
   def _parse_users(self, users, service):

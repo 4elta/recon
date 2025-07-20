@@ -19,8 +19,8 @@ description = "{protocol}: signing not required"
 ["improper access control: anonymous"]
 description = "improper access control: null session"
 
-["improper access control: non-existing user"]
-description = "improper access control: non-existing user"
+["improper access control: guest"]
+description = "improper access control: guest access"
 
 ["improper access control"]
 description = "improper access control: {authentication}"
