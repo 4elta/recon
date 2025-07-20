@@ -3,24 +3,36 @@ description = "{protocol}: Protokoll unterstützt"
 
 ["dialect supported"]
 description = "{protocol}: Dialekt unterstützt: {dialect}"
+references = [
+  "[Manage SMB dialects](https://learn.microsoft.com/en-us/windows-server/storage/file-server/manage-smb-dialects)"
+]
 
 ["protocol not supported"]
 description = "{protocol}: Protokoll nicht unterstützt"
 
 ["dialect not supported"]
 description = "{protocol}: Dialekt nicht unterstützt: {dialect}"
+references = [
+  "[Manage SMB dialects](https://learn.microsoft.com/en-us/windows-server/storage/file-server/manage-smb-dialects)"
+]
 
 ["signing r:True"]
 description = "{protocol}: Signatur erforderlich"
 
 ["signing r:False"]
 description = "{protocol}: Signatur nicht erforderlich"
+references = [
+  "[What is Server Message Block signing?](https://learn.microsoft.com/en-us/windows-server/storage/file-server/smb-signing-overview)"
+]
 
 ["improper access control: anonymous"]
 description = "unsichere Zugriffskontrolle: Null-Session"
 
 ["improper access control: guest"]
 description = "unsichere Zugriffskontrolle: Gast-Benutzer"
+references = [
+  "[AllowInsecureGuestAuth](https://learn.microsoft.com/en-us/windows-hardware/customize/desktop/unattend/microsoft-windows-workstationservice-allowinsecureguestauth)"
+]
 
 ["improper access control"]
 description = "unsichere Zugriffskontrolle: {authentication}"

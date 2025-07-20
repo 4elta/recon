@@ -173,7 +173,7 @@ class Parser(AbstractParser):
           service['access'].append('Kerberos')
           break
         case 'nthash':
-          service['access'].append('NTLM hash')
+          service['access'].append('NTLM')
           break
 
         # guest vs. null session

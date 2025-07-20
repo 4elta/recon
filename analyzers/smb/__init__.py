@@ -7,7 +7,7 @@ SERVICE_SCHEMA = {
   'address': None,
   'dialects': {}, # for each protocol (CIFS, SMB2) hold a list of supported dialects
   'signing': {}, # for each protocol (CIFS, SMB2) hold information about 'enabled' and 'required'
-  'access': [], # password, Kerberos, NTLM hash, guest, anonymous
+  'access': [], # password, Kerberos, NTLM, guest, anonymous
   # https://sensepost.com/blog/2024/guest-vs-null-session-on-windows/
   'issues': [],
   'misc': [], # misc information (NetBIOS, etc); shown with the host, after all issues
