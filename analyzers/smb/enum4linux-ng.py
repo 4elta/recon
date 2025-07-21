@@ -95,7 +95,6 @@ class Parser(AbstractParser):
         elif m.group('major') in ['2', '3']:
           preferred_protocol = 'SMB2'
       else:
-        print(f"could not parse preferred SMB dialect '{dialect}'")
         self.__class__.logger.error(f"could not parse preferred SMB dialect: '{dialect}'")
 
     '''
@@ -121,7 +120,7 @@ class Parser(AbstractParser):
       if not supported:
         continue
 
-      # TODO: remove, once the issue has been resolved
+      # older versions of enum4linux-ng used '2.02' instead of '2.0.2'
       # https://github.com/cddmp/enum4linux-ng/issues/51
       if '2.02' in dialect:
         dialect = dialect.replace('2.02', '2.0.2')
