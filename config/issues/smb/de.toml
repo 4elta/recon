@@ -31,7 +31,8 @@ description = "unsichere Zugriffskontrolle: Null-Session"
 ["improper access control: guest"]
 description = "unsichere Zugriffskontrolle: Gast-Benutzer"
 references = [
-  "[AllowInsecureGuestAuth](https://learn.microsoft.com/de-de/windows-hardware/customize/desktop/unattend/microsoft-windows-workstationservice-allowinsecureguestauth)"
+  "[AllowInsecureGuestAuth](https://learn.microsoft.com/de-de/windows-hardware/customize/desktop/unattend/microsoft-windows-workstationservice-allowinsecureguestauth)",
+  "[smb.conf - map to guest](https://www.samba.org/samba/docs/current/man-html/smb.conf.5.html#MAPTOGUEST)"
 ]
 
 ["improper access control"]
