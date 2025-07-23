@@ -1,5 +1,8 @@
 ["protocol supported"]
 description = "{protocol}: protocol supported"
+references = [
+  "[Detect, enable, and disable SMBv1, SMBv2, and SMBv3 in Windows](https://learn.microsoft.com/en-us/windows-server/storage/file-server/troubleshoot/detect-enable-and-disable-smbv1-v2-v3)"
+]
 
 ["dialect supported"]
 description = "{protocol}: dialect supported: {dialect}"
@@ -9,6 +12,9 @@ references = [
 
 ["protocol not supported"]
 description = "{protocol}: not supported"
+references = [
+  "[Detect, enable, and disable SMBv1, SMBv2, and SMBv3 in Windows](https://learn.microsoft.com/en-us/windows-server/storage/file-server/troubleshoot/detect-enable-and-disable-smbv1-v2-v3)"
+]
 
 ["dialect not supported"]
 description = "{protocol}: dialect not supported: {dialect}"

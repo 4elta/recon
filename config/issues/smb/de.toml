@@ -1,19 +1,25 @@
 ["protocol supported"]
 description = "{protocol}: Protokoll unterstützt"
+references = [
+  "[Erkennen, Aktivieren und Deaktivieren von SMBv1, SMBv2 und SMBv3 in Windows](https://learn.microsoft.com/de-de/windows-server/storage/file-server/troubleshoot/detect-enable-and-disable-smbv1-v2-v3)"
+]
 
 ["dialect supported"]
 description = "{protocol}: Dialekt unterstützt: {dialect}"
 references = [
-  "[Manage SMB dialects](https://learn.microsoft.com/de-de/windows-server/storage/file-server/manage-smb-dialects)"
+  "[Verwalten von SMB-Dialekten](https://learn.microsoft.com/de-de/windows-server/storage/file-server/manage-smb-dialects)"
 ]
 
 ["protocol not supported"]
 description = "{protocol}: Protokoll nicht unterstützt"
+references = [
+  "[Erkennen, Aktivieren und Deaktivieren von SMBv1, SMBv2 und SMBv3 in Windows](https://learn.microsoft.com/de-de/windows-server/storage/file-server/troubleshoot/detect-enable-and-disable-smbv1-v2-v3)"
+]
 
 ["dialect not supported"]
 description = "{protocol}: Dialekt nicht unterstützt: {dialect}"
 references = [
-  "[Manage SMB dialects](https://learn.microsoft.com/de-de/windows-server/storage/file-server/manage-smb-dialects)"
+  "[Verwalten von SMB-Dialekten](https://learn.microsoft.com/de-de/windows-server/storage/file-server/manage-smb-dialects)"
 ]
 
 ["signing r:True"]
@@ -22,7 +28,7 @@ description = "{protocol}: Signatur erforderlich"
 ["signing r:False"]
 description = "{protocol}: Signatur nicht erforderlich"
 references = [
-  "[What is Server Message Block signing?](https://learn.microsoft.com/de-de/windows-server/storage/file-server/smb-signing-overview)"
+  "[Was sind Server Message Block-Signaturen?](https://learn.microsoft.com/de-de/windows-server/storage/file-server/smb-signing-overview)"
 ]
 
 ["authentication: anonymous"]
