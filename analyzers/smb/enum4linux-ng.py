@@ -168,16 +168,16 @@ class Parser(AbstractParser):
         case 'password':
           service['access'].append('password')
           break
-        case 'kerberos':
+        case 'kerberos' | 'Kerberos':
           service['access'].append('Kerberos')
           break
-        case 'nthash':
+        case 'nthash' | 'NTLM':
           service['access'].append('NTLM')
           break
 
         # guest vs. null session
         # https://sensepost.com/blog/2024/guest-vs-null-session-on-windows/
-        case 'random_user':
+        case 'random_user' | 'guest':
           service['access'].append('guest')
           break
         case 'null':

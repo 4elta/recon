@@ -111,11 +111,11 @@ class Analyzer(AbstractAnalyzer):
     for a in access:
       if a not in recommendations['authentications']:
         if a in ['anonymous', 'guest']:
-          issues.append(Issue(f'improper access control: {a}'))
+          issues.append(Issue(f'authentication: {a}'))
         else:
           issues.append(
             Issue(
-              'improper access control',
+              'authentication',
               authentication = a
             )
           )

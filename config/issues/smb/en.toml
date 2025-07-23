@@ -25,18 +25,18 @@ references = [
   "[What is Server Message Block signing?](https://learn.microsoft.com/en-us/windows-server/storage/file-server/smb-signing-overview)"
 ]
 
-["improper access control: anonymous"]
-description = "improper access control: null session"
+["authentication: anonymous"]
+description = "anonymous access (null session) allowed"
 
-["improper access control: guest"]
-description = "improper access control: guest access"
+["authentication: guest"]
+description = "guest access allowed"
 references = [
   "[AllowInsecureGuestAuth](https://learn.microsoft.com/en-us/windows-hardware/customize/desktop/unattend/microsoft-windows-workstationservice-allowinsecureguestauth)",
   "[smb.conf - map to guest](https://www.samba.org/samba/docs/current/man-html/smb.conf.5.html#MAPTOGUEST)"
 ]
 
-["improper access control"]
-description = "improper access control: {authentication}"
+["authentication"]
+description = "authentication via {authentication} allowed"
 
 ["info leak"]
 description = "cleartext storage of sensitive information: `{info}`"
