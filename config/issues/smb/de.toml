@@ -31,18 +31,18 @@ references = [
   "[Was sind Server Message Block-Signaturen?](https://learn.microsoft.com/de-de/windows-server/storage/file-server/smb-signing-overview)"
 ]
 
-["authentication: anonymous"]
-description = "anonymer Zugriff (Null-Session) erlaubt"
+["authentication"]
+description = "Authentifizierung mittels {method}"
 
-["authentication: guest"]
-description = "Gast-Zugriff erlaubt"
+["authentication: NTLM: anonymous"]
+description = "NTLM: anonymer Zugriff (Null-Session) erlaubt"
+
+["authentication: NTLM: guest"]
+description = "NTLM: Gast-Zugriff erlaubt"
 references = [
   "[AllowInsecureGuestAuth](https://learn.microsoft.com/de-de/windows-hardware/customize/desktop/unattend/microsoft-windows-workstationservice-allowinsecureguestauth)",
   "[smb.conf - map to guest](https://www.samba.org/samba/docs/current/man-html/smb.conf.5.html#MAPTOGUEST)"
 ]
-
-["authentication"]
-description = "Authentifizierung mittels {authentication} erlaubt"
 
 ["info leak"]
 description = "Klartextspeicherung sensibler Informationen: `{info}`"

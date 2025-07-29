@@ -165,24 +165,26 @@ class Parser(AbstractParser):
         continue
 
       match session:
-        case 'password':
-          service['access'].append('password')
-          break
         case 'kerberos' | 'Kerberos':
-          service['access'].append('Kerberos')
+          if 'Kerberos' not in service['authentication_methods']:
+            service['authentication_methods']['Kerberos'] = []
           break
-        case 'nthash' | 'NTLM':
-          service['access'].append('NTLM')
+        case 'password' | 'nthash' | 'NTLM':
+          self._add_NTLM_authentication(service['authentication_methods'])
           break
-
-        # guest vs. null session
-        # https://sensepost.com/blog/2024/guest-vs-null-session-on-windows/
         case 'random_user' | 'guest':
-          service['access'].append('guest')
+          self._add_NTLM_authentication(service['authentication_methods'], 'guest')
           break
         case 'null':
-          service['access'].append('anonymous')
+          self._add_NTLM_authentication(service['authentication_methods'], 'anonymous')
           break
+
+  def _add_NTLM_authentication(self, authentication_methods, variation=None):
+    if 'NTLM' not in authentication_methods:
+      authentication_methods['NTLM'] = []
+
+    if variation and variation not in authentication_methods['NTLM']:
+      authentication_methods['NTLM'].append(variation)
 
   def _parse_users(self, users, service):
     for user_ID, user in users.items():

@@ -1,9 +1,11 @@
 # https://learn.microsoft.com/en-us/windows-server/storage/file-server/smb-security-hardening
 
 # allowed authentication methods
-authentications = [ 'password', 'Kerberos' ]
-# potential values:
-# password, Kerberos, NTLM, guest, anonymous
+authentication_methods = [ 'Kerberos' ]
+# possible values: 'Kerberos', 'NTLM'
+
+# applications are generally advised not to use NTLM.
+# https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-nlmp/1e846608-4c5f-41f4-8454-1b91af8a755b
 
 [dialect]
 # minimum protocol and dialect the server must support

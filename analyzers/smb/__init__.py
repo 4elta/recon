@@ -7,7 +7,7 @@ SERVICE_SCHEMA = {
   'address': None,
   'dialects': {}, # for each protocol (CIFS, SMB2) hold a list of supported dialects
   'signing': {}, # for each protocol (CIFS, SMB2) hold information about 'enabled' and 'required'
-  'access': [], # password, Kerberos, NTLM, guest, anonymous
+  'authentication_methods': {}, # Kerberos: [], NTLM: [guest, anonymous]
   # https://sensepost.com/blog/2024/guest-vs-null-session-on-windows/
   'issues': [],
   'misc': [], # misc information (NetBIOS, etc); shown with the host, after all issues
@@ -37,8 +37,8 @@ class Analyzer(AbstractAnalyzer):
       if service['signing']:
         self._analyze_signing(service['signing'], self.recommendations, issues)
 
-      if service['access']:
-        self._analyze_access(service['access'], self.recommendations, issues)
+      if service['authentication_methods']:
+        self._analyze_authentication_methods(service['authentication_methods'], self.recommendations, issues)
 
       for info in service['misc']:
         issues.append(
@@ -107,16 +107,16 @@ class Analyzer(AbstractAnalyzer):
           )
         )
 
-  def _analyze_access(self, access, recommendations, issues):
-    for a in access:
-      if a not in recommendations['authentications']:
-        if a in ['anonymous', 'guest']:
-          issues.append(Issue(f'authentication: {a}'))
-        else:
-          issues.append(
-            Issue(
-              'authentication',
-              authentication = a
-            )
+  def _analyze_authentication_methods(self, authentication_methods, recommendations, issues):
+    for method, variations in authentication_methods.items():
+      if method not in recommendations['authentication_methods']:
+        issues.append(
+          Issue(
+            'authentication',
+            method = method
           )
+        )
+
+        for variation in variations:
+          issues.append(Issue(f'authentication: {method}: {variation}'))
 
