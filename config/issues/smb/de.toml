@@ -34,6 +34,12 @@ references = [
 ["authentication"]
 description = "Authentifizierung mittels {method}"
 
+["authentication: NTLM"]
+description = "Authentifizierung mittels NTLM"
+references = [
+  "[Introducing the Restriction of NTLM Authentication](https://learn.microsoft.com/de-de/previous-versions/windows/it-pro/windows-server-2008-R2-and-2008/dd560653(v=ws.10))"
+]
+
 ["authentication: NTLM: anonymous"]
 description = "NTLM: anonymer Zugriff (Null-Session) erlaubt"
 

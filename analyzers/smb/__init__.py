@@ -110,12 +110,15 @@ class Analyzer(AbstractAnalyzer):
   def _analyze_authentication_methods(self, authentication_methods, recommendations, issues):
     for method, variations in authentication_methods.items():
       if method not in recommendations['authentication_methods']:
-        issues.append(
-          Issue(
-            'authentication',
-            method = method
+        if method == 'NTLM':
+          issues.append(Issue('authentication: NTLM'))
+        else:
+          issues.append(
+            Issue(
+              'authentication',
+              method = method
+            )
           )
-        )
 
         for variation in variations:
           issues.append(Issue(f'authentication: {method}: {variation}'))
