@@ -42,6 +42,9 @@ references = [
 
 ["authentication: NTLM: anonymous"]
 description = "NTLM: anonymous access (null session) allowed"
+references = [
+  "[IPC$ share and null session behavior in Windows](https://learn.microsoft.com/en-us/troubleshoot/windows-server/networking/inter-process-communication-share-null-session)"
+]
 
 ["authentication: NTLM: guest"]
 description = "NTLM: guest access allowed"
