@@ -56,5 +56,23 @@ references = [
 ["info leak"]
 description = "Klartextspeicherung sensibler Informationen: `{info}`"
 
+["AD password policy: history_count"]
+description = "AD-Passwortrichtlinie: Passwortverlauf: {value} Einträge"
+
+["AD password policy: max_age"]
+description = "AD-Passwortrichtlinie: maximales Passwortalter: {value}"
+
+["AD password policy: min_age"]
+description = "AD-Passwortrichtlinie: minimales Passwortalter: {value}"
+
+["AD password policy: min_length"]
+description = "AD-Passwortrichtlinie: minimale Passwortlänge: {value}"
+
+["AD password policy: complexity_required"]
+description = "AD-Passwortrichtlinie: Passwortkomplexität erfordert: {value}"
+
+["AD password policy: reversible_encryption"]
+description = "AD-Passwortrichtlinie: Passwörter mittels reversibler Verschlüsselung gespeichert: {value}"
+
 ["additional info"]
 description = "zusätzliche Informationen: {info}"

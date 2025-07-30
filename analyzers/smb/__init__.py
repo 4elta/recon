@@ -9,6 +9,9 @@ SERVICE_SCHEMA = {
   'signing': {}, # for each protocol (CIFS, SMB2) hold information about 'enabled' and 'required'
   'authentication_methods': {}, # Kerberos: [], NTLM: [guest, anonymous]
   # https://sensepost.com/blog/2024/guest-vs-null-session-on-windows/
+  'AD': {
+    'password_policy': {}
+  },
   'issues': [],
   'misc': [], # misc information (NetBIOS, etc); shown with the host, after all issues
   'info': [], # additional (debug) information; shown at the end of the analysis
@@ -39,6 +42,9 @@ class Analyzer(AbstractAnalyzer):
 
       if service['authentication_methods']:
         self._analyze_authentication_methods(service['authentication_methods'], self.recommendations, issues)
+
+      if service['AD']['password_policy']:
+        self._analyze_AD_password_policy(service['AD']['password_policy'], self.recommendations, issues)
 
       for info in service['misc']:
         issues.append(
@@ -123,3 +129,44 @@ class Analyzer(AbstractAnalyzer):
         for variation in variations:
           issues.append(Issue(f'authentication: {method}: {variation}'))
 
+  def _analyze_AD_password_policy(self, AD_password_policy, recommendations, issues):
+    if 'AD' not in recommendations or 'password_policy' not in recommendations['AD']:
+      return
+
+    for policy_name, policy_value in AD_password_policy.items():
+      if policy_name not in recommendations['AD']['password_policy']:
+        continue
+
+      match policy_name:
+        case 'history_count':
+          if policy_value < recommendations['AD']['password_policy'][policy_name]:
+            issues.append(
+              Issue(
+                f'AD password policy: {policy_name}',
+                value = policy_value
+              )
+            )
+        case 'min_age':
+          if policy_value < recommendations['AD']['password_policy'][policy_name]:
+            issues.append(
+              Issue(
+                f'AD password policy: {policy_name}',
+                value = policy_value
+              )
+            )
+        case 'min_length':
+          if policy_value < recommendations['AD']['password_policy'][policy_name]:
+            issues.append(
+              Issue(
+                f'AD password policy: {policy_name}',
+                value = policy_value
+              )
+            )
+        case _:
+          if policy_value != recommendations['AD']['password_policy'][policy_name]:
+            issues.append(
+              Issue(
+                f'AD password policy: {policy_name}',
+                value = policy_value
+              )
+            )

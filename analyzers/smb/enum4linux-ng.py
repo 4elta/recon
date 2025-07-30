@@ -168,16 +168,12 @@ class Parser(AbstractParser):
         case 'kerberos' | 'Kerberos':
           if 'Kerberos' not in service['authentication_methods']:
             service['authentication_methods']['Kerberos'] = []
-          break
         case 'password' | 'nthash' | 'NTLM':
           self._add_NTLM_authentication(service['authentication_methods'])
-          break
         case 'random_user' | 'guest':
           self._add_NTLM_authentication(service['authentication_methods'], 'guest')
-          break
         case 'null':
           self._add_NTLM_authentication(service['authentication_methods'], 'anonymous')
-          break
 
   def _add_NTLM_authentication(self, authentication_methods, variation=None):
     if 'NTLM' not in authentication_methods:
@@ -224,8 +220,63 @@ class Parser(AbstractParser):
     if 'Domain logoff information' in policy:
       self._parse_domain_logoff_information(policy['Domain logoff information'], service)
 
+  def _set_AD_password_policy(self, service, policy_name, policy_value):
+    if policy_name in service['AD']['password_policy']:
+      return
+
+    service['AD']['password_policy'][policy_name] = policy_value
+
   def _parse_domain_password_information(self, domain_password_information, service):
-    pass
+    if 'Password history length' in domain_password_information:
+      self._set_AD_password_policy(
+        service,
+        'history_count',
+        domain_password_information['Password history length']
+      )
+
+    if 'Minimum password length' in domain_password_information:
+      self._set_AD_password_policy(
+        service,
+        'min_length',
+        domain_password_information['Minimum password length']
+      )
+
+    if 'Maximum password age' in domain_password_information:
+      self._set_AD_password_policy(
+        service,
+        'max_age',
+        domain_password_information['Maximum password age']
+      )
+
+    if 'Minimum password age' in domain_password_information:
+      self._set_AD_password_policy(
+        service,
+        'min_age',
+        domain_password_information['Minimum password age']
+      )
+
+    if 'Password properties' in domain_password_information:
+      self._parse_password_properties(
+        domain_password_information['Password properties'],
+        service
+      )
+
+  def _parse_password_properties(self, password_properties, service):
+    for pwd_property in password_properties:
+      for k, v in pwd_property.items():
+        match k:
+          case 'DOMAIN_PASSWORD_COMPLEX':
+            self._set_AD_password_policy(
+              service,
+              'complexity_required',
+              v
+            )
+          case 'DOMAIN_PASSWORD_PASSWORD_STORE_CLEARTEXT':
+            self._set_AD_password_policy(
+              service,
+              'reversible_encryption',
+              v
+            )
 
   def _parse_domain_lockout_information(self, domain_lockout_information, service):
     pass

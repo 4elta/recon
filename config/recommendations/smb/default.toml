@@ -18,3 +18,13 @@ SMB2 = '3.1.1'
 # https://techcommunity.microsoft.com/blog/filecab/configure-smb-signing-with-confidence/2418102
 
 SMB2 = {required = true}
+
+[AD.password_policy]
+# https://petri.com/active-directory-password-policy/#best-practices-8211-ad-password-policy
+# https://blog.uniqkey.eu/active-directory-password-policy/
+history_count = 10
+max_age = 0 # disabled
+min_age = 3
+min_length = 14
+complexity_required = true
+reversible_encryption = false
