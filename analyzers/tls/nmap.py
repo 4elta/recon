@@ -216,10 +216,16 @@ class Parser(AbstractParser):
       if re.match(r'(dh|rsa) \d+', kex_info):
         kex_type, kex_bits = kex_info.split(' ')
         kex = ( kex_type.upper(), int(kex_bits) )
+      elif re.match(r'ecdh_.+', kex_info):
+        _, group = kex_info.split('_')
+        kex = ( 'ECDH', None )
+        if group not in key_exchange['groups']:
+          key_exchange['groups'].append(group)
       else: # ECDH
-        kex = ( 'ECDH', None ) # TODO: parse bits
-        if kex_info not in key_exchange['groups']:
-          key_exchange['groups'].append(kex_info)
+        group = kex_info
+        kex = ( 'ECDH', None )
+        if group not in key_exchange['groups']:
+          key_exchange['groups'].append(group)
 
       kex_methods = key_exchange['methods']
       if kex[0] not in kex_methods:
