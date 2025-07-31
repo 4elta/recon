@@ -244,7 +244,6 @@ class Parser(AbstractParser):
       if m.group('minutes'):
         seconds += int(m.group('minutes')) * 60
 
-      print(f"'{duration}' = {seconds} seconds")#TODO
       return seconds
 
     m = DURATION_PATTERN_NEW.fullmatch(duration)
@@ -260,12 +259,10 @@ class Parser(AbstractParser):
       if m.group('microseconds'):
         seconds += float(m.group('microseconds')) * 10e-6
 
-      print(f"'{duration}' = {seconds} seconds")#TODO
       return seconds
 
     m = DURATION_PATTERN_SECONDS.fullmatch(duration)
     if m:
-      print(f"'{duration}' = {seconds} seconds")#TODO
       return float(m.group('seconds'))
 
     self.__class__.logger.error(f"could not parse duration: '{duration}'")
