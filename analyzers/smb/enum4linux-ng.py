@@ -312,7 +312,7 @@ class Parser(AbstractParser):
       if m.group('seconds'):
         seconds += int(m.group('seconds'))
       if m.group('microseconds'):
-        seconds += float(m.group('microseconds')) * 10e-6
+        seconds += int(m.group('microseconds')) * 10e-6
 
       return seconds
 
