@@ -10,9 +10,9 @@ SMB_DIALECT_PATTERN = re.compile(r'SMB (?P<major>\d+)\.(?P<minor>\d+)(\.(?P<patc
 SECRETS_PATTERN = re.compile(r'password|secret', re.IGNORECASE)
 
 # see https://github.com/cddmp/enum4linux-ng/pull/56
-DURATION_PATTERN = re.compile(r'(?:(?P<days>\d+) day(?:s ))?(?:\(\d+ years?\) )?(?:(?P<hours>\d+) hours? )?(?:(?P<minutes>\d+) minutes?)?')
+DURATION_PATTERN = re.compile(r'(?:(?P<days>\d+) days?)?(?: \(\d+ years?\))?(?: (?P<hours>\d+) hours?)?(?: (?P<minutes>\d+) minutes?)?')
 DURATION_PATTERN_NEW = re.compile(r'(?:(?P<days>\d+) days?, )?(?P<hours>\d+):(?P<minutes>\d+):(?P<seconds>\d+)(?:.(?P<microseconds>\d+))? \(hours:minutes:seconds\)')
-DURATION_PATTERN_SECONDS = re.compile(r'(?P<seconds>\d+) seconds')
+DURATION_PATTERN_SECONDS = re.compile(r'(?P<seconds>[\d.,]+) seconds')
 
 class Parser(AbstractParser):
   '''
@@ -226,50 +226,6 @@ class Parser(AbstractParser):
     if 'Domain logoff information' in policy:
       self._parse_domain_logoff_information(policy['Domain logoff information'], service)
 
-  def _set_AD_password_policy(self, service, policy_name, policy_value):
-    if policy_value is None:
-      return
-
-    if policy_name in service['AD']['password_policy']:
-      return
-
-    service['AD']['password_policy'][policy_name] = policy_value
-
-  def _get_seconds(self, duration):
-    seconds = 0
-
-    m = DURATION_PATTERN.fullmatch(duration)
-    if m:
-      if m.group('days'):
-        seconds += int(m.group('days')) * 24*60*60
-      if m.group('hours'):
-        seconds += int(m.group('hours')) * 60*60
-      if m.group('minutes'):
-        seconds += int(m.group('minutes')) * 60
-
-      return seconds
-
-    m = DURATION_PATTERN_NEW.fullmatch(duration)
-    if m:
-      if m.group('days'):
-        seconds += int(m.group('days')) * 24*60*60
-      if m.group('hours'):
-        seconds += int(m.group('hours')) * 60*60
-      if m.group('minutes'):
-        seconds += int(m.group('minutes')) * 60
-      if m.group('seconds'):
-        seconds += int(m.group('seconds'))
-      if m.group('microseconds'):
-        seconds += float(m.group('microseconds')) * 10e-6
-
-      return seconds
-
-    m = DURATION_PATTERN_SECONDS.fullmatch(duration)
-    if m:
-      return float(m.group('seconds'))
-
-    self.__class__.logger.error(f"could not parse duration: '{duration}'")
-
   def _parse_domain_password_information(self, domain_password_information, service):
     if 'Password history length' in domain_password_information:
       self._set_AD_password_policy(
@@ -305,6 +261,15 @@ class Parser(AbstractParser):
         service
       )
 
+  def _set_AD_password_policy(self, service, policy_name, policy_value):
+    if policy_value is None:
+      return
+
+    if policy_name in service['AD']['password_policy']:
+      return
+
+    service['AD']['password_policy'][policy_name] = policy_value
+
   def _parse_password_properties(self, password_properties, service):
     for pwd_property in password_properties:
       for k, v in pwd_property.items():
@@ -321,6 +286,41 @@ class Parser(AbstractParser):
               'reversible_encryption',
               v
             )
+
+  def _get_seconds(self, duration):
+    seconds = 0
+
+    m = DURATION_PATTERN.fullmatch(duration)
+    if m:
+      if m.group('days'):
+        seconds += int(m.group('days')) * 24*60*60
+      if m.group('hours'):
+        seconds += int(m.group('hours')) * 60*60
+      if m.group('minutes'):
+        seconds += int(m.group('minutes')) * 60
+
+      return seconds
+
+    m = DURATION_PATTERN_NEW.fullmatch(duration)
+    if m:
+      if m.group('days'):
+        seconds += int(m.group('days')) * 24*60*60
+      if m.group('hours'):
+        seconds += int(m.group('hours')) * 60*60
+      if m.group('minutes'):
+        seconds += int(m.group('minutes')) * 60
+      if m.group('seconds'):
+        seconds += int(m.group('seconds'))
+      if m.group('microseconds'):
+        seconds += float(m.group('microseconds')) * 10e-6
+
+      return seconds
+
+    m = DURATION_PATTERN_SECONDS.fullmatch(duration)
+    if m:
+      return float(m.group('seconds'))
+
+    self.__class__.logger.error(f"could not parse duration: '{duration}'")
 
   def _parse_domain_lockout_information(self, domain_lockout_information, service):
     pass
