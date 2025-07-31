@@ -22,9 +22,9 @@ SMB2 = {required = true}
 [AD.password_policy]
 # https://petri.com/active-directory-password-policy/#best-practices-8211-ad-password-policy
 # https://blog.uniqkey.eu/active-directory-password-policy/
-history_count = 10
+history_count = 10 # number of passwords
 max_age = 0 # disabled
-min_age = 3
-min_length = 14
+min_age = 259200 # seconds (3*24*60*60)
+min_length = 14 # number of characters
 complexity_required = true
 reversible_encryption = false

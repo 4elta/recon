@@ -1,4 +1,5 @@
 import copy
+import datetime
 import json
 import re
 
@@ -7,6 +8,11 @@ from . import SERVICE_SCHEMA
 
 SMB_DIALECT_PATTERN = re.compile(r'SMB (?P<major>\d+)\.(?P<minor>\d+)(\.(?P<patch>\d+))?')
 SECRETS_PATTERN = re.compile(r'password|secret', re.IGNORECASE)
+
+# see https://github.com/cddmp/enum4linux-ng/pull/56
+DURATION_PATTERN = re.compile(r'(?:(?P<days>\d+) day(?:s ))?(?:\(\d+ years?\) )?(?:(?P<hours>\d+) hours? )?(?:(?P<minutes>\d+) minutes?)?')
+DURATION_PATTERN_NEW = re.compile(r'(?:(?P<days>\d+) days?, )?(?P<hours>\d+):(?P<minutes>\d+):(?P<seconds>\d+)(?:.(?P<microseconds>\d+))? \(hours:minutes:seconds\)')
+DURATION_PATTERN_SECONDS = re.compile(r'(?P<seconds>\d+) seconds')
 
 class Parser(AbstractParser):
   '''
@@ -226,6 +232,44 @@ class Parser(AbstractParser):
 
     service['AD']['password_policy'][policy_name] = policy_value
 
+  def _get_seconds(self, duration):
+    seconds = 0
+
+    m = DURATION_PATTERN.fullmatch(duration)
+    if m:
+      if m.group('days'):
+        seconds += int(m.group('days')) * 24*60*60
+      if m.group('hours'):
+        seconds += int(m.group('hours')) * 60*60
+      if m.group('minutes'):
+        seconds += int(m.group('minutes')) * 60
+
+      print(f"'{duration}' = {seconds} seconds")#TODO
+      return seconds
+
+    m = DURATION_PATTERN_NEW.fullmatch(duration)
+    if m:
+      if m.group('days'):
+        seconds += int(m.group('days')) * 24*60*60
+      if m.group('hours'):
+        seconds += int(m.group('hours')) * 60*60
+      if m.group('minutes'):
+        seconds += int(m.group('minutes')) * 60
+      if m.group('seconds'):
+        seconds += int(m.group('seconds'))
+      if m.group('microseconds'):
+        seconds += float(m.group('microseconds')) * 10e-6
+
+      print(f"'{duration}' = {seconds} seconds")#TODO
+      return seconds
+
+    m = DURATION_PATTERN_SECONDS.fullmatch(duration)
+    if m:
+      print(f"'{duration}' = {seconds} seconds")#TODO
+      return float(m.group('seconds'))
+
+    self.__class__.logger.error(f"could not parse duration: '{duration}'")
+
   def _parse_domain_password_information(self, domain_password_information, service):
     if 'Password history length' in domain_password_information:
       self._set_AD_password_policy(
@@ -245,14 +289,14 @@ class Parser(AbstractParser):
       self._set_AD_password_policy(
         service,
         'max_age',
-        domain_password_information['Maximum password age']
+        self._get_seconds(domain_password_information['Maximum password age'])
       )
 
     if 'Minimum password age' in domain_password_information:
       self._set_AD_password_policy(
         service,
         'min_age',
-        domain_password_information['Minimum password age']
+        self._get_seconds(domain_password_information['Minimum password age'])
       )
 
     if 'Password properties' in domain_password_information:

@@ -1,3 +1,4 @@
+import datetime
 import re
 import sys
 
@@ -146,12 +147,22 @@ class Analyzer(AbstractAnalyzer):
                 value = policy_value
               )
             )
-        case 'min_age':
-          if policy_value < recommendations['AD']['password_policy'][policy_name]:
+        case 'max_age':
+          if policy_value > recommendations['AD']['password_policy'][policy_name]:
+            duration = datetime.timedelta(seconds=policy_value)
             issues.append(
               Issue(
                 f'AD password policy: {policy_name}',
-                value = policy_value
+                value = str(duration)
+              )
+            )
+        case 'min_age':
+          if policy_value < recommendations['AD']['password_policy'][policy_name]:
+            duration = datetime.timedelta(seconds=policy_value)
+            issues.append(
+              Issue(
+                f'AD password policy: {policy_name}',
+                value = str(duration)
               )
             )
         case 'min_length':
