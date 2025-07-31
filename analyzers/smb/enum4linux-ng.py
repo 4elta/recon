@@ -227,6 +227,9 @@ class Parser(AbstractParser):
       self._parse_domain_logoff_information(policy['Domain logoff information'], service)
 
   def _set_AD_password_policy(self, service, policy_name, policy_value):
+    if policy_value is None:
+      return
+
     if policy_name in service['AD']['password_policy']:
       return
 
