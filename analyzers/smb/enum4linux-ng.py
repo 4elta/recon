@@ -78,10 +78,13 @@ class Parser(AbstractParser):
     return target['host']
 
   def _parse_listeners(self, listeners, service):
+    self.__class__.logger.debug("parsing listeners ...")
     ports = []
-    for listener in listeners.values():
+    for key, listener in listeners.items():
       if listener['accessible'] and listener['port'] not in ports:
-        ports.append(str(listener['port']))
+        port = listener['port']
+        ports.append(str(port))
+        self.__class__.logger.info(f"{key} ({port})")
 
     if ports:
       service['misc'].append(f"ports: {', '.join(sorted(ports))}")
@@ -94,14 +97,21 @@ class Parser(AbstractParser):
 
     if 'Preferred dialect' in smb_dialects:
       dialect = smb_dialects['Preferred dialect']
+      self.__class__.logger.debug(f"parsing preferred protocol: '{dialect}'")
       m = SMB_DIALECT_PATTERN.fullmatch(dialect)
-      if m:
-        if m.group('major') == '1':
-          preferred_protocol = 'CIFS'
-        elif m.group('major') in ['2', '3']:
-          preferred_protocol = 'SMB2'
+      if not m:
+        self.__class__.logger.error("could not parse protocol")
+        return
+
+      if m.group('major') == '1':
+        preferred_protocol = 'CIFS'
+      elif m.group('major') in ['2', '3']:
+        preferred_protocol = 'SMB2'
       else:
-        self.__class__.logger.error(f"could not parse preferred SMB dialect: '{dialect}'")
+        self.__class__.logger.error("could not parse protocol")
+        return
+
+    self.__class__.logger.info(f"preferred protocol: {preferred_protocol}")
 
     '''
     enum4linux-ng checks the security (i.e. signing required) only for the preferred dialect
@@ -113,22 +123,29 @@ class Parser(AbstractParser):
     '''
 
     if 'SMB signing required' in smb_dialects:
+      self.__class__.logger.info("signing required")
       service['signing'][preferred_protocol] = {
         'required': smb_dialects['SMB signing required']
       }
     else:
+      self.__class__.logger.info("signing not required")
       service['signing'][preferred_protocol] = {
         'required': False
       }
 
   def _parse_supported_dialects(self, supported_dialects, service):
+    self.__class__.logger.debug("parsing supported dialects ...")
+
     for dialect, supported in supported_dialects.items():
       if not supported:
         continue
 
+      self.__class__.logger.debug(dialect)
+
       # older versions of enum4linux-ng used '2.02' instead of '2.0.2'
       # https://github.com/cddmp/enum4linux-ng/issues/51
       if '2.02' in dialect:
+        self.__class__.logger.debug("replacing '2.02' with '2.0.2'")
         dialect = dialect.replace('2.02', '2.0.2')
 
       m = SMB_DIALECT_PATTERN.fullmatch(dialect)
@@ -142,11 +159,13 @@ class Parser(AbstractParser):
           service['dialects']['CIFS'] = []
 
         service['dialects']['CIFS'].append("NT LM 0.12")
+        self.__class__.logger.info("adding 'NT LM 0.12' to the list of supported CIFS dialects")
         continue
 
       if m.group('major') in ['2', '3']:
         protocol = 'SMB2'
       else:
+        self.__class__.logger.error("unknown protocol")
         protocol = 'unknown'
 
       if protocol not in service['dialects']:
@@ -156,6 +175,7 @@ class Parser(AbstractParser):
       if m.group('patch'):
         dialect += f".{m.group('patch')}"
 
+      self.__class__.logger.info(f"adding '{dialect}' to the list of supported {protocol} dialects")
       service['dialects'][protocol].append(dialect)
 
   def _parse_smb_domain_info(self, smb_domain_info, service):
@@ -170,15 +190,21 @@ class Parser(AbstractParser):
       if not possible:
         continue
 
+      self.__class__.logger.debug(f"parsing session '{session}' ...")
+
       match session:
         case 'kerberos' | 'Kerberos':
+          self.__class__.logger.info("Kerberos authentication")
           if 'Kerberos' not in service['authentication_methods']:
             service['authentication_methods']['Kerberos'] = []
         case 'password' | 'nthash' | 'NTLM':
+          self.__class__.logger.info("NTLM authentication")
           self._add_NTLM_authentication(service['authentication_methods'])
         case 'random_user' | 'guest':
+          self.__class__.logger.info("NTLM authentication")
           self._add_NTLM_authentication(service['authentication_methods'], 'guest')
         case 'null':
+          self.__class__.logger.info("NTLM authentication")
           self._add_NTLM_authentication(service['authentication_methods'], 'anonymous')
 
   def _add_NTLM_authentication(self, authentication_methods, variation=None):
@@ -186,6 +212,7 @@ class Parser(AbstractParser):
       authentication_methods['NTLM'] = []
 
     if variation and variation not in authentication_methods['NTLM']:
+      self.__class__.logger.info(f"adding '{variation}' to NTLM variations")
       authentication_methods['NTLM'].append(variation)
 
   def _parse_users(self, users, service):
@@ -288,10 +315,12 @@ class Parser(AbstractParser):
             )
 
   def _get_seconds(self, duration):
+    self.__class__.logger.debug(f"parsing duration '{duration}' ...")
     seconds = 0
 
     m = DURATION_PATTERN.fullmatch(duration)
     if m:
+      self.__class__.logger.debug(f"using '{DURATION_PATTERN.pattern}'")
       if m.group('days'):
         seconds += int(m.group('days')) * 24*60*60
       if m.group('hours'):
@@ -299,10 +328,12 @@ class Parser(AbstractParser):
       if m.group('minutes'):
         seconds += int(m.group('minutes')) * 60
 
+      self.__class__.logger.info(f"{seconds} seconds")
       return seconds
 
     m = DURATION_PATTERN_NEW.fullmatch(duration)
     if m:
+      self.__class__.logger.debug(f"using '{DURATION_PATTERN_NEW.pattern}'")
       if m.group('days'):
         seconds += int(m.group('days')) * 24*60*60
       if m.group('hours'):
@@ -314,13 +345,17 @@ class Parser(AbstractParser):
       if m.group('microseconds'):
         seconds += int(m.group('microseconds')) * 10e-6
 
+      self.__class__.logger.info(f"{seconds} seconds")
       return seconds
 
     m = DURATION_PATTERN_SECONDS.fullmatch(duration)
     if m:
-      return float(m.group('seconds'))
+      self.__class__.logger.debug(f"using '{DURATION_PATTERN_SECONDS.pattern}'")
+      seconds = float(m.group('seconds'))
+      self.__class__.logger.info(f"{seconds} seconds")
+      return seconds
 
-    self.__class__.logger.error(f"could not parse duration: '{duration}'")
+    self.__class__.logger.error(f"could not parse duration")
 
   def _parse_domain_lockout_information(self, domain_lockout_information, service):
     pass
