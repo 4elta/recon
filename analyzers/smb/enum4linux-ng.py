@@ -10,7 +10,7 @@ SMB_DIALECT_PATTERN = re.compile(r'SMB (?P<major>\d+)\.(?P<minor>\d+)(\.(?P<patc
 SECRETS_PATTERN = re.compile(r'password|secret', re.IGNORECASE)
 
 # see https://github.com/cddmp/enum4linux-ng/pull/56
-DURATION_PATTERN = re.compile(r'(?:(?P<days>\d+) days?)?(?: \(\d+ years?\))?(?: (?P<hours>\d+) hours?)?(?: (?P<minutes>\d+) minutes?)?')
+DURATION_PATTERN = re.compile(r'(?:(?P<days>\d+) days?)?(?: \(\d+ years?\))? ?(?:(?P<hours>\d+) hours?)? ?(?:(?P<minutes>\d+) minutes?)?')
 DURATION_PATTERN_NEW = re.compile(r'(?:(?P<days>\d+) days?, )?(?P<hours>\d+):(?P<minutes>\d+):(?P<seconds>\d+)(?:.(?P<microseconds>\d+))? \(hours:minutes:seconds\)')
 DURATION_PATTERN_SECONDS = re.compile(r'(?P<seconds>[\d.,]+) seconds')
 
