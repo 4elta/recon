@@ -23,24 +23,24 @@ Dieser Sachverhalt wurde bei folgenden Assets festgestellt:
 {% for asset in affected_assets.keys() %}
 * `{{ asset }}`
 {% endfor %}
-
 {% if recommendations|length %}
+
 # empfehlungen
 
 {% for recommendation in recommendations %}
 * {{ recommendation }}
 {% endfor %}
 {% endif %}
-
 {% if references|length %}
+
 # referenzen
 
 {% for reference in references %}
 * {{ reference }}
 {% endfor %}
 {% endif %}
-
 {% if info|length %}
+
 # zusätzliche informationen
 
 {% for info in additional_info %}

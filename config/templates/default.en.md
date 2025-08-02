@@ -21,24 +21,24 @@ The following vulnerabilities and/or deviations from the recommended settings (`
 {% for asset in affected_assets.keys() %}
 * `{{ asset }}`
 {% endfor %}
-
 {% if recommendations|length %}
+
 # recommendations
 
 {% for recommendation in recommendations %}
 * {{ recommendation }}
 {% endfor %}
 {% endif %}
-
 {% if references|length %}
+
 # references
 
 {% for reference in references %}
 * {{ reference }}
 {% endfor %}
 {% endif %}
-
 {% if info|length %}
+
 # additional info
 
 {% for info in additional_info %}
