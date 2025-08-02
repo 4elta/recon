@@ -11,7 +11,8 @@ SERVICE_SCHEMA = {
   'authentication_methods': {}, # Kerberos: [], NTLM: [guest, anonymous]
   # https://sensepost.com/blog/2024/guest-vs-null-session-on-windows/
   'AD': {
-    'password_policy': {}
+    'password_policy': {},
+    'account_lockout_policy': {},
   },
   'issues': [],
   'misc': [], # misc information (NetBIOS, etc); shown with the host, after all issues
@@ -46,6 +47,13 @@ class Analyzer(AbstractAnalyzer):
 
       if service['AD']['password_policy']:
         self._analyze_AD_password_policy(service['AD']['password_policy'], self.recommendations, issues)
+
+      if service['AD']['account_lockout_policy']:
+        self._analyze_AD_account_lockout_policy(
+          service['AD']['account_lockout_policy'],
+          self.recommendations,
+          issues
+        )
 
       for info in service['misc']:
         issues.append(
@@ -130,54 +138,65 @@ class Analyzer(AbstractAnalyzer):
         for variation in variations:
           issues.append(Issue(f'authentication: {method}: {variation}'))
 
-  def _analyze_AD_password_policy(self, AD_password_policy, recommendations, issues):
-    if 'AD' not in recommendations or 'password_policy' not in recommendations['AD']:
+  def _analyze_AD_password_policy(self, policy, recommendations, issues):
+    section = 'password_policy'
+
+    if 'AD' not in recommendations or section not in recommendations['AD']:
       return
 
-    for policy_name, policy_value in AD_password_policy.items():
-      if policy_name not in recommendations['AD']['password_policy']:
+    for policy_name, policy_value in policy.items():
+      if policy_name not in recommendations['AD'][section]:
         continue
 
       match policy_name:
         case 'history_count':
-          if policy_value < recommendations['AD']['password_policy'][policy_name]:
-            issues.append(
-              Issue(
-                f'AD password policy: {policy_name}',
-                value = policy_value
-              )
-            )
+          if policy_value < recommendations['AD'][section][policy_name]:
+            issues.append(Issue(f'{section}: {policy_name}', value=policy_value))
         case 'max_age':
-          if policy_value > recommendations['AD']['password_policy'][policy_name]:
+          if (
+            (policy_value == 0 and recommendations['AD'][section][policy_name] != 0)
+            or policy_value > recommendations['AD'][section][policy_name]
+          ):
             duration = datetime.timedelta(seconds=policy_value)
             issues.append(
               Issue(
-                f'AD password policy: {policy_name}',
-                value = str(duration)
+                f'{section}: {policy_name}',
+                value = str(duration).replace(', 0:00:00', '')
               )
             )
         case 'min_age':
-          if policy_value < recommendations['AD']['password_policy'][policy_name]:
+          if policy_value < recommendations['AD'][section][policy_name]:
             duration = datetime.timedelta(seconds=policy_value)
             issues.append(
               Issue(
-                f'AD password policy: {policy_name}',
-                value = str(duration)
+                f'{section}: {policy_name}',
+                value = str(duration).replace(', 0:00:00', '')
               )
             )
         case 'min_length':
-          if policy_value < recommendations['AD']['password_policy'][policy_name]:
-            issues.append(
-              Issue(
-                f'AD password policy: {policy_name}',
-                value = policy_value
-              )
-            )
+          if policy_value < recommendations['AD'][section][policy_name]:
+            issues.append(Issue(f'{section}: {policy_name}', value=policy_value))
         case _:
-          if policy_value != recommendations['AD']['password_policy'][policy_name]:
-            issues.append(
-              Issue(
-                f'AD password policy: {policy_name}',
-                value = policy_value
-              )
-            )
+          if policy_value != recommendations['AD'][section][policy_name]:
+            issues.append(Issue(f'{section}: {policy_name}', value=policy_value))
+
+  def _analyze_AD_account_lockout_policy(self, policy, recommendations, issues):
+    section = 'account_lockout_policy'
+
+    if 'AD' not in recommendations or section not in recommendations['AD']:
+      return
+
+    for policy_name, policy_value in policy.items():
+      if policy_name not in recommendations['AD'][section]:
+        continue
+
+      match policy_name:
+        case 'threshold':
+          if (
+            (policy_value == 0 and recommendations['AD'][section][policy_name] != 0)
+            or (policy_value > recommendations['AD'][section][policy_name])
+          ):
+            issues.append(Issue(f'{section}: {policy_name}', value=policy_value))
+        case _:
+          if policy_value < recommendations['AD'][section][policy_name]:
+            issues.append(Issue(f'{section}: {policy_name}', value=policy_value))

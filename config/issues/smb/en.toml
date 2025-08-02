@@ -56,23 +56,32 @@ references = [
 ["info leak"]
 description = "cleartext storage of sensitive information: `{info}`"
 
-["AD password policy: history_count"]
+["password_policy: history_count"]
 description = "AD password policy: password history count: {value}"
 
-["AD password policy: max_age"]
+["password_policy: max_age"]
 description = "AD password policy: maximum password age: {value}"
 
-["AD password policy: min_age"]
+["password_policy: min_age"]
 description = "AD password policy: minimum password age: {value}"
 
-["AD password policy: min_length"]
+["password_policy: min_length"]
 description = "AD password policy: minimum password length: {value}"
 
-["AD password policy: complexity_required"]
+["password_policy: complexity_required"]
 description = "AD password policy: require complex passwords: {value}"
 
-["AD password policy: reversible_encryption"]
+["password_policy: reversible_encryption"]
 description = "AD password policy: store passwords using reversible encryption: {value}"
+
+["account_lockout_policy: threshold"]
+description = "AD account lockout policy: threshold: {value}"
+
+["account_lockout_policy: duration"]
+description = "AD account lockout policy: duration: {value} minutes"
+
+["account_lockout_policy: reset_counter_after"]
+description = "AD account lockout policy: reset counter after {value} minutes"
 
 ["additional info"]
 description = "additional information: {info}"

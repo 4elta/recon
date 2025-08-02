@@ -20,11 +20,18 @@ SMB2 = '3.1.1'
 SMB2 = {required = true}
 
 [AD.password_policy]
-# https://petri.com/active-directory-password-policy/#best-practices-8211-ad-password-policy
-# https://blog.uniqkey.eu/active-directory-password-policy/
-history_count = 10 # number of passwords
+# https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-10/security/threat-protection/security-policy-settings/password-policy
+# https://learn.cisecurity.org/cis-password-policy-guide-passphrases-monitoring-and-more
+history_count = 10 # number of passwords; prevents users from reusing previous passwords
 max_age = 0 # disabled
-min_age = 259200 # seconds (3*24*60*60)
+min_age = 259200 # seconds (3*24*60*60); prevents users from rapidly changing their passwords and revert to a previously used one
 min_length = 14 # number of characters
-complexity_required = true
+complexity_required = true # mandating a mix of character types (upper and lower case letters, numbers, and special characters)
 reversible_encryption = false
+
+[AD.account_lockout_policy]
+# https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-10/security/threat-protection/security-policy-settings/account-lockout-policy
+# https://learn.cisecurity.org/cis-password-policy-guide-passphrases-monitoring-and-more
+threshold = 5 # number of failed logon attempts before an account is locked out
+duration = 30 # how many minutes an account should be locked out
+reset_counter_after = 30 # number of minutes that should elapse, after a failed logon attempt, for the failed logon counter to be reset to 0

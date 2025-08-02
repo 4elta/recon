@@ -254,32 +254,38 @@ class Parser(AbstractParser):
       self._parse_domain_logoff_information(policy['Domain logoff information'], service)
 
   def _parse_domain_password_information(self, domain_password_information, service):
+    section = 'password_policy'
+
     if 'Password history length' in domain_password_information:
-      self._set_AD_password_policy(
+      self._set_AD_policy(
         service,
+        section,
         'history_count',
         domain_password_information['Password history length']
       )
 
     if 'Minimum password length' in domain_password_information:
-      self._set_AD_password_policy(
+      self._set_AD_policy(
         service,
+        section,
         'min_length',
         domain_password_information['Minimum password length']
       )
 
     if 'Maximum password age' in domain_password_information:
-      self._set_AD_password_policy(
+      self._set_AD_policy(
         service,
+        section,
         'max_age',
-        self._get_seconds(domain_password_information['Maximum password age'])
+        self._parse_duration(domain_password_information['Maximum password age'])
       )
 
     if 'Minimum password age' in domain_password_information:
-      self._set_AD_password_policy(
+      self._set_AD_policy(
         service,
+        section,
         'min_age',
-        self._get_seconds(domain_password_information['Minimum password age'])
+        self._parse_duration(domain_password_information['Minimum password age'])
       )
 
     if 'Password properties' in domain_password_information:
@@ -288,35 +294,85 @@ class Parser(AbstractParser):
         service
       )
 
-  def _set_AD_password_policy(self, service, policy_name, policy_value):
-    if policy_value is None:
+  def _parse_domain_lockout_information(self, domain_lockout_information, service):
+    section = 'account_lockout_policy'
+
+    if 'Lockout threshold' in domain_lockout_information:
+      threshold = domain_lockout_information['Lockout threshold']
+      if threshold is None:
+        threshold = 0
+
+      self._set_AD_policy(
+        service,
+        section,
+        'threshold',
+        int(threshold)
+      )
+
+    if 'Lockout duration' in domain_lockout_information:
+      duration = self._parse_duration(domain_lockout_information['Lockout duration'])
+      self._set_AD_policy(
+        service,
+        section,
+        'duration',
+        int(duration / 60)
+      )
+
+    if 'Lockout observation window' in domain_lockout_information:
+      duration = self._parse_duration(domain_lockout_information['Lockout observation window'])
+      self._set_AD_policy(
+        service,
+        section,
+        'reset_counter_after',
+        int(duration / 60)
+      )
+
+  def _parse_domain_logoff_information(self, domain_logoff_information, service):
+    pass
+
+  def _parse_printers(self, printers, service):
+    pass
+
+  def _set_AD_policy(self, service, section, name, value):
+    if value is None:
       return
 
-    if policy_name in service['AD']['password_policy']:
+    if section not in service['AD']:
       return
 
-    service['AD']['password_policy'][policy_name] = policy_value
+    if name in service['AD'][section]:
+      return
+
+    service['AD'][section][name] = value
 
   def _parse_password_properties(self, password_properties, service):
+    section = 'password_policy'
+
     for pwd_property in password_properties:
       for k, v in pwd_property.items():
         match k:
           case 'DOMAIN_PASSWORD_COMPLEX':
-            self._set_AD_password_policy(
+            self._set_AD_policy(
               service,
+              section,
               'complexity_required',
               v
             )
           case 'DOMAIN_PASSWORD_PASSWORD_STORE_CLEARTEXT':
-            self._set_AD_password_policy(
+            self._set_AD_policy(
               service,
+              section,
               'reversible_encryption',
               v
             )
 
-  def _get_seconds(self, duration):
+  def _parse_duration(self, duration):
     self.__class__.logger.debug(f"parsing duration '{duration}' ...")
     seconds = 0
+
+    if duration in ['not set', 'none']:
+      self.__class__.logger.info(f"{seconds} seconds")
+      return seconds
 
     m = DURATION_PATTERN.fullmatch(duration)
     if m:
@@ -356,12 +412,3 @@ class Parser(AbstractParser):
       return seconds
 
     self.__class__.logger.error(f"could not parse duration")
-
-  def _parse_domain_lockout_information(self, domain_lockout_information, service):
-    pass
-
-  def _parse_domain_logoff_information(self, domain_logoff_information, service):
-    pass
-
-  def _parse_printers(self, printers, service):
-    pass

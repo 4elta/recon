@@ -56,23 +56,32 @@ references = [
 ["info leak"]
 description = "Klartextspeicherung sensibler Informationen: `{info}`"
 
-["AD password policy: history_count"]
+["password_policy: history_count"]
 description = "AD-Passwortrichtlinie: Passwortverlauf: {value} Einträge"
 
-["AD password policy: max_age"]
+["password_policy: max_age"]
 description = "AD-Passwortrichtlinie: maximales Passwortalter: {value}"
 
-["AD password policy: min_age"]
+["password_policy: min_age"]
 description = "AD-Passwortrichtlinie: minimales Passwortalter: {value}"
 
-["AD password policy: min_length"]
+["password_policy: min_length"]
 description = "AD-Passwortrichtlinie: minimale Passwortlänge: {value}"
 
-["AD password policy: complexity_required"]
+["password_policy: complexity_required"]
 description = "AD-Passwortrichtlinie: Passwortkomplexität erfordert: {value}"
 
-["AD password policy: reversible_encryption"]
+["password_policy: reversible_encryption"]
 description = "AD-Passwortrichtlinie: Passwörter mittels reversibler Verschlüsselung gespeichert: {value}"
+
+["account_lockout_policy: threshold"]
+description = "AD-Kontosperr-Richtlinie: Schwellwert: {value}"
+
+["account_lockout_policy: duration"]
+description = "AD-Kontosperr-Richtlinie: Dauer: {value} Minuten"
+
+["account_lockout_policy: reset_counter_after"]
+description = "AD-Kontosperr-Richtlinie: Zähler wird nach {value} Minuten zurückgesetzt"
 
 ["additional info"]
 description = "zusätzliche Informationen: {info}"
