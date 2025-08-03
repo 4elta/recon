@@ -53,35 +53,47 @@ references = [
   "[smb.conf - map to guest](https://www.samba.org/samba/docs/current/man-html/smb.conf.5.html#MAPTOGUEST)"
 ]
 
-["info leak"]
-description = "Klartextspeicherung sensibler Informationen: `{info}`"
+["AD: users: sensitive information"]
+description = "Domäne: Benutzer: sensible Informationen gefunden: {users}"
 
-["password_policy: history_count"]
-description = "AD-Passwortrichtlinie: Passwortverlauf: {value} Einträge"
+["AD: users: AC: neg"]
+description = "Domäne: Benutzer: Kontoeigenschaft `{name}`: {users}"
 
-["password_policy: max_age"]
-description = "AD-Passwortrichtlinie: maximales Passwortalter: {value}"
+["AD: users: AC: pos"]
+description = "Domäne: Benutzer: Kontoeigenschaft `{name}` fehlt: {users}"
 
-["password_policy: min_age"]
-description = "AD-Passwortrichtlinie: minimales Passwortalter: {value}"
+["AD: domain: force_logoff"]
+description = "Domäne: Abmelderichtlinie: inaktive Sitzungen werden nach {value} (Tage:Stunden:Minuten:Sekunden) beendet"
 
-["password_policy: min_length"]
-description = "AD-Passwortrichtlinie: minimale Passwortlänge: {value}"
+["AD: domain: lockout_duration"]
+description = "Domäne: Kontosperr-Richtlinie: Sperrdauer: {value} (Tage:Stunden:Minuten:Sekunden)"
 
-["password_policy: complexity_required"]
-description = "AD-Passwortrichtlinie: Passwortkomplexität erfordert: {value}"
+["AD: domain: lockout_observation_window"]
+description = "Domäne: Kontosperr-Richtlinie: Zähler wird nach {value} (Tage:Stunden:Minuten:Sekunden) zurückgesetzt"
 
-["password_policy: reversible_encryption"]
-description = "AD-Passwortrichtlinie: Passwörter mittels reversibler Verschlüsselung gespeichert: {value}"
+["AD: domain: lockout_threshold"]
+description = "Domäne: Kontosperr-Richtlinie: Sperrschwellwert: {value}"
 
-["account_lockout_policy: threshold"]
-description = "AD-Kontosperr-Richtlinie: Schwellwert: {value}"
+["AD: domain: max_password_age"]
+description = "Domäne: Passwortrichtlinie: maximales Passwortalter: {value} (Tage:Stunden:Minuten:Sekunden)"
 
-["account_lockout_policy: duration"]
-description = "AD-Kontosperr-Richtlinie: Dauer: {value} Minuten"
+["AD: domain: min_password_age"]
+description = "Domäne: Passwortrichtlinie: minimales Passwortalter: {value} (Tage:Stunden:Minuten:Sekunden)"
 
-["account_lockout_policy: reset_counter_after"]
-description = "AD-Kontosperr-Richtlinie: Zähler wird nach {value} Minuten zurückgesetzt"
+["AD: domain: min_password_length"]
+description = "Domäne: Passwortrichtlinie: minimale Passwortlänge: {value}"
+
+["AD: domain: password_history_length"]
+description = "Domäne: Passwortrichtlinie: Passwortverlauf: {value} Einträge"
+
+["AD: domain: password_properties: complex: False"]
+description = "Domäne: Passwortrichtlinie: Passwortkomplexität nicht erfordert"
+
+["AD: domain: password_properties: complex: True"]
+description = "Domäne: Passwortrichtlinie: Passwortkomplexität erfordert"
+
+["AD: domain: password_properties: store_cleartext: True"]
+description = "Domäne: Passwortrichtlinie: Passwörter mittels reversibler Verschlüsselung gespeichert"
 
 ["additional info"]
 description = "zusätzliche Informationen: {info}"

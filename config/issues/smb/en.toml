@@ -53,35 +53,47 @@ references = [
   "[smb.conf - map to guest](https://www.samba.org/samba/docs/current/man-html/smb.conf.5.html#MAPTOGUEST)"
 ]
 
-["info leak"]
-description = "cleartext storage of sensitive information: `{info}`"
+["AD: users: sensitive information"]
+description = "domain: users: sensitive information found: {users}"
 
-["password_policy: history_count"]
-description = "AD password policy: password history count: {value}"
+["AD: users: AC: neg"]
+description = "domain: users: account control `{name}`: {users}"
 
-["password_policy: max_age"]
-description = "AD password policy: maximum password age: {value}"
+["AD: users: AC: pos"]
+description = "domain: users: account control `{name}` missing: {users}"
 
-["password_policy: min_age"]
-description = "AD password policy: minimum password age: {value}"
+["AD: domain: force_logoff"]
+description = "domain: logoff policy: inactive session timeout: {value} (days:hours:minutes:seconds)"
 
-["password_policy: min_length"]
-description = "AD password policy: minimum password length: {value}"
+["AD: domain: lockout_duration"]
+description = "domain: account lockout policy: lockout duration: {value} (days:hours:minutes:seconds)"
 
-["password_policy: complexity_required"]
-description = "AD password policy: require complex passwords: {value}"
+["AD: domain: lockout_observation_window"]
+description = "domain: account lockout policy: reset lockout counter after {value} (days:hours:minutes:seconds)"
 
-["password_policy: reversible_encryption"]
-description = "AD password policy: store passwords using reversible encryption: {value}"
+["AD: domain: lockout_threshold"]
+description = "domain: account lockout policy: lockout threshold: {value}"
 
-["account_lockout_policy: threshold"]
-description = "AD account lockout policy: threshold: {value}"
+["AD: domain: max_password_age"]
+description = "domain: password policy: maximum password age: {value} (days:hours:minutes:seconds)"
 
-["account_lockout_policy: duration"]
-description = "AD account lockout policy: duration: {value} minutes"
+["AD: domain: min_password_age"]
+description = "domain: password policy: minimum password age: {value} (days:hours:minutes:seconds)"
 
-["account_lockout_policy: reset_counter_after"]
-description = "AD account lockout policy: reset counter after {value} minutes"
+["AD: domain: min_password_length"]
+description = "domain: password policy: minimum password length: {value}"
+
+["AD: domain: password_history_length"]
+description = "domain: password policy: password history count: {value}"
+
+["AD: domain: password_properties: complex: False"]
+description = "domain: password policy: does not require complex passwords"
+
+["AD: domain: password_properties: complex: True"]
+description = "domain: password policy: requires complex passwords"
+
+["AD: domain: password_properties: store_cleartext: True"]
+description = "domain: password policy: store passwords using reversible encryption"
 
 ["additional info"]
 description = "additional information: {info}"

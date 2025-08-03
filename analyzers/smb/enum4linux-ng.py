@@ -4,10 +4,9 @@ import json
 import re
 
 from .. import Issue, AbstractParser
-from . import SERVICE_SCHEMA
+from . import SERVICE_SCHEMA, USER_SCHEMA
 
 SMB_DIALECT_PATTERN = re.compile(r'SMB (?P<major>\d+)\.(?P<minor>\d+)(\.(?P<patch>\d+))?')
-SECRETS_PATTERN = re.compile(r'password|secret', re.IGNORECASE)
 
 # see https://github.com/cddmp/enum4linux-ng/pull/56
 DURATION_PATTERN = re.compile(r'(?:(?P<days>\d+) days?)?(?: \(\d+ years?\))? ?(?:(?P<hours>\d+) hours?)? ?(?:(?P<minutes>\d+) minutes?)?')
@@ -216,17 +215,20 @@ class Parser(AbstractParser):
       authentication_methods['NTLM'].append(variation)
 
   def _parse_users(self, users, service):
-    for user_ID, user in users.items():
-      description = user['description']
-      if SECRETS_PATTERN.search(description):
-        service['issues'].append(
-          Issue(
-            'info leak',
-            info = description
-          )
-        )
+    for RID, user_info in users.items():
+      user = copy.deepcopy(USER_SCHEMA)
+      service['AD']['users'][RID] = user
 
-      service['misc'].append(f"user account: `{user['username']}` ({user_ID})")
+      user['name'] = user_info['username']
+
+      if 'name' in user_info and user_info['name'] != "(null)":
+        user['full_name'] = user_info['name']
+
+      if 'acb' in user_info:
+        user['AC'] = int(user_info['acb'], 16)
+
+      if 'description' in user_info:
+        user['description'] = user_info['description']
 
   def _parse_shares(self, shares, service):
     for k, share in shares.items():
@@ -245,126 +247,75 @@ class Parser(AbstractParser):
 
   def _parse_policy(self, policy, service):
     if 'Domain password information' in policy:
-      self._parse_domain_password_information(policy['Domain password information'], service)
+      self._parse_domain_password_information(policy['Domain password information'], service['AD']['domain'])
 
     if 'Domain lockout information' in policy:
-      self._parse_domain_lockout_information(policy['Domain lockout information'], service)
+      self._parse_domain_lockout_information(policy['Domain lockout information'], service['AD']['domain'])
 
     if 'Domain logoff information' in policy:
-      self._parse_domain_logoff_information(policy['Domain logoff information'], service)
+      self._parse_domain_logoff_information(policy['Domain logoff information'], service['AD']['domain'])
 
-  def _parse_domain_password_information(self, domain_password_information, service):
-    section = 'password_policy'
-
+  def _parse_domain_password_information(self, domain_password_information, domain_info):
     if 'Password history length' in domain_password_information:
-      self._set_AD_policy(
-        service,
-        section,
-        'history_count',
-        domain_password_information['Password history length']
-      )
+      password_history_length = domain_password_information['Password history length']
+      if password_history_length is None:
+        password_history_length = 0
+      domain_info['password_history_length'] = password_history_length
 
     if 'Minimum password length' in domain_password_information:
-      self._set_AD_policy(
-        service,
-        section,
-        'min_length',
-        domain_password_information['Minimum password length']
-      )
+      min_password_length = domain_password_information['Minimum password length']
+      if min_password_length is None:
+        min_password_length = 0
+      domain_info['min_password_length'] = min_password_length
 
     if 'Maximum password age' in domain_password_information:
-      self._set_AD_policy(
-        service,
-        section,
-        'max_age',
-        self._parse_duration(domain_password_information['Maximum password age'])
-      )
+      duration = self._parse_duration(domain_password_information['Maximum password age'])
+      domain_info['max_password_age'] = duration
 
     if 'Minimum password age' in domain_password_information:
-      self._set_AD_policy(
-        service,
-        section,
-        'min_age',
-        self._parse_duration(domain_password_information['Minimum password age'])
-      )
+      duration = self._parse_duration(domain_password_information['Minimum password age'])
+      domain_info['min_password_age'] = duration
 
     if 'Password properties' in domain_password_information:
       self._parse_password_properties(
         domain_password_information['Password properties'],
-        service
+        domain_info
       )
 
-  def _parse_domain_lockout_information(self, domain_lockout_information, service):
-    section = 'account_lockout_policy'
-
-    if 'Lockout threshold' in domain_lockout_information:
-      threshold = domain_lockout_information['Lockout threshold']
-      if threshold is None:
-        threshold = 0
-
-      self._set_AD_policy(
-        service,
-        section,
-        'threshold',
-        int(threshold)
-      )
+  def _parse_domain_lockout_information(self, domain_lockout_information, domain_info):
+    if 'Lockout observation window' in domain_lockout_information:
+      duration = self._parse_duration(domain_lockout_information['Lockout observation window'])
+      domain_info['lockout_observation_window'] = duration
 
     if 'Lockout duration' in domain_lockout_information:
       duration = self._parse_duration(domain_lockout_information['Lockout duration'])
-      self._set_AD_policy(
-        service,
-        section,
-        'duration',
-        int(duration / 60)
-      )
+      domain_info['lockout_duration'] = duration
 
-    if 'Lockout observation window' in domain_lockout_information:
-      duration = self._parse_duration(domain_lockout_information['Lockout observation window'])
-      self._set_AD_policy(
-        service,
-        section,
-        'reset_counter_after',
-        int(duration / 60)
-      )
+    if 'Lockout threshold' in domain_lockout_information:
+      lockout_threshold = domain_lockout_information['Lockout threshold']
+      if lockout_threshold is None:
+        lockout_threshold = 0
 
-  def _parse_domain_logoff_information(self, domain_logoff_information, service):
-    pass
+      domain_info['lockout_threshold'] = lockout_threshold
+
+  def _parse_domain_logoff_information(self, domain_logoff_information, domain_info):
+    if 'Force logoff time' in domain_logoff_information:
+      duration = self._parse_duration(domain_logoff_information['Force logoff time'])
+      domain_info['force_logoff'] = duration
 
   def _parse_printers(self, printers, service):
-    pass
+    pass #TODO
 
-  def _set_AD_policy(self, service, section, name, value):
-    if value is None:
-      return
-
-    if section not in service['AD']:
-      return
-
-    if name in service['AD'][section]:
-      return
-
-    service['AD'][section][name] = value
-
-  def _parse_password_properties(self, password_properties, service):
-    section = 'password_policy'
+  def _parse_password_properties(self, password_properties, domain_info):
+    domain_info['password_properties'] = {}
 
     for pwd_property in password_properties:
       for k, v in pwd_property.items():
         match k:
           case 'DOMAIN_PASSWORD_COMPLEX':
-            self._set_AD_policy(
-              service,
-              section,
-              'complexity_required',
-              v
-            )
+            domain_info['password_properties']['complex'] = v
           case 'DOMAIN_PASSWORD_PASSWORD_STORE_CLEARTEXT':
-            self._set_AD_policy(
-              service,
-              section,
-              'reversible_encryption',
-              v
-            )
+            domain_info['password_properties']['store_cleartext'] = v
 
   def _parse_duration(self, duration):
     self.__class__.logger.debug(f"parsing duration '{duration}' ...")
@@ -412,3 +363,4 @@ class Parser(AbstractParser):
       return seconds
 
     self.__class__.logger.error(f"could not parse duration")
+    return 0

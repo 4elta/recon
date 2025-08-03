@@ -11,12 +11,21 @@ SERVICE_SCHEMA = {
   'authentication_methods': {}, # Kerberos: [], NTLM: [guest, anonymous]
   # https://sensepost.com/blog/2024/guest-vs-null-session-on-windows/
   'AD': {
-    'password_policy': {},
-    'account_lockout_policy': {},
+    'domain': {},
+    'users': {},
   },
   'issues': [],
   'misc': [], # misc information (NetBIOS, etc); shown with the host, after all issues
   'info': [], # additional (debug) information; shown at the end of the analysis
+}
+
+USER_SCHEMA = {
+  'name': None,
+  'full_name': None, # can be null
+  # account control bits
+  # https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-samr/b10cfda1-f24f-441b-8f43-80cb93e786ec
+  'AC': None, # can be null
+  'description': None # can be null
 }
 
 PROTOCOL_NICE = {
@@ -37,20 +46,36 @@ class Analyzer(AbstractAnalyzer):
       issues = service['issues']
 
       if service['dialects']:
-        self._analyze_dialects(service['dialects'], self.recommendations, issues)
+        self._analyze_dialects(
+          service['dialects'],
+          self.recommendations,
+          issues
+        )
    
       if service['signing']:
-        self._analyze_signing(service['signing'], self.recommendations, issues)
+        self._analyze_signing(
+          service['signing'],
+          self.recommendations,
+          issues
+        )
 
       if service['authentication_methods']:
-        self._analyze_authentication_methods(service['authentication_methods'], self.recommendations, issues)
+        self._analyze_authentication_methods(
+          service['authentication_methods'],
+          self.recommendations,
+          issues
+        )
 
-      if service['AD']['password_policy']:
-        self._analyze_AD_password_policy(service['AD']['password_policy'], self.recommendations, issues)
+      if service['AD']['domain']:
+        self._analyze_domain_info(
+          service['AD']['domain'],
+          self.recommendations,
+          issues
+        )
 
-      if service['AD']['account_lockout_policy']:
-        self._analyze_AD_account_lockout_policy(
-          service['AD']['account_lockout_policy'],
+      if service['AD']['users']:
+        self._analyze_domain_users(
+          service['AD']['users'],
           self.recommendations,
           issues
         )
@@ -138,65 +163,190 @@ class Analyzer(AbstractAnalyzer):
         for variation in variations:
           issues.append(Issue(f'authentication: {method}: {variation}'))
 
-  def _analyze_AD_password_policy(self, policy, recommendations, issues):
-    section = 'password_policy'
-
-    if 'AD' not in recommendations or section not in recommendations['AD']:
+  def _analyze_domain_info(self, domain_info, recommendations, issues):
+    if 'AD' not in recommendations:
       return
 
-    for policy_name, policy_value in policy.items():
-      if policy_name not in recommendations['AD'][section]:
-        continue
-
-      match policy_name:
-        case 'history_count':
-          if policy_value < recommendations['AD'][section][policy_name]:
-            issues.append(Issue(f'{section}: {policy_name}', value=policy_value))
-        case 'max_age':
-          if (
-            (policy_value == 0 and recommendations['AD'][section][policy_name] != 0)
-            or policy_value > recommendations['AD'][section][policy_name]
-          ):
-            duration = datetime.timedelta(seconds=policy_value)
-            issues.append(
-              Issue(
-                f'{section}: {policy_name}',
-                value = str(duration).replace(', 0:00:00', '')
-              )
-            )
-        case 'min_age':
-          if policy_value < recommendations['AD'][section][policy_name]:
-            duration = datetime.timedelta(seconds=policy_value)
-            issues.append(
-              Issue(
-                f'{section}: {policy_name}',
-                value = str(duration).replace(', 0:00:00', '')
-              )
-            )
-        case 'min_length':
-          if policy_value < recommendations['AD'][section][policy_name]:
-            issues.append(Issue(f'{section}: {policy_name}', value=policy_value))
-        case _:
-          if policy_value != recommendations['AD'][section][policy_name]:
-            issues.append(Issue(f'{section}: {policy_name}', value=policy_value))
-
-  def _analyze_AD_account_lockout_policy(self, policy, recommendations, issues):
-    section = 'account_lockout_policy'
-
-    if 'AD' not in recommendations or section not in recommendations['AD']:
+    if 'domain' not in recommendations['AD']:
       return
 
-    for policy_name, policy_value in policy.items():
-      if policy_name not in recommendations['AD'][section]:
+    issue_group = 'AD: domain'
+
+    for field_name, field_value in domain_info.items():
+      if field_name not in recommendations['AD']['domain']:
         continue
 
-      match policy_name:
-        case 'threshold':
+      recommendation = recommendations['AD']['domain'][field_name]
+
+      match field_name:
+
+        # duration; disabled with '0'; value must be equal or larger than recommendation
+        case 'force_logoff':
           if (
-            (policy_value == 0 and recommendations['AD'][section][policy_name] != 0)
-            or (policy_value > recommendations['AD'][section][policy_name])
+            (field_value == 0 and recommendation != 0)
+            or field_value < recommendation
           ):
-            issues.append(Issue(f'{section}: {policy_name}', value=policy_value))
+            issues.append(
+              Issue(
+                f'{issue_group}: {field_name}',
+                value = self._format_duration(field_value)
+              )
+            )
+
+        # duration; disabled with '0'; value must be equal or larger than recommendation
+        case 'lockout_duration' | 'lockout_observation_window' | 'min_password_age':
+          if field_value < recommendation:
+            issues.append(
+              Issue(
+                f'{issue_group}: {field_name}',
+                value = self._format_duration(field_value)
+              )
+            )
+
+        # duration; disabled with '0'; value must be equal or less than recommendation
+        case 'max_password_age':
+          if (
+            (field_value == 0 and recommendation != 0)
+            or field_value > recommendation
+          ):
+            issues.append(
+              Issue(
+                f'{issue_group}: {field_name}',
+                value = self._format_duration(field_value)
+              )
+            )
+
+        # integer; disabled with '0'; value must be equal or less than recommendation
+        case 'lockout_threshold':
+          if (
+            (field_value == 0 and recommendation != 0)
+            or field_value > recommendation
+          ):
+            issues.append(
+              Issue(
+                f'{issue_group}: {field_name}',
+                value = field_value
+              )
+            )
+
+        # integer; value must be equal or larger than recommendation
+        case 'min_password_length' | 'password_history_length':
+          if field_value < recommendation:
+            issues.append(
+              Issue(
+                f'{issue_group}: {field_name}',
+                value = field_value
+              )
+            )
+
+        # password properties (boolean flags)
+        case 'password_properties':
+          for password_property_name, password_property in field_value.items():
+            if password_property_name not in recommendation:
+              continue
+
+            if password_property != recommendation[password_property_name]:
+              issues.append(
+                Issue(
+                  f'{issue_group}: {field_name}: {password_property_name}: {password_property}'
+                )
+              )
+
         case _:
-          if policy_value < recommendations['AD'][section][policy_name]:
-            issues.append(Issue(f'{section}: {policy_name}', value=policy_value))
+          if field_value != recommendation[password_property_name]:
+            issues.append(
+              Issue(
+                f'{issue_group}: {field_name}',
+                value = field_value
+              )
+            )
+
+  def _format_duration(self, seconds):
+    duration = datetime.timedelta(seconds=seconds)
+
+    seconds = duration.seconds
+    hours = int(seconds / (60*60))
+    seconds -= hours * 60*60
+
+    minutes = int(seconds / 60)
+    seconds -= minutes * 60
+
+    return f'{duration.days}:{hours}:{minutes}:{seconds}.{duration.microseconds}'
+
+  def _analyze_domain_users(self, domain_users, recommendations, issues):
+    if 'AD' not in recommendations:
+      return
+
+    if 'users' not in recommendations['AD']:
+      return
+
+    issue_group = 'AD: users'
+
+    secrets_pattern = None
+    if 'secrets' in recommendations['AD']['users']:
+      secrets_pattern = recommendations['AD']['users']['secrets']
+
+    AC_bits_neg = None
+    if 'AC_bits_neg' in recommendations['AD']['users']:
+      AC_bits_neg = recommendations['AD']['users']['AC_bits_neg']
+
+    AC_bits_pos = None
+    if 'AC_bits_pos' in recommendations['AD']['users']:
+      AC_bits_pos = recommendations['AD']['users']['AC_bits_pos']
+
+    AC_neg = {}
+    AC_pos = {}
+    sensitive_info = []
+
+    for RID, user in domain_users.items():
+      if secrets_pattern:
+        if user['full_name'] and re.search(secrets_pattern, user['full_name']):
+          if user['name'] not in sensitive_info:
+            sensitive_info.append(user['name'])
+
+        if user['description'] and re.search(secrets_pattern, user['description']):
+          if user['name'] not in sensitive_info:
+            sensitive_info.append(user['name'])
+
+      if user['AC']:
+        if AC_bits_neg:
+          for bit_string, name in AC_bits_neg.items():
+            bit = int(bit_string, 16)
+            if user['AC'] & bit != 0:
+              if name not in AC_neg:
+                AC_neg[name] = []
+              AC_neg[name].append(user['name'])
+
+        if AC_bits_pos:
+          for bit_string, name in AC_bits_pos.items():
+            bit = int(bit_string, 16)
+            if user['AC'] & bit == 0:
+              if name not in AC_pos:
+                AC_pos[name] = []
+              AC_pos[name].append(user['name'])
+
+    for AC_name, users in AC_neg.items():
+      issues.append(
+        Issue(
+          f'{issue_group}: AC: neg',
+          name = AC_name,
+          users = ', '.join([f'`{user}`' for user in users])
+        )
+      )
+
+    for AC_name, users in AC_pos.items():
+      issues.append(
+        Issue(
+          f'{issue_group}: AC: pos',
+          name = AC_name,
+          users = ', '.join([f'`{user}`' for user in users])
+        )
+      )
+
+    if sensitive_info:
+      issues.append(
+        Issue(
+          f'{issue_group}: sensitive information',
+          users = ', '.join([f'`{user}`' for user in sensitive_info])
+        )
+      )
