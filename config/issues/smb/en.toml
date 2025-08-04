@@ -1,25 +1,25 @@
 ["protocol supported"]
 description = "{protocol}: protocol supported"
-references = [
-  "[Detect, enable, and disable SMBv1, SMBv2, and SMBv3 in Windows](https://learn.microsoft.com/en-us/windows-server/storage/file-server/troubleshoot/detect-enable-and-disable-smbv1-v2-v3)"
+recommendations = [
+  "[disable {protocol} in Windows](https://learn.microsoft.com/en-us/windows-server/storage/file-server/troubleshoot/detect-enable-and-disable-smbv1-v2-v3)"
 ]
 
 ["dialect supported"]
 description = "{protocol}: dialect supported: {dialect}"
-references = [
-  "[Manage SMB dialects](https://learn.microsoft.com/en-us/windows-server/storage/file-server/manage-smb-dialects)"
+recommendations = [
+  "[manage SMB dialects in Windows](https://learn.microsoft.com/en-us/windows-server/storage/file-server/manage-smb-dialects)"
 ]
 
 ["protocol not supported"]
 description = "{protocol}: not supported"
-references = [
-  "[Detect, enable, and disable SMBv1, SMBv2, and SMBv3 in Windows](https://learn.microsoft.com/en-us/windows-server/storage/file-server/troubleshoot/detect-enable-and-disable-smbv1-v2-v3)"
+recommendations = [
+  "[enable {protocol} in Windows](https://learn.microsoft.com/en-us/windows-server/storage/file-server/troubleshoot/detect-enable-and-disable-smbv1-v2-v3)"
 ]
 
 ["dialect not supported"]
 description = "{protocol}: dialect not supported: {dialect}"
-references = [
-  "[Manage SMB dialects](https://learn.microsoft.com/en-us/windows-server/storage/file-server/manage-smb-dialects)"
+recommendations = [
+  "[manage SMB dialects in Windows](https://learn.microsoft.com/en-us/windows-server/storage/file-server/manage-smb-dialects)"
 ]
 
 ["signing r:True"]
@@ -27,8 +27,8 @@ description = "{protocol}: signing required"
 
 ["signing r:False"]
 description = "{protocol}: signing not required"
-references = [
-  "[What is Server Message Block signing?](https://learn.microsoft.com/en-us/windows-server/storage/file-server/smb-signing-overview)"
+recommendations = [
+  "[enable SMB signing in Windows](https://learn.microsoft.com/en-us/windows-server/storage/file-server/smb-signing-overview)"
 ]
 
 ["authentication"]
@@ -36,30 +36,30 @@ description = "authentication via {method}"
 
 ["authentication: NTLM"]
 description = "authentication via NTLM"
-references = [
-  "[Introducing the Restriction of NTLM Authentication](https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2008-R2-and-2008/dd560653(v=ws.10))"
+recommendations = [
+  "[restrict the use of NTLM authentication](https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2008-R2-and-2008/dd560653(v=ws.10))"
 ]
 
 ["authentication: NTLM: anonymous"]
 description = "NTLM: anonymous access (null session) allowed"
-references = [
-  "[IPC$ share and null session behavior in Windows](https://learn.microsoft.com/en-us/troubleshoot/windows-server/networking/inter-process-communication-share-null-session)"
+recommendations = [
+  "[disallow anonymous access](https://learn.microsoft.com/en-us/troubleshoot/windows-server/networking/inter-process-communication-share-null-session)"
 ]
 
 ["authentication: NTLM: guest"]
 description = "NTLM: guest access allowed"
-references = [
-  "[AllowInsecureGuestAuth](https://learn.microsoft.com/en-us/windows-hardware/customize/desktop/unattend/microsoft-windows-workstationservice-allowinsecureguestauth)",
-  "[smb.conf - map to guest](https://www.samba.org/samba/docs/current/man-html/smb.conf.5.html#MAPTOGUEST)"
+recommendations = [
+  "[disable guest access in Windows](https://learn.microsoft.com/en-us/windows-hardware/customize/desktop/unattend/microsoft-windows-workstationservice-allowinsecureguestauth)",
+  "[disable guest access in Samba](https://www.samba.org/samba/docs/current/man-html/smb.conf.5.html#MAPTOGUEST)"
 ]
 
 ["AD: users: sensitive information"]
 description = "domain: users: sensitive information found: {users}"
 
-["AD: users: AC: neg"]
+["AD: users: AC"]
 description = "domain: users: account control `{name}`: {users}"
 
-["AD: users: AC: pos"]
+["AD: users: AC: missing"]
 description = "domain: users: account control `{name}` missing: {users}"
 
 ["AD: domain: force_logoff"]

@@ -10,8 +10,7 @@
 # allowed authentication methods
 authentication_methods = [ 'Kerberos' ]
 # possible values: 'Kerberos', 'NTLM'
-
-# applications are generally advised not to use NTLM.
+# MS: "applications are generally advised not to use NTLM":
 # https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-nlmp/1e846608-4c5f-41f4-8454-1b91af8a755b
 
 [dialect]
@@ -26,23 +25,25 @@ SMB2 = '3.1.1'
 SMB2 = {required = true}
 
 [AD.users]
+# AD user information
 
 # regular expression to look for secrets in the information stored with a user
 secrets = '(?i)password|secret|passwort|geheim|zugangsdaten'
 
-# account control bits that should not be set
+# account control bits that should NOT be set
 # https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-samr/b10cfda1-f24f-441b-8f43-80cb93e786ec
-[AD.users.AC_bits_neg]
+[AD.users.AC.discouraged]
 0x00000004 = 'PASSWORD_NOT_REQUIRED'
 0x00000200 = 'DONT_EXPIRE_PASSWORD'
 0x00000800 = 'ENCRYPTED_TEXT_PASSWORD_ALLOWED'
 0x00008000 = 'USE_DES_KEY_ONLY'
-0x00010000 = 'DONT_REQUIRE_PREAUTH'
+0x00010000 = 'DONT_REQUIRE_PREAUTH' # AS-REP roasting
 0x00040000 = 'TRUSTED_TO_AUTHENTICATE_FOR_DELEGATION'
 0x00080000 = 'NO_AUTH_DATA_REQUIRED'
 
 # account control bits that should be set
-[AD.users.AC_bits_pos]
+[AD.users.AC.recommended]
+# none yet
 
 [AD.domain]
 # AD domain information, queried via SAM-R protocol
@@ -68,21 +69,32 @@ lockout_threshold = 5
 
 # maximum time (in seconds) allowed before a password reset or change is required
 max_password_age = 0 # diabled
+# NIST recommends against groundless periodic password changes:
+# https://pages.nist.gov/800-63-4/sp800-63b.html#passwordver
 
 # minimum time (in seconds) allowed before a password change operation is allowed
 min_password_age = 259200 # 3 days
 
 # minimum password length
-min_password_length = 15
+min_password_length = 8
+# NIST recommends 15 characters; 8 characters when MFA is mandatory:
+# https://pages.nist.gov/800-63-4/sp800-63b.html#passwordver
+# TODO: how to test for MFA requirement?
 
 # number of previously used passwords
 password_history_length = 10
 
 [AD.domain.password_properties]
 
-# server enforces password complexity policy
-# https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-samr/cb1f380a-0a51-4705-84cd-eea1b85953e0
-complex = false
+# passwords must meet complexity requirements
+# https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-10/security/threat-protection/security-policy-settings/password-must-meet-complexity-requirements
+complex = true
+# NIST recommends against "complexity rules":
+# https://pages.nist.gov/800-63-4/sp800-63b.html#complexity
+# but it also recommends the password should not contain context-specific words,
+# e.g. name of the service/company, username, etc.
+# the security policy setting enforces this (requirement 1).
 
-# server MUST store the cleartext password, not just the computed hashes
+# store passwords using reversible encryption
+# https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-10/security/threat-protection/security-policy-settings/store-passwords-using-reversible-encryption
 store_cleartext = false

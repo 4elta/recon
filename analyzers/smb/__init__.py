@@ -11,8 +11,8 @@ SERVICE_SCHEMA = {
   'authentication_methods': {}, # Kerberos: [], NTLM: [guest, anonymous]
   # https://sensepost.com/blog/2024/guest-vs-null-session-on-windows/
   'AD': {
-    'domain': {},
     'users': {},
+    'domain': {},
   },
   'issues': [],
   'misc': [], # misc information (NetBIOS, etc); shown with the host, after all issues
@@ -22,7 +22,7 @@ SERVICE_SCHEMA = {
 USER_SCHEMA = {
   'name': None,
   'full_name': None, # can be null
-  # account control bits
+  # account control bit field
   # https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-samr/b10cfda1-f24f-441b-8f43-80cb93e786ec
   'AC': None, # can be null
   'description': None # can be null
@@ -66,16 +66,16 @@ class Analyzer(AbstractAnalyzer):
           issues
         )
 
-      if service['AD']['domain']:
-        self._analyze_domain_info(
-          service['AD']['domain'],
+      if service['AD']['users']:
+        self._analyze_domain_users(
+          service['AD']['users'],
           self.recommendations,
           issues
         )
 
-      if service['AD']['users']:
-        self._analyze_domain_users(
-          service['AD']['users'],
+      if service['AD']['domain']:
+        self._analyze_domain_info(
+          service['AD']['domain'],
           self.recommendations,
           issues
         )
@@ -162,6 +162,86 @@ class Analyzer(AbstractAnalyzer):
 
         for variation in variations:
           issues.append(Issue(f'authentication: {method}: {variation}'))
+
+  def _analyze_domain_users(self, domain_users, recommendations, issues):
+    if 'AD' not in recommendations:
+      return
+
+    if 'users' not in recommendations['AD']:
+      return
+
+    issue_group = 'AD: users'
+
+    secrets_pattern = None
+    if 'secrets' in recommendations['AD']['users']:
+      secrets_pattern = recommendations['AD']['users']['secrets']
+
+    AC_discouraged = None
+    AC_recommended = None
+
+    if 'AC' in recommendations['AD']['users']:
+      if 'discouraged' in recommendations['AD']['users']['AC']:
+        AC_discouraged = recommendations['AD']['users']['AC']['discouraged']
+
+      if 'recommended' in recommendations['AD']['users']['AC']:
+        AC_recommended = recommendations['AD']['users']['AC']['recommended']
+
+    AC_present = {}
+    AC_missing = {}
+    users_with_sensitive_info = []
+
+    for RID, user in domain_users.items():
+      if secrets_pattern:
+        if user['full_name'] and re.search(secrets_pattern, user['full_name']):
+          if user['name'] not in users_with_sensitive_info:
+            users_with_sensitive_info.append(user['name'])
+
+        if user['description'] and re.search(secrets_pattern, user['description']):
+          if user['name'] not in users_with_sensitive_info:
+            users_with_sensitive_info.append(user['name'])
+
+      if user['AC']:
+        if AC_discouraged:
+          for hex_string, name in AC_discouraged.items():
+            value = int(hex_string, 16)
+            if user['AC'] & value != 0:
+              if name not in AC_present:
+                AC_present[name] = []
+              AC_present[name].append(user['name'])
+
+        if AC_recommended:
+          for hex_string, name in AC_recommended.items():
+            value = int(hex_string, 16)
+            if user['AC'] & value == 0:
+              if name not in AC_missing:
+                AC_missing[name] = []
+              AC_missing[name].append(user['name'])
+
+    for AC_name, users in AC_present.items():
+      issues.append(
+        Issue(
+          f'{issue_group}: AC',
+          name = AC_name,
+          users = ', '.join([f'`{user}`' for user in users])
+        )
+      )
+
+    for AC_name, users in AC_missing.items():
+      issues.append(
+        Issue(
+          f'{issue_group}: AC: missing',
+          name = AC_name,
+          users = ', '.join([f'`{user}`' for user in users])
+        )
+      )
+
+    if users_with_sensitive_info:
+      issues.append(
+        Issue(
+          f'{issue_group}: sensitive information',
+          users = ', '.join([f'`{user}`' for user in users_with_sensitive_info])
+        )
+      )
 
   def _analyze_domain_info(self, domain_info, recommendations, issues):
     if 'AD' not in recommendations:
@@ -273,80 +353,3 @@ class Analyzer(AbstractAnalyzer):
 
     return f'{duration.days}:{hours}:{minutes}:{seconds}.{duration.microseconds}'
 
-  def _analyze_domain_users(self, domain_users, recommendations, issues):
-    if 'AD' not in recommendations:
-      return
-
-    if 'users' not in recommendations['AD']:
-      return
-
-    issue_group = 'AD: users'
-
-    secrets_pattern = None
-    if 'secrets' in recommendations['AD']['users']:
-      secrets_pattern = recommendations['AD']['users']['secrets']
-
-    AC_bits_neg = None
-    if 'AC_bits_neg' in recommendations['AD']['users']:
-      AC_bits_neg = recommendations['AD']['users']['AC_bits_neg']
-
-    AC_bits_pos = None
-    if 'AC_bits_pos' in recommendations['AD']['users']:
-      AC_bits_pos = recommendations['AD']['users']['AC_bits_pos']
-
-    AC_neg = {}
-    AC_pos = {}
-    sensitive_info = []
-
-    for RID, user in domain_users.items():
-      if secrets_pattern:
-        if user['full_name'] and re.search(secrets_pattern, user['full_name']):
-          if user['name'] not in sensitive_info:
-            sensitive_info.append(user['name'])
-
-        if user['description'] and re.search(secrets_pattern, user['description']):
-          if user['name'] not in sensitive_info:
-            sensitive_info.append(user['name'])
-
-      if user['AC']:
-        if AC_bits_neg:
-          for bit_string, name in AC_bits_neg.items():
-            bit = int(bit_string, 16)
-            if user['AC'] & bit != 0:
-              if name not in AC_neg:
-                AC_neg[name] = []
-              AC_neg[name].append(user['name'])
-
-        if AC_bits_pos:
-          for bit_string, name in AC_bits_pos.items():
-            bit = int(bit_string, 16)
-            if user['AC'] & bit == 0:
-              if name not in AC_pos:
-                AC_pos[name] = []
-              AC_pos[name].append(user['name'])
-
-    for AC_name, users in AC_neg.items():
-      issues.append(
-        Issue(
-          f'{issue_group}: AC: neg',
-          name = AC_name,
-          users = ', '.join([f'`{user}`' for user in users])
-        )
-      )
-
-    for AC_name, users in AC_pos.items():
-      issues.append(
-        Issue(
-          f'{issue_group}: AC: pos',
-          name = AC_name,
-          users = ', '.join([f'`{user}`' for user in users])
-        )
-      )
-
-    if sensitive_info:
-      issues.append(
-        Issue(
-          f'{issue_group}: sensitive information',
-          users = ', '.join([f'`{user}`' for user in sensitive_info])
-        )
-      )

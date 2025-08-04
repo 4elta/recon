@@ -1,25 +1,25 @@
 ["protocol supported"]
 description = "{protocol}: Protokoll unterstützt"
-references = [
-  "[Erkennen, Aktivieren und Deaktivieren von SMBv1, SMBv2 und SMBv3 in Windows](https://learn.microsoft.com/de-de/windows-server/storage/file-server/troubleshoot/detect-enable-and-disable-smbv1-v2-v3)"
+recommendations = [
+  "[deaktivieren Sie {protocol} in Windows](https://learn.microsoft.com/de-de/windows-server/storage/file-server/troubleshoot/detect-enable-and-disable-smbv1-v2-v3)"
 ]
 
 ["dialect supported"]
 description = "{protocol}: Dialekt unterstützt: {dialect}"
-references = [
-  "[Verwalten von SMB-Dialekten](https://learn.microsoft.com/de-de/windows-server/storage/file-server/manage-smb-dialects)"
+recommendations = [
+  "[verwalten Sie SMB-Dialekte in Windows](https://learn.microsoft.com/de-de/windows-server/storage/file-server/manage-smb-dialects)"
 ]
 
 ["protocol not supported"]
 description = "{protocol}: Protokoll nicht unterstützt"
-references = [
-  "[Erkennen, Aktivieren und Deaktivieren von SMBv1, SMBv2 und SMBv3 in Windows](https://learn.microsoft.com/de-de/windows-server/storage/file-server/troubleshoot/detect-enable-and-disable-smbv1-v2-v3)"
+recommendations = [
+  "[aktivieren Sie {protocol} in Windows](https://learn.microsoft.com/de-de/windows-server/storage/file-server/troubleshoot/detect-enable-and-disable-smbv1-v2-v3)"
 ]
 
 ["dialect not supported"]
 description = "{protocol}: Dialekt nicht unterstützt: {dialect}"
-references = [
-  "[Verwalten von SMB-Dialekten](https://learn.microsoft.com/de-de/windows-server/storage/file-server/manage-smb-dialects)"
+recommendations = [
+  "[verwalten Sie SMB-Dialekte in Windows](https://learn.microsoft.com/de-de/windows-server/storage/file-server/manage-smb-dialects)"
 ]
 
 ["signing r:True"]
@@ -27,8 +27,8 @@ description = "{protocol}: Signatur erforderlich"
 
 ["signing r:False"]
 description = "{protocol}: Signatur nicht erforderlich"
-references = [
-  "[Was sind Server Message Block-Signaturen?](https://learn.microsoft.com/de-de/windows-server/storage/file-server/smb-signing-overview)"
+recommendations = [
+  "[aktivieren Sie SMB-Signatur in Windows](https://learn.microsoft.com/de-de/windows-server/storage/file-server/smb-signing-overview)"
 ]
 
 ["authentication"]
@@ -36,30 +36,30 @@ description = "Authentifizierung mittels {method}"
 
 ["authentication: NTLM"]
 description = "Authentifizierung mittels NTLM"
-references = [
-  "[Introducing the Restriction of NTLM Authentication](https://learn.microsoft.com/de-de/previous-versions/windows/it-pro/windows-server-2008-R2-and-2008/dd560653(v=ws.10))"
+recommendations = [
+  "[deaktivieren Sie die Verwendung von NTLM-Authentikation](https://learn.microsoft.com/de-de/previous-versions/windows/it-pro/windows-server-2008-R2-and-2008/dd560653(v=ws.10))"
 ]
 
 ["authentication: NTLM: anonymous"]
 description = "NTLM: anonymer Zugriff (Null-Session) erlaubt"
-references = [
-  "[IPC$-Freigabe- und NULL-Sitzungsverhalten in Windows](https://learn.microsoft.com/de-de/troubleshoot/windows-server/networking/inter-process-communication-share-null-session)"
+recommendations = [
+  "[unterbinden Sie anonymer Zugriff (Null-Session)](https://learn.microsoft.com/de-de/troubleshoot/windows-server/networking/inter-process-communication-share-null-session)"
 ]
 
 ["authentication: NTLM: guest"]
 description = "NTLM: Gast-Zugriff erlaubt"
-references = [
-  "[AllowInsecureGuestAuth](https://learn.microsoft.com/de-de/windows-hardware/customize/desktop/unattend/microsoft-windows-workstationservice-allowinsecureguestauth)",
-  "[smb.conf - map to guest](https://www.samba.org/samba/docs/current/man-html/smb.conf.5.html#MAPTOGUEST)"
+recommendations = [
+  "[deaktivieren Sie Gast-Zugriff in Windows](https://learn.microsoft.com/de-de/windows-hardware/customize/desktop/unattend/microsoft-windows-workstationservice-allowinsecureguestauth)",
+  "[deaktivieren Sie Gast-Zugriff in Samba](https://www.samba.org/samba/docs/current/man-html/smb.conf.5.html#MAPTOGUEST)"
 ]
 
 ["AD: users: sensitive information"]
 description = "Domäne: Benutzer: sensible Informationen gefunden: {users}"
 
-["AD: users: AC: neg"]
+["AD: users: AC"]
 description = "Domäne: Benutzer: Kontoeigenschaft `{name}`: {users}"
 
-["AD: users: AC: pos"]
+["AD: users: AC: missing"]
 description = "Domäne: Benutzer: Kontoeigenschaft `{name}` fehlt: {users}"
 
 ["AD: domain: force_logoff"]

@@ -57,6 +57,7 @@ class Issue(dict):
     for recommendation in recommendations:
       formatted_recommendation = recommendation.format(**self.values)
       self.recommendations.append(formatted_recommendation)
+
     self['recommendations'] = self.recommendations
 
   def _format_references(self, references):
