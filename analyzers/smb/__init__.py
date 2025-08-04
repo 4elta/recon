@@ -43,6 +43,8 @@ class Analyzer(AbstractAnalyzer):
     self.services = services
 
     for identifier, service in services.items():
+      self.__class__.logger.debug(f"analyzing {identifier} ...")
+
       issues = service['issues']
 
       if service['dialects']:
@@ -91,9 +93,12 @@ class Analyzer(AbstractAnalyzer):
     return services
 
   def _analyze_dialects(self, dialects, recommendations, issues):
+    self.__class__.logger.debug("analyzing dialects ...")
+
     # look for missing protocols/dialects support
     for protocol, dialect in recommendations['dialect'].items():
       if protocol not in dialects:
+        self.__class__.logger.info(f"protocol not supported: {protocol}")
         issues.append(
           Issue(
             "protocol not supported",
@@ -103,6 +108,7 @@ class Analyzer(AbstractAnalyzer):
         continue
 
       if dialect not in dialects[protocol]:
+        self.__class__.logger.info(f"dialect not supported: {dialect}")
         issues.append(
           Issue(
             "dialect not supported",
@@ -114,6 +120,7 @@ class Analyzer(AbstractAnalyzer):
     # look for protocols/dialects that should not be supported
     for protocol, dialect_list in dialects.items():
       if protocol not in recommendations['dialect']:
+        self.__class__.logger.info(f"protocol supported: {protocol}")
         issues.append(
           Issue(
             "protocol supported",
@@ -126,6 +133,7 @@ class Analyzer(AbstractAnalyzer):
           protocol not in recommendations['dialect']
           or dialect < recommendations['dialect'][protocol]
         ):
+          self.__class__.logger.info(f"dialect supported: {dialect}")
           issues.append(
             Issue(
               "dialect supported",
@@ -135,11 +143,16 @@ class Analyzer(AbstractAnalyzer):
           )
 
   def _analyze_signing(self, signing, recommendations, issues):
+    self.__class__.logger.debug("analyzing SMB signing ...")
+
     for protocol, signing_info in signing.items():
-      if (
-        protocol not in recommendations['signing']
-        or signing_info['required'] != recommendations['signing'][protocol]['required']
-      ):
+      # ignore protocol version that don't have a recommendation:
+      # these are flagged as "not recommended" anyway
+      if protocol not in recommendations['signing']:
+        continue
+
+      if signing_info['required'] != recommendations['signing'][protocol]['required']:
+        self.__class__.logger.info(f"{protocol}: signing required: {signing_info['required']}")
         issues.append(
           Issue(
             f"signing r:{signing_info['required']}",
@@ -148,11 +161,15 @@ class Analyzer(AbstractAnalyzer):
         )
 
   def _analyze_authentication_methods(self, authentication_methods, recommendations, issues):
+    self.__class__.logger.debug("analyzing authentication methods ...")
+
     for method, variations in authentication_methods.items():
       if method not in recommendations['authentication_methods']:
         if method == 'NTLM':
+          self.__class__.logger.info("authentication: NTLM")
           issues.append(Issue('authentication: NTLM'))
         else:
+          self.__class__.logger.info(f"authentication: {method}")
           issues.append(
             Issue(
               'authentication',
@@ -161,9 +178,12 @@ class Analyzer(AbstractAnalyzer):
           )
 
         for variation in variations:
+          self.__class__.logger.info(f"authentication: {method}: {variation}")
           issues.append(Issue(f'authentication: {method}: {variation}'))
 
   def _analyze_domain_users(self, domain_users, recommendations, issues):
+    self.__class__.logger.info("analyzing domain users ...")
+
     if 'AD' not in recommendations:
       return
 
@@ -218,6 +238,7 @@ class Analyzer(AbstractAnalyzer):
               AC_missing[name].append(user['name'])
 
     for AC_name, users in AC_present.items():
+      self.__class__.logger.info(f"{issue_group}: AC: {AC_name}: {users}")
       issues.append(
         Issue(
           f'{issue_group}: AC',
@@ -227,6 +248,7 @@ class Analyzer(AbstractAnalyzer):
       )
 
     for AC_name, users in AC_missing.items():
+      self.__class__.logger.info(f"{issue_group}: AC missing: {AC_name}: {users}")
       issues.append(
         Issue(
           f'{issue_group}: AC: missing',
@@ -236,6 +258,7 @@ class Analyzer(AbstractAnalyzer):
       )
 
     if users_with_sensitive_info:
+      self.__class__.logger.info(f"{issue_group}: sensitive information: {users_with_sensitive_info}")
       issues.append(
         Issue(
           f'{issue_group}: sensitive information',
@@ -244,6 +267,8 @@ class Analyzer(AbstractAnalyzer):
       )
 
   def _analyze_domain_info(self, domain_info, recommendations, issues):
+    self.__class__.logger.info("analyzing domain info ...")
+
     if 'AD' not in recommendations:
       return
 
@@ -266,20 +291,24 @@ class Analyzer(AbstractAnalyzer):
             (field_value == 0 and recommendation != 0)
             or field_value < recommendation
           ):
+            duration = self._format_duration(field_value)
+            self.__class__.logger.info(f"{issue_group}: {field_name}: {duration}")
             issues.append(
               Issue(
                 f'{issue_group}: {field_name}',
-                value = self._format_duration(field_value)
+                value = duration
               )
             )
 
         # duration; disabled with '0'; value must be equal or larger than recommendation
         case 'lockout_duration' | 'lockout_observation_window' | 'min_password_age':
           if field_value < recommendation:
+            duration = self._format_duration(field_value)
+            self.__class__.logger.info(f"{issue_group}: {field_name}: {duration}")
             issues.append(
               Issue(
                 f'{issue_group}: {field_name}',
-                value = self._format_duration(field_value)
+                value = duration
               )
             )
 
@@ -289,10 +318,12 @@ class Analyzer(AbstractAnalyzer):
             (field_value == 0 and recommendation != 0)
             or field_value > recommendation
           ):
+            duration = self._format_duration(field_value)
+            self.__class__.logger.info(f"{issue_group}: {field_name}: {duration}")
             issues.append(
               Issue(
                 f'{issue_group}: {field_name}',
-                value = self._format_duration(field_value)
+                value = duration
               )
             )
 
@@ -302,6 +333,7 @@ class Analyzer(AbstractAnalyzer):
             (field_value == 0 and recommendation != 0)
             or field_value > recommendation
           ):
+            self.__class__.logger.info(f"{issue_group}: {field_name}: {field_value}")
             issues.append(
               Issue(
                 f'{issue_group}: {field_name}',
@@ -312,6 +344,7 @@ class Analyzer(AbstractAnalyzer):
         # integer; value must be equal or larger than recommendation
         case 'min_password_length' | 'password_history_length':
           if field_value < recommendation:
+            self.__class__.logger.info(f"{issue_group}: {field_name}: {field_value}")
             issues.append(
               Issue(
                 f'{issue_group}: {field_name}',
@@ -326,6 +359,7 @@ class Analyzer(AbstractAnalyzer):
               continue
 
             if password_property != recommendation[password_property_name]:
+              self.__class__.logger.info(f"{issue_group}: {field_name}: {password_property_name}: {password_property}")
               issues.append(
                 Issue(
                   f'{issue_group}: {field_name}: {password_property_name}: {password_property}'
@@ -334,6 +368,7 @@ class Analyzer(AbstractAnalyzer):
 
         case _:
           if field_value != recommendation[password_property_name]:
+            self.__class__.logger.info(f"{issue_group}: {field_name}: {field_value}")
             issues.append(
               Issue(
                 f'{issue_group}: {field_name}',

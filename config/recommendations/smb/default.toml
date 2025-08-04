@@ -18,8 +18,6 @@ authentication_methods = [ 'Kerberos' ]
 SMB2 = '3.1.1'
 
 [signing]
-# if a protocol (e.g. CIFS, SMB2) is not specified here, the server's configuration regarding signing is interpreted as "incorrect"/"invalid"/"insecure"
-
 # SMB2 signing is controlled solely by being required or not.
 # https://techcommunity.microsoft.com/blog/filecab/configure-smb-signing-with-confidence/2418102
 SMB2 = {required = true}
@@ -76,7 +74,7 @@ max_password_age = 0 # diabled
 min_password_age = 259200 # 3 days
 
 # minimum password length
-min_password_length = 8
+min_password_length = 15
 # NIST recommends 15 characters; 8 characters when MFA is mandatory:
 # https://pages.nist.gov/800-63-4/sp800-63b.html#passwordver
 # TODO: how to test for MFA requirement?
