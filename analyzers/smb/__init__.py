@@ -42,8 +42,10 @@ class Analyzer(AbstractAnalyzer):
     services = self.parser.parse_files(files)
     self.services = services
 
+    self.__class__.logger.debug("parsing done")
+
     for identifier, service in services.items():
-      self.__class__.logger.debug(f"analyzing {identifier} ...")
+      self.__class__.logger.info(f"analyzing {identifier} ...")
 
       issues = service['issues']
 

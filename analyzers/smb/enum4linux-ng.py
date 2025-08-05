@@ -83,7 +83,7 @@ class Parser(AbstractParser):
       if listener['accessible'] and listener['port'] not in ports:
         port = listener['port']
         ports.append(str(port))
-        self.__class__.logger.info(f"{key} ({port})")
+        self.__class__.logger.debug(f"{key} ({port})")
 
     if ports:
       service['misc'].append(f"ports: {', '.join(sorted(ports))}")
@@ -110,7 +110,7 @@ class Parser(AbstractParser):
         self.__class__.logger.error("could not parse protocol")
         return
 
-    self.__class__.logger.info(f"preferred protocol: {preferred_protocol}")
+    self.__class__.logger.debug(f"preferred protocol: {preferred_protocol}")
 
     '''
     enum4linux-ng checks the security (i.e. signing required) only for the preferred dialect
@@ -122,12 +122,12 @@ class Parser(AbstractParser):
     '''
 
     if 'SMB signing required' in smb_dialects:
-      self.__class__.logger.info("signing required")
+      self.__class__.logger.debug("signing required")
       service['signing'][preferred_protocol] = {
         'required': smb_dialects['SMB signing required']
       }
     else:
-      self.__class__.logger.info("signing not required")
+      self.__class__.logger.debug("signing not required")
       service['signing'][preferred_protocol] = {
         'required': False
       }
@@ -158,7 +158,7 @@ class Parser(AbstractParser):
           service['dialects']['CIFS'] = []
 
         service['dialects']['CIFS'].append("NT LM 0.12")
-        self.__class__.logger.info("adding 'NT LM 0.12' to the list of supported CIFS dialects")
+        self.__class__.logger.debug("adding 'NT LM 0.12' to the list of supported CIFS dialects")
         continue
 
       if m.group('major') in ['2', '3']:
@@ -174,14 +174,18 @@ class Parser(AbstractParser):
       if m.group('patch'):
         dialect += f".{m.group('patch')}"
 
-      self.__class__.logger.info(f"adding '{dialect}' to the list of supported {protocol} dialects")
+      self.__class__.logger.debug(f"adding '{dialect}' to the list of supported {protocol} dialects")
       service['dialects'][protocol].append(dialect)
 
   def _parse_smb_domain_info(self, smb_domain_info, service):
+    self.__class__.logger.debug("parsing SMB domain info ...")
     for k, v in smb_domain_info.items():
+      self.__class__.logger.debug(f"{k}: `{v}`")
       service['misc'].append(f"{k}: `{v}`")
 
   def _parse_sessions(self, sessions, service):
+    self.__class__.logger.debug("parsing session ...")
+
     if not sessions.pop('sessions_possible'):
       return
 
@@ -189,21 +193,21 @@ class Parser(AbstractParser):
       if not possible:
         continue
 
-      self.__class__.logger.debug(f"parsing session '{session}' ...")
+      self.__class__.logger.debug(session)
 
       match session:
         case 'kerberos' | 'Kerberos':
-          self.__class__.logger.info("Kerberos authentication")
+          self.__class__.logger.debug("Kerberos authentication")
           if 'Kerberos' not in service['authentication_methods']:
             service['authentication_methods']['Kerberos'] = []
         case 'password' | 'nthash' | 'NTLM':
-          self.__class__.logger.info("NTLM authentication")
+          self.__class__.logger.debug("NTLM authentication")
           self._add_NTLM_authentication(service['authentication_methods'])
         case 'random_user' | 'guest':
-          self.__class__.logger.info("NTLM authentication")
+          self.__class__.logger.debug("NTLM authentication")
           self._add_NTLM_authentication(service['authentication_methods'], 'guest')
         case 'null':
-          self.__class__.logger.info("NTLM authentication")
+          self.__class__.logger.debug("NTLM authentication")
           self._add_NTLM_authentication(service['authentication_methods'], 'anonymous')
 
   def _add_NTLM_authentication(self, authentication_methods, variation=None):
@@ -211,7 +215,7 @@ class Parser(AbstractParser):
       authentication_methods['NTLM'] = []
 
     if variation and variation not in authentication_methods['NTLM']:
-      self.__class__.logger.info(f"adding '{variation}' to NTLM variations")
+      self.__class__.logger.debug(f"adding '{variation}' to NTLM variations")
       authentication_methods['NTLM'].append(variation)
 
   def _parse_users(self, users, service):
@@ -231,6 +235,8 @@ class Parser(AbstractParser):
         user['description'] = user_info['description']
 
   def _parse_shares(self, shares, service):
+    self.__class__.logger.debug("parsing shares ...")
+
     for k, share in shares.items():
       if (
         'access' not in share
@@ -243,6 +249,7 @@ class Parser(AbstractParser):
       if share['comment']:
         info += f" ({share['comment']})"
 
+      self.__class__.logger.debug(f"additional info: '{info}'")
       service['misc'].append(info)
 
   def _parse_policy(self, policy, service):
@@ -322,7 +329,7 @@ class Parser(AbstractParser):
     seconds = 0
 
     if duration in ['not set', 'none']:
-      self.__class__.logger.info(f"{seconds} seconds")
+      self.__class__.logger.debug(f"{seconds} seconds")
       return seconds
 
     m = DURATION_PATTERN.fullmatch(duration)
@@ -335,7 +342,7 @@ class Parser(AbstractParser):
       if m.group('minutes'):
         seconds += int(m.group('minutes')) * 60
 
-      self.__class__.logger.info(f"{seconds} seconds")
+      self.__class__.logger.debug(f"{seconds} seconds")
       return seconds
 
     m = DURATION_PATTERN_NEW.fullmatch(duration)
@@ -352,14 +359,14 @@ class Parser(AbstractParser):
       if m.group('microseconds'):
         seconds += int(m.group('microseconds')) * 10e-6
 
-      self.__class__.logger.info(f"{seconds} seconds")
+      self.__class__.logger.debug(f"{seconds} seconds")
       return seconds
 
     m = DURATION_PATTERN_SECONDS.fullmatch(duration)
     if m:
       self.__class__.logger.debug(f"using '{DURATION_PATTERN_SECONDS.pattern}'")
       seconds = float(m.group('seconds'))
-      self.__class__.logger.info(f"{seconds} seconds")
+      self.__class__.logger.debug(f"{seconds} seconds")
       return seconds
 
     self.__class__.logger.error(f"could not parse duration")

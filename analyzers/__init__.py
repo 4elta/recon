@@ -102,7 +102,7 @@ class AbstractParser:
     this method has to be implemented by each concrete Parser class.
     '''
 
-    self.__class__.logger.info(f"parsing '{path}'")
+    self.__class__.logger.debug(f"parsing '{path}'")
 
     '''
     filename structure for most of the scans:
