@@ -26,9 +26,14 @@ for path in ANALYZERS_DIR.iterdir():
   if path.is_dir() and not path.name.startswith('__'):
     SUPPORTED_SERVICES.append(path.name)
 
+DEFAULT_CONFIG = pathlib.Path(
+  pathlib.Path(__file__).resolve().parent,
+  "config",
+  "analyzer.toml"
+)
+
 LANGUAGE = 'en'
 SUPPORTED_FORMATS = ['md', 'json', 'csv']
-
 
 def analyze_service(service, files, recommendations_file, tool):
   with open(recommendations_file, 'rb') as f:
@@ -164,11 +169,7 @@ def process(args):
     if not config_file_path.exists():
       sys.exit(f"the specified configuration file '{config_file_path}' does not exist!")
   else:
-    config_file_path = pathlib.Path(
-      pathlib.Path(__file__).resolve().parent,
-      "config",
-      "analyzer.toml"
-    )
+    config_file_path = DEFAULT_CONFIG
     if not config_file_path.exists():
       sys.exit(f"the default configuration file '{config_file_path}' does not exist!")
 

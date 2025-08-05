@@ -68,7 +68,7 @@ sudo ln --symbolic "$(realpath scan.py)" /usr/local/bin/scan
 2. run the scanner on the results of the Nmap service scan; be aware that this (like the Nmap scan itself) will send requests to the target system(s)
 3. run the analyzer on the results of the scanner; no network traffic will be generated during this step
 
-You can customize the configuration for the scanner (i.e. what tools to run, etc.) by modifying the provided one (i.e. [`config/scans.toml`](config/scans.toml)), or you can specify your own with the `--config` argument.
+You can customize the configuration for the scanner (i.e. what tools to run, etc.) by modifying the provided one (i.e. [`config/scanner.toml`](config/scanner.toml)), or you can specify your own with the `--config` argument.
 Similarly, you can modify the recommendations based on what the analyzers will evaluate certain services.
 Make sure to have a look at the [architecture documentation](documentation/architecture.md) and/or study the provided configuration files.
 
@@ -123,7 +123,7 @@ Analyze and summarize the results of specific tools previously run by the scanne
 
 options:
   -h, --help            show this help message and exit
-  -c, --config path     path to the analyzer configuration file (default: '/path/to/recon/config/analysis.toml')
+  -c, --config path     path to the analyzer configuration file (default: '/path/to/recon/config/analyzer.toml')
   -s, --service code    service that should be analyzed (choices: ['dns', 'ftp', 'http', 'isakmp', 'ntp', 'rdp', 'smb', 'ssh', 'tls'])
   -S, --scan name       name of the tool/scan whose results should be parsed
   -r, --recommendations path
@@ -139,18 +139,18 @@ The following analyzers (and parsers) are currently implemented:
 
 * DNS configuration (`nase`, `nmap`)
 * FTP configuration (`nmap`)
-* HTTP response headers (`nmap`, `curl`)
+* HTTP response headers (`curl`, `nmap`)
 * ISAKMP/IKE configuration (`ike`)
-* NTP configuration (`ntp`, `nmap`)
+* NTP configuration (`nmap`, `ntp`)
 * RDP configuration (`nmap`)
-* SMB configuration (`nmap`, `enum4linux-ng`)
+* SMB configuration (`enum4linux-ng`, `nmap`)
 * SSH configuration (`nmap`)
-* TLS configuration (`testssl`, `sslscan`, `sslyze`, `nmap`)
+* TLS configuration (`nmap`, `sslscan`, `sslyze`, `testssl`)
 
 The following languages are currently available for the analysis:
 
-* `en`: English
 * `de`: Deutsch
+* `en`: English
 
 The analyzer can print its results in Markdown, JSON or CSV.
 If you need the analysis in a markup format other than Markdown, just [pipe](https://en.wikipedia.org/wiki/Pipeline_(Unix)) the output of the analyzer to [`pandoc`](https://pandoc.org/) and you are good to go.
