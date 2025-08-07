@@ -5,6 +5,7 @@
 import argparse
 import asyncio
 import csv
+import curses
 import datetime
 import functools
 import inspect
@@ -21,34 +22,23 @@ import time
 import tomllib as toml
 
 try:
-  # https://rich.readthedocs.io/en/latest/index.html
-  import rich
-except:
-  sys.exit("this script requires the 'rich' module.\nplease install it via 'pip3 install rich'.")
-
-from rich.console import Group
-from rich.live import Live
-from rich.progress import Progress, SpinnerColumn
-
-try:
   # https://github.com/tiran/defusedxml
   import defusedxml.ElementTree
 except:
   sys.exit("this script requires the 'defusedxml' module.\nplease install it via 'pip3 install defusedxml'.")
 
-OVERALL_PROGRESS = Progress(
-  SpinnerColumn(),
-  "[progress.description]{task.description}",
-  "{task.completed}/{task.total}",
-  transient = True,
-)
-OVERALL_TASK = None
+PROGRESS_BAR_LENGTH = 10
+PROGRESS_BAR_STYLES = {
+  'pipe': ['|', ':'],
+  'pipe2': ['|', '⋅'],
+  'dot': ['●', '⋅'],
+}
+PROGRESS_BAR_STYLE = 'pipe2'
 
-JOB_PROGRESS = Progress(
-  SpinnerColumn(),
-  "[progress.description]{task.description}",
-  transient = True,
-)
+UI = None
+TARGETS = []
+STOPPING = False
+QUITTING = False
 
 # error/debug log
 LOG_FILE = None
@@ -64,6 +54,148 @@ PATH_TO_SCANNERS = pathlib.Path(
   "scanners"
 )
 
+class UserInterface:
+  '''
+  `curses` user interface,
+  incl. keyboard event listener
+  '''
+  def __init__(self, window, screen_width, screen_height):
+    self.window = window
+    self.window.nodelay(True)
+
+    self.screen_height = screen_height
+    self.main = curses.newpad(screen_height + 1, screen_width + 1)
+    self.footer = curses.newpad(2, screen_width)
+
+    self.progress_x_pos = None
+
+    asyncio.create_task(self.listen_for_keypress())
+
+  async def listen_for_keypress(self):
+    global STOPPING, QUITTING
+
+    while True:
+      key = self.window.getch()
+
+      if key == -1:
+        await asyncio.sleep(0.1)
+        continue
+
+      if key == curses.KEY_RESIZE:
+        self.update()
+        continue
+
+      match chr(key):
+        case 'q':
+          QUITTING = True
+          cancel_tasks()
+          break
+        case 's':
+          STOPPING = True
+          self.update()
+          break
+
+  def render_progress(self, partial, total):
+    progress = []
+    progress += [PROGRESS_BAR_STYLES[PROGRESS_BAR_STYLE][0]] * int(partial / total * PROGRESS_BAR_LENGTH)
+    progress += [PROGRESS_BAR_STYLES[PROGRESS_BAR_STYLE][1]] * (PROGRESS_BAR_LENGTH - len(progress))
+
+    return ''.join(progress)
+
+  def update_progress_x_pos(self):
+    self.progress_x_pos = len("recon scanner")
+
+    for target_address in TARGETS.keys():
+      name_length = len(target_address)
+      if name_length > self.progress_x_pos:
+        self.progress_x_pos = name_length
+
+    self.progress_x_pos += 3
+
+  def update(self):
+    if self.progress_x_pos is None:
+      self.update_progress_x_pos()
+
+    self.window.clear()
+    self.window.refresh()
+
+    self.main.clear()
+
+    screen_height, screen_width = self.window.getmaxyx()
+
+    line = 1
+    number_of_targets_completed = 0
+
+    for target in TARGETS.values():
+      if line >= self.screen_height:
+        break
+
+      if not target.active:
+        continue
+
+      number_of_scans = len(target.scans)
+      number_of_scans_completed = target.number_of_scans_completed
+
+      if number_of_scans_completed == number_of_scans:
+        number_of_targets_completed += 1
+        continue
+
+      target_is_active = False
+      for scan in target.scans.values():
+        if scan.active and not scan.completed:
+          target_is_active = True
+          break
+
+      if not target_is_active:
+        continue
+
+      self.main.addstr(line, 0, f"{target.address}", curses.A_UNDERLINE)
+
+      if not STOPPING:
+        self.main.addstr(line, self.progress_x_pos, self.render_progress(number_of_scans_completed, number_of_scans))
+
+      line += 1
+
+      for scan in target.scans.values():
+        if line >= self.screen_height:
+          break
+
+        if not scan.active or scan.completed:
+          continue
+
+        self.main.addstr(line, 0, scan.description, curses.A_DIM)
+        line += 1
+
+    line = 0
+    self.main.addstr(line, 0, "recon scanner", curses.A_BOLD)
+    if STOPPING:
+      self.main.addstr(line, self.progress_x_pos, "stopping ... waiting for the running scans to finish ...", curses.A_BOLD)
+    else:
+      self.main.addstr(line, self.progress_x_pos, self.render_progress(number_of_targets_completed, len(TARGETS)), curses.A_BOLD)
+
+    self.main.refresh(
+      0, 0,
+      0, 0,
+      screen_height - 1, screen_width - 1
+    )
+
+    self.footer.clear()
+
+    if not (STOPPING or QUITTING):
+      footer_messages = [
+        "[q] quit: kill all running scans",
+        "[s] stop gracefully: wait for the currently running scans to finish"
+      ]
+
+      for n, msg in enumerate(footer_messages):
+        self.footer.addstr(n, 0, msg, curses.A_DIM)
+
+      self.footer.refresh(
+        0, 0,
+        screen_height - 2, 0,
+        screen_height - 1, screen_width - 1
+      )
+
 class Service:
   def __init__(self, transport_protocol, port, application_protocol, description):
     self.transport_protocol = transport_protocol
@@ -74,14 +206,17 @@ class Service:
 
 class Target:
   def __init__(self, address, directory):
+    self.semaphore = None # limiting the number of concurrently running scans
     self.address = address
     self.hostnames = []
     self.directory = directory
     self.services = []
-    self.scans = {}
-    self.semaphore = None # limiting the number of concurrently running scans
+    self.scans = {} # dictionary of `Scan`s
+    self.active = False
+    self.number_of_scans_completed = 0
 
-class Scan:
+class ScanDefinition:
+  # as parsed from the scanner config (`scanner.toml`)
   def __init__(self, service, name, command, patterns, run_once):
     self.service = service
     self.name = name
@@ -89,13 +224,20 @@ class Scan:
     self.patterns = patterns
     self.run_once = run_once
 
-class Command:
-  def __init__(self, host, port, description, string, patterns):
-    self.host = host
+class Scan:
+  def __init__(self, target, host, port, description, command, patterns):
+    self.target = target
+    self.host = host # address or hostname
     self.port = port
-    self.description = description
-    self.string = string
+    self.description = description # <host>: <service>: <port>: [<hostname>:] <name>
+    self.command = command # the command string
     self.patterns = patterns
+    self.active = False
+    self.completed = False
+
+  def set_complete(self):
+    self.completed = True
+    self.target.number_of_scans_completed += 1
 
 class CommandLog:
 
@@ -167,7 +309,7 @@ def create_summary(target: Target):
 
       f.write(f"* {service.port} ({service.transport_protocol}): `{description}`\n")
 
-async def read_command_results(process, command):
+async def read_command_results(process, scan):
   # parse STDOUT
 
   while True:
@@ -175,19 +317,25 @@ async def read_command_results(process, command):
     if line:
       line = str(line.rstrip(), 'utf8', 'ignore')
 
-      for pattern in command.patterns:
+      for pattern in scan.patterns:
         match = re.search(pattern, line)
         if match:
-          JOB_PROGRESS.console.print(f"{command.description}: \"{match.group(0)}\"")
+          info = match.group(0)
+          #TODO: do something with the info
     else:
       return
 
-async def run_command(command: Command, target: Target):
+async def run_command(scan: Scan):
 
   # make sure that only a specific number of scans are running per target
-  async with target.semaphore:
-    log(f"[{command.description}]")
-    task_ID = JOB_PROGRESS.add_task(f"{command.description}")
+  async with scan.target.semaphore:
+    if STOPPING:
+      return
+
+    scan.active = True
+    UI.update()
+
+    log(f"[{scan.description}]\tstarted")
 
     timestamp_start = time.time()
     return_code = 0
@@ -195,7 +343,7 @@ async def run_command(command: Command, target: Target):
     if not DRY_RUN:
       # create/start the async process
       process = await asyncio.create_subprocess_shell(
-        command.string,
+        scan.command,
         stdout = asyncio.subprocess.PIPE,
         stderr = asyncio.subprocess.PIPE,
         executable = '/bin/bash'
@@ -204,7 +352,7 @@ async def run_command(command: Command, target: Target):
       try:
         # wait for the task (i.e. read command results) to finish within the specified timeout (in seconds)
         # https://docs.python.org/3/library/asyncio-task.html#asyncio.wait_for
-        await asyncio.wait_for(read_command_results(process, command), timeout=MAX_TIME)
+        await asyncio.wait_for(read_command_results(process, scan), timeout=MAX_TIME)
 
         return_code = process.returncode
 
@@ -214,28 +362,27 @@ async def run_command(command: Command, target: Target):
         if return_code not in (0, 'timeout'):
           error_msg = await process.stderr.read()
           error_msg = error_msg.decode().strip()
-          OVERALL_PROGRESS.console.print(f"[red]{command.description}: {error_msg}")
-          log(f"[{command.description}]\t{error_msg}")
+          log(f"[{scan.description}]\t{error_msg}")
       except asyncio.exceptions.TimeoutError:
-        OVERALL_PROGRESS.console.print(f"[red]{command.description}: timeout")
-        log(f"[{command.description}]\ttimeout")
+        log(f"[{scan.description}]\ttimeout")
         return_code = "timeout"
       except asyncio.exceptions.CancelledError:
-        log(f"[{command.description}]\tcancelled")
+        log(f"[{scan.description}]\tcancelled")
         return_code = "cancelled"
 
     timestamp_completion = time.time()
 
-    await CommandLog.add_entry([timestamp_start, timestamp_completion, command.host, command.port, command.string, return_code])
+    await CommandLog.add_entry([timestamp_start, timestamp_completion, scan.host, scan.port, scan.command, return_code])
     
-    JOB_PROGRESS.remove_task(task_ID)
+    scan.set_complete()
+    UI.update()
 
     if return_code not in ('timeout', 'cancelled'):
-      log(f"[{command.description}]\tdone")
+      log(f"[{scan.description}]\tdone")
 
 def find_suitable_scans(application_protocol):
 
-  scans = []
+  scan_definitions = []
   
   # iterate over each service scan configuration
   for service_name, service_config in CONFIG['services'].items():
@@ -249,8 +396,8 @@ def find_suitable_scans(application_protocol):
       for service_pattern in service_patterns:
         if re.search(service_pattern, application_protocol):
           #log(f"application protocol '{application_protocol}' matched '{service_name}' pattern '{service_pattern}'; command '{scan_name}'")
-          scans.append(
-            Scan(
+          scan_definitions.append(
+            ScanDefinition(
               service_name,
               scan_name,
               scan_command,
@@ -259,7 +406,7 @@ def find_suitable_scans(application_protocol):
             )
           )
 
-  return scans
+  return scan_definitions
 
 def result_file_exists(results_directory, file_name):
   result_files = 0
@@ -273,7 +420,7 @@ def result_file_exists(results_directory, file_name):
     log(f"'{results_directory}/{file_name}.*' exists and we must not overwrite them.")
     return True
 
-def queue_service_scan_hostname(target: Target, service: Service, scan: Scan):
+def queue_service_scan_hostname(target: Target, service: Service, scan_definition: ScanDefinition):
   '''
   queue a scan of a service that recognizes the concept of a hostname in contrast/addition to an IP address (e.g. HTTP, TLS)
   '''
@@ -297,31 +444,32 @@ def queue_service_scan_hostname(target: Target, service: Service, scan: Scan):
 
   # we have to run the scan for each hostname associated with the target
   for hostname in hostnames:
-    file_name = f'{scan.service},{transport_protocol},{port},{hostname},{scan.name}'
+    file_name = f'{scan_definition.service},{transport_protocol},{port},{hostname},{scan_definition.name}'
     result_file = pathlib.Path(results_directory, file_name)
 
     # run scan only if result file does not yet exist or "overwrite_results" flag is set
     if result_file_exists(results_directory, file_name):
       continue # with another hostname
 
-    scan_ID = (transport_protocol, port, application_protocol, hostname, scan.service, scan.name)
+    scan_ID = (transport_protocol, port, application_protocol, hostname, scan_definition.service, scan_definition.name)
 
     if scan_ID in target.scans:
       continue # with another hostname 
 
-    description = f"{address}: {scan.service}: {port}: {hostname}: {scan.name}"
+    description = f"{address}: {scan_definition.service}: {port}: {hostname}: {scan_definition.name}"
 
     log(f"[{description}]")
 
-    target.scans[scan_ID] = Command(
+    target.scans[scan_ID] = Scan(
+      target,
       hostname,
       port,
       description,
-      format(scan.command),
-      scan.patterns
+      format(scan_definition.command),
+      scan_definition.patterns
     )
 
-def queue_service_scan_address(target: Target, service: Service, scan: Scan):
+def queue_service_scan_address(target: Target, service: Service, scan_definition: ScanDefinition):
   '''
   queue a scan of a service that does not recognize the concept of a hostname
   '''
@@ -338,44 +486,45 @@ def queue_service_scan_address(target: Target, service: Service, scan: Scan):
     _, application_protocol = application_protocol.split('|')
 
   # does this service belong to a group that should only be scanned once (e.g. SMB)?
-  if scan.run_once:
-    file_name = f'{scan.service},{scan.name}'
+  if scan_definition.run_once:
+    file_name = f'{scan_definition.service},{scan_definition.name}'
     result_file = pathlib.Path(results_directory, file_name)
 
     # run scan only if result file does not yet exist or "overwrite_results" flag is set
     if result_file_exists(results_directory, file_name):
       return # continue with another service of the target
 
-    description = f"{address}: {scan.service}: {scan.name}"
+    description = f"{address}: {scan_definition.service}: {scan_definition.name}"
 
-    scan_ID = (scan.service, scan.name)
+    scan_ID = (scan_definition.service, scan_definition.name)
 
     if scan_ID in target.scans:
       return # continue with another service of the target
 
   else: # service does not belong to a group that should only be scanned once
-    file_name = f'{scan.service},{transport_protocol},{port},{scan.name}'
+    file_name = f'{scan_definition.service},{transport_protocol},{port},{scan_definition.name}'
     result_file = pathlib.Path(results_directory, file_name)
 
     # run scan only if result file does not yet exist or "overwrite_results" flag is set
     if result_file_exists(results_directory, file_name):
       return # continue with another service of the target
 
-    description = f"{address}: {scan.service}: {transport_protocol}/{port}: {scan.name}"
+    description = f"{address}: {scan_definition.service}: {transport_protocol}/{port}: {scan_definition.name}"
 
-    scan_ID = (transport_protocol, port, application_protocol, scan.service, scan.name)
+    scan_ID = (transport_protocol, port, application_protocol, scan_definition.service, scan_definition.name)
 
     if scan_ID in target.scans:
       return # continue with another service of the target
 
   log(f"[{description}]")
 
-  target.scans[scan_ID] = Command(
+  target.scans[scan_ID] = Scan(
+    target,
     address,
     port,
     description,
-    format(scan.command),
-    scan.patterns
+    format(scan_definition.command),
+    scan_definition.patterns
   )
   
 async def scan_services(target: Target):
@@ -384,7 +533,7 @@ async def scan_services(target: Target):
   # it's referenced like this (i.e. `{address}`) in the scan configs.
   address = target.address
 
-  log(f"[{address}]")
+  log(f"[{address}]\tstarted")
 
   # iterate over the services found to be running on the target
   for service in target.services:
@@ -399,26 +548,28 @@ async def scan_services(target: Target):
     service.scanned = (len(suitable_scans) > 0)
 
     # iterate over each suitable scan
-    for scan in suitable_scans:
-      if scan.service in ('http', 'tls'):
-        queue_service_scan_hostname(target, service, scan)
+    for scan_definition in suitable_scans:
+      if scan_definition.service in ('http', 'tls'):
+        queue_service_scan_hostname(target, service, scan_definition)
       else:
-        queue_service_scan_address(target, service, scan)
+        queue_service_scan_address(target, service, scan_definition)
 
-  tasks = []
-  for scan_ID, command in target.scans.items():
-    tasks.append(
+  tasks = set()
+  for scan in target.scans.values():
+    if STOPPING:
+      break
+
+    tasks.add(
       asyncio.create_task(
-        run_command(command, target)
+        run_command(scan)
       )
     )
 
-  for task in tasks:
-    await task
+  await asyncio.gather(*tasks)
 
   log(f"[{address}]\tdone")
   
-async def scan_target(target: Target, semaphore: asyncio.Semaphore):
+async def scan_target(semaphore: asyncio.Semaphore, target: Target):
   
   target.directory.mkdir(exist_ok=True)
 
@@ -429,14 +580,16 @@ async def scan_target(target: Target, semaphore: asyncio.Semaphore):
 
   # make sure that only a specific number of targets are scanned in parallel
   async with semaphore:
+    if STOPPING:
+      return
+
+    target.active = True
 
     log(f"[{target.address}]")
+
     await scan_services(target)
 
-    JOB_PROGRESS.console.print(f"[bold green]{target.address}: finished")
     log(f"[{target.address}]\tdone")
-
-    OVERALL_PROGRESS.update(OVERALL_TASK, advance=1)
 
 def parse_result_file(base_directory, result_file, targets, unique_services, rescan_filters):
   # https://nmap.org/book/nmap-dtd.html
@@ -622,7 +775,18 @@ def load_config(config_files):
 
   return config
 
-async def process(args):
+async def process(stdscr, args):
+  loop = asyncio.get_running_loop()
+
+  for signame in ('SIGINT', 'SIGTERM'):
+    loop.add_signal_handler(
+      getattr(signal, signame),
+      cancel_tasks
+    )
+
+  # hide cursor
+  curses.curs_set(0)
+
   global DRY_RUN
   DRY_RUN = args.dry_run
 
@@ -693,54 +857,50 @@ async def process(args):
   if len(rescan_filters):
     OVERWRITE = True
 
-  # parse Nmap result file(s), i.e. service.xml
-  targets = parse_result_files(base_directory, args.input, rescan_filters)
-  log(f"parsed {len(targets)} targets")
+  global TARGETS
+  TARGETS = parse_result_files(base_directory, args.input, rescan_filters)
+  log(f"parsed {len(TARGETS)} targets")
 
   # create services.csv file and initialize its header
   with open(pathlib.Path(base_directory, 'services.csv'), 'w') as f:
     csv.writer(f, delimiter=args.delimiter, quoting=csv.QUOTE_MINIMAL).writerow(['host', 'transport_protocol', 'port', 'service', 'scanned'])
 
-  global OVERALL_TASK
-  OVERALL_TASK = OVERALL_PROGRESS.add_task("overall progress:", total=len(targets))
+  global UI
+  UI = UserInterface(stdscr, 80, args.concurrent_targets * (args.concurrent_scans + 1) + 3)
 
-  group = Group(
-    JOB_PROGRESS,
-    OVERALL_PROGRESS,
-  )
+  # each target in its own task ...
+  tasks = set()
+  for target in TARGETS.values():
+    # limit the number of concurrent scans per target
+    target.semaphore = asyncio.Semaphore(args.concurrent_scans)
 
-  with Live(group):
-    # each target in its own task ...
-    tasks = []
-    for address, target in targets.items():
-      # limit the number of concurrent scans per target
-      target.semaphore = asyncio.Semaphore(args.concurrent_scans)
-
-      tasks.append(
-        asyncio.create_task(
-          scan_target(target, concurrent_targets)
+    tasks.add(
+      asyncio.create_task(
+        scan_target(
+          concurrent_targets,
+          target
         )
       )
+    )
 
-    for task in tasks:
-      await task
-
-    OVERALL_PROGRESS.remove_task(OVERALL_TASK)
+  await asyncio.gather(*tasks)
 
   # fill services.csv file with the found services services
   with open(pathlib.Path(base_directory, 'services.csv'), 'a') as f:
-    for address, target in targets.items():
+    for address, target in TARGETS.items():
       for service in target.services:
         row = [address, service.transport_protocol, service.port, service.application_protocol, service.scanned]
         csv.writer(f, delimiter=args.delimiter, quoting=csv.QUOTE_MINIMAL).writerow(row)
 
-def cancel_tasks(loop):
-  print("aborted by user")
+def cancel_tasks():
+  global QUITTING
+  QUITTING = True
+
   log("aborted by user")
 
-  loop.stop()
+  asyncio.get_running_loop().stop()
 
-async def main():
+async def main(stdscr):
   parser = argparse.ArgumentParser(
     description = "Schedule and execute various tools based on the findings of an Nmap service scan."
   )
@@ -827,18 +987,32 @@ async def main():
     action = 'store_true'
   )
 
-  loop = asyncio.get_running_loop()
-
-  for signame in ('SIGINT', 'SIGTERM'):
-    loop.add_signal_handler(
-      getattr(signal, signame),
-      functools.partial(cancel_tasks, loop)
-    )
-
-  await process(parser.parse_args())
+  await process(stdscr, parser.parse_args())
 
 if __name__ == '__main__':
+  start_time = datetime.datetime.now()
+
   try:
-    asyncio.run(main())
+    curses.wrapper(lambda stdscr: asyncio.run(main(stdscr)))
   except RuntimeError:
     pass
+
+  end_time = datetime.datetime.now()
+
+  completed_scans = 0
+  scanned_targets = 0
+  for target in TARGETS.values():
+    number_of_scans = 0
+    for scan in target.scans.values():
+      if scan.active and scan.completed:
+        number_of_scans += 1
+
+    completed_scans += number_of_scans
+
+    if number_of_scans:
+      scanned_targets += 1
+
+  if QUITTING:
+    print("user aborted: some scans might have been killed before they were finished.")
+
+  print(f"ran {completed_scans} scans on {scanned_targets} targets in {end_time - start_time} (hours:minutes:seconds)")
