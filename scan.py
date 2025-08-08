@@ -1027,7 +1027,7 @@ if __name__ == '__main__':
   for target in TARGETS.values():
     if target.number_of_completed_scans:
       number_of_scanned_targets += 1
-      number_of_completed_scans += target.number_of_completed_scans
+      number_of_completed_scans += target.number_of_scans_completed
 
     for scan in target.scans.values():
       if scan.completed and scan.return_code != 0:
