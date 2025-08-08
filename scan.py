@@ -1026,9 +1026,9 @@ if __name__ == '__main__':
   number_of_completed_scans = 0
   number_of_scanned_targets = 0
   for target in TARGETS.values():
+    number_of_scans += len(target.scans)
     if target.number_of_scans_completed:
       number_of_scanned_targets += 1
-      number_of_scans += len(target.scans)
       number_of_completed_scans += target.number_of_scans_completed
 
     for scan in target.scans.values():
