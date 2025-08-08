@@ -331,13 +331,13 @@ def process(args):
       except RuntimeError as error:
         LOGGER.error(error)
         if batch_mode:
-          print(error, file=sys.stderr)
+          print(f"{service}: {error}", file=sys.stderr)
           continue
         else:
-          sys.exit(error)
+          sys.exit(f"{service}: {error}")
       except Warning as warning:
         LOGGER.warning(warning)
-        print(warning, file=sys.stderr)
+        print(f"{service}: {warning}", file=sys.stderr)
         continue
 
       if output_directory:
