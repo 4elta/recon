@@ -71,6 +71,9 @@ class UserInterface:
 
     self.progress_x_pos = None
 
+    self.start_time = datetime.datetime.now()
+    self.progress = None
+
     asyncio.create_task(self.listen_for_keypress())
 
   async def listen_for_keypress(self):
@@ -96,6 +99,16 @@ class UserInterface:
           STOPPING = True
           self.update()
           break
+
+  def estimate_time_of_completion(self):
+    if not self.progress:
+      return "estimating time of completion ..."
+
+    now = datetime.datetime.now()
+    duration = (now - self.start_time)
+
+    estimated_time_of_completion = self.start_time + duration / self.progress
+    return f"estimated time of completion: {estimated_time_of_completion.strftime('%Y-%m-%d %H:%M')}"
 
   def render_progress(self, partial, total, length=PROGRESS_BAR_LENGTH, style=PROGRESS_BAR_STYLE):
     progress = []
@@ -125,7 +138,7 @@ class UserInterface:
 
     screen_height, screen_width = self.window.getmaxyx()
 
-    line = 1
+    line = 2
     number_of_targets_completed = 0
     number_of_scans_total = 0
     number_of_scans_completed_total = 0
@@ -172,10 +185,13 @@ class UserInterface:
         self.main.addstr(line, 0, scan.description, curses.A_DIM)
         line += 1
 
+    self.progress = number_of_scans_completed_total / number_of_scans_total
+
     line = 0
     self.main.addstr(line, 0, TITLE, curses.A_BOLD)
     if STOPPING:
-      self.main.addstr(line, len(TITLE) + 1, "... stopping ... waiting for the running scans to finish ...", curses.A_BOLD)
+      self.main.addstr(line, len(TITLE) + 1, "... stopping ...", curses.A_BOLD)
+      self.main.addstr(1, 0, "waiting for the running scans to finish ...")
     else:
       self.main.addstr(
         line, len(TITLE) + 1,
@@ -187,6 +203,7 @@ class UserInterface:
         ),
         curses.A_BOLD
       )
+      self.main.addstr(1, 0, self.estimate_time_of_completion())
 
     self.main.refresh(
       0, 0,
@@ -888,7 +905,7 @@ async def process(stdscr, args):
     csv.writer(f, delimiter=args.delimiter, quoting=csv.QUOTE_MINIMAL).writerow(['host', 'transport_protocol', 'port', 'service', 'scanned'])
 
   global UI
-  UI = UserInterface(stdscr, 80, args.concurrent_targets * (args.concurrent_scans + 1) + 3)
+  UI = UserInterface(stdscr, 80, args.concurrent_targets * (args.concurrent_scans + 2) + 4)
 
   # each target in its own task ...
   tasks = set()
