@@ -27,13 +27,15 @@ try:
 except:
   sys.exit("this script requires the 'defusedxml' module.\nplease install it via 'pip3 install defusedxml'.")
 
+TITLE = "recon scanner"
+
 PROGRESS_BAR_LENGTH = 10
 PROGRESS_BAR_STYLES = {
-  'pipe': ['|', ':'],
-  'pipe2': ['|', '⋅'],
+  'pipe': ['|', '⋅'],
+  'pipe2': ['┃', '⋅'],
   'dot': ['●', '⋅'],
 }
-PROGRESS_BAR_STYLE = 'pipe2'
+PROGRESS_BAR_STYLE = 'pipe'
 
 UI = None
 TARGETS = []
@@ -95,22 +97,22 @@ class UserInterface:
           self.update()
           break
 
-  def render_progress(self, partial, total):
+  def render_progress(self, partial, total, length=PROGRESS_BAR_LENGTH, style=PROGRESS_BAR_STYLE):
     progress = []
-    progress += [PROGRESS_BAR_STYLES[PROGRESS_BAR_STYLE][0]] * int(partial / total * PROGRESS_BAR_LENGTH)
-    progress += [PROGRESS_BAR_STYLES[PROGRESS_BAR_STYLE][1]] * (PROGRESS_BAR_LENGTH - len(progress))
+    progress += [PROGRESS_BAR_STYLES[style][0]] * int(partial / total * length)
+    progress += [PROGRESS_BAR_STYLES[style][1]] * (length - len(progress))
 
     return ''.join(progress)
 
   def update_progress_x_pos(self):
-    self.progress_x_pos = len("recon scanner")
+    self.progress_x_pos = 0
 
     for target_address in TARGETS.keys():
       name_length = len(target_address)
       if name_length > self.progress_x_pos:
         self.progress_x_pos = name_length
 
-    self.progress_x_pos += 3
+    self.progress_x_pos += 1
 
   def update(self):
     if self.progress_x_pos is None:
@@ -125,19 +127,21 @@ class UserInterface:
 
     line = 1
     number_of_targets_completed = 0
+    number_of_scans_total = 0
+    number_of_scans_completed_total = 0
 
     for target in TARGETS.values():
-      if line >= self.screen_height:
-        break
-
-      if not target.active:
-        continue
-
       number_of_scans = len(target.scans)
+      number_of_scans_total += number_of_scans
+
       number_of_scans_completed = target.number_of_scans_completed
+      number_of_scans_completed_total += number_of_scans_completed
 
       if number_of_scans_completed == number_of_scans:
         number_of_targets_completed += 1
+        continue
+
+      if not target.active:
         continue
 
       target_is_active = False
@@ -149,10 +153,12 @@ class UserInterface:
       if not target_is_active:
         continue
 
-      self.main.addstr(line, 0, f"{target.address}", curses.A_UNDERLINE)
+      line += 1
 
-      if not STOPPING:
-        self.main.addstr(line, self.progress_x_pos, self.render_progress(number_of_scans_completed, number_of_scans))
+      if line < self.screen_height:
+        self.main.addstr(line, 0, f"{target.address}")
+        if not STOPPING:
+          self.main.addstr(line, self.progress_x_pos, self.render_progress(number_of_scans_completed, number_of_scans))
 
       line += 1
 
@@ -160,18 +166,27 @@ class UserInterface:
         if line >= self.screen_height:
           break
 
-        if not scan.active or scan.completed:
+        if not scan.active:
           continue
 
         self.main.addstr(line, 0, scan.description, curses.A_DIM)
         line += 1
 
     line = 0
-    self.main.addstr(line, 0, "recon scanner", curses.A_BOLD)
+    self.main.addstr(line, 0, TITLE, curses.A_BOLD)
     if STOPPING:
-      self.main.addstr(line, self.progress_x_pos, "stopping ... waiting for the running scans to finish ...", curses.A_BOLD)
+      self.main.addstr(line, len(TITLE) + 1, "... stopping ... waiting for the running scans to finish ...", curses.A_BOLD)
     else:
-      self.main.addstr(line, self.progress_x_pos, self.render_progress(number_of_targets_completed, len(TARGETS)), curses.A_BOLD)
+      self.main.addstr(
+        line, len(TITLE) + 1,
+        self.render_progress(
+          number_of_scans_completed_total,
+          number_of_scans_total,
+          length = 25,
+          style = 'pipe2'
+        ),
+        curses.A_BOLD
+      )
 
     self.main.refresh(
       0, 0,
@@ -234,9 +249,12 @@ class Scan:
     self.patterns = patterns
     self.active = False
     self.completed = False
+    self.return_code = None
 
-  def set_complete(self):
+  def set_complete(self, return_code):
+    self.return_code = return_code
     self.completed = True
+    self.active = False
     self.target.number_of_scans_completed += 1
 
 class CommandLog:
@@ -340,6 +358,10 @@ async def run_command(scan: Scan):
     timestamp_start = time.time()
     return_code = 0
 
+    if DRY_RUN:
+      # add some random delay, just for fun
+      await asyncio.sleep(random.randrange(1, 10))
+
     if not DRY_RUN:
       # create/start the async process
       process = await asyncio.create_subprocess_shell(
@@ -374,7 +396,7 @@ async def run_command(scan: Scan):
 
     await CommandLog.add_entry([timestamp_start, timestamp_completion, scan.host, scan.port, scan.command, return_code])
     
-    scan.set_complete()
+    scan.set_complete(return_code)
     UI.update()
 
     if return_code not in ('timeout', 'cancelled'):
@@ -999,20 +1021,23 @@ if __name__ == '__main__':
 
   end_time = datetime.datetime.now()
 
-  completed_scans = 0
-  scanned_targets = 0
+  unsuccessful_scans = []
+  number_of_completed_scans = 0
+  number_of_scanned_targets = 0
   for target in TARGETS.values():
-    number_of_scans = 0
+    if target.number_of_completed_scans:
+      number_of_scanned_targets += 1
+      number_of_completed_scans += target.number_of_completed_scans
+
     for scan in target.scans.values():
-      if scan.active and scan.completed:
-        number_of_scans += 1
-
-    completed_scans += number_of_scans
-
-    if number_of_scans:
-      scanned_targets += 1
+      if scan.completed and scan.return_code != 0:
+        unsuccessful_scans.append(scan.command)
 
   if QUITTING:
     print("user aborted: some scans might have been killed before they were finished.")
 
-  print(f"ran {completed_scans} scans on {scanned_targets} targets in {end_time - start_time} (hours:minutes:seconds)")
+  print(f"recon scanner ran {end_time - start_time} (hours:minutes:seconds).")
+  print(f"{number_of_scanned_targets} targets were scanned ({100 * number_of_scanned_targets / len(TARGETS)} %).")
+  print(f"{number_of_completed_scans} scans completed.")
+  if len(unsuccessful_scans):
+    print(f"{len(unsuccessful_scans)} of those scans returned an error, ran into a timeout or were cancelled.")
