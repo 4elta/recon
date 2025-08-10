@@ -75,31 +75,49 @@ Make sure to have a look at the [architecture documentation](documentation/archi
 
 ```text
 % scan -h
-usage: scan [-h] [-i path [path ...]] [-o path] [-c path [path ...]] [-t number] [-s number] [-m seconds] [-n] [-r <host>:<protocol>:<port>:<service> [<host>:<protocol>:<port>:<service> ...]] [-y] [-d character] [--ignore_uid]
+usage: scan [-h] [-i path [path ...]] [-o path] [-c path [path ...]]
+            [-t number] [-s number] [-m seconds] [-n]
+            [-r <host>:<protocol>:<port>:<service> 
+               [<host>:<protocol>:<port>:<service> ...]]
+            [-y] [-d character] [--ignore_uid]
 
-Schedule and execute various tools based on the findings of an Nmap service scan.
+Schedule and execute various tools based on the findings of an Nmap service
+scan.
 
 options:
   -h, --help            show this help message and exit
   -i, --input path [path ...]
-                        path to the result file(s) of the Nmap service scan (default: 'services.xml')
-  -o, --output path     path to where the results are stored (default: './recon')
+                        path to the result file(s) of the Nmap service scan
+                        (default: 'services.xml')
+  -o, --output path     path to where the results are stored (default:
+                        './recon')
   -c, --config path [path ...]
-                        path to the scanner configuration file(s); see '/path/to/recon/config/scanner.toml'
+                        path to the scanner configuration file(s); see
+                        '/path/to/recon/config/scanner.toml'
   -t, --concurrent_targets number
-                        number of targets that should be scanned concurrently (default: 3)
+                        number of targets that should be scanned concurrently
+                        (default: 3)
   -s, --concurrent_scans number
-                        number of scans that should be running concurrently on a single target (default: 2)
+                        number of scans that should be running concurrently on
+                        a single target (default: 2)
   -m, --max_time seconds
-                        maximum time in seconds each scan is allowed to take (default: 3600)
-  -n, --dry_run         do not run any command; just create/update the 'commands.csv' file
-  -r, --rescan <host>:<protocol>:<port>:<service> [<host>:<protocol>:<port>:<service> ...]
-                        re-scan certain hosts/protocols/ports/services and overwrite existing result files; you can use '*' if you cannot or don't want to specify a host/protocol/port/service part
+                        maximum time in seconds each scan is allowed to take
+                        (default: 3600)
+  -n, --dry_run         do not run any command; just create/update the
+                        'commands.csv' file
+  -r, --rescan <host>:<protocol>:<port>:<service> 
+              [<host>:<protocol>:<port>:<service> ...]
+                        re-scan certain hosts/protocols/ports/services and
+                        overwrite existing result files; you can use '*' if
+                        you cannot or don't want to specify a
+                        host/protocol/port/service part
   -y, --overwrite_results
                         overwrite existing result files
   -d, --delimiter character
-                        character used to delimit columns in the 'commands.csv' and 'services.csv' files (default: ',')
-  --ignore_uid          ignore the warning about potentially lacking permissions
+                        character used to delimit columns in the
+                        'commands.csv' and 'services.csv' files (default: ',')
+  --ignore_uid          ignore the warning about potentially lacking
+                        permissions
 ```
 
 After running the scanner, the results directory (e.g. `recon/`) will contain the following files/directories:
@@ -116,22 +134,32 @@ After running the scanner, the results directory (e.g. `recon/`) will contain th
 
 ```text
 % analyze -h
-usage: analyze [-h] [-c path] [-s code] [-S name] [-r path] [-i path] [-l code] [-f code] [--template path] [-o path]
+usage: analyze [-h] [-c path] [-s code] [-S name] [-r path] [-i path]
+               [-l code] [-f code] [--template path] [-o path]
 
-Analyze and summarize the results of specific tools previously run by the scanner of the recon tool suite (i.e. 'scan').
+Analyze and summarize the results of specific tools previously run by the
+scanner of the recon tool suite (i.e. 'scan').
 
 options:
   -h, --help            show this help message and exit
-  -c, --config path     path to the analyzer configuration file (default: '/path/to/recon/config/analyzer.toml')
-  -s, --service code    service that should be analyzed (choices: ['dns', 'ftp', 'http', 'isakmp', 'ntp', 'rdp', 'smb', 'ssh', 'tls'])
+  -c, --config path     path to the analyzer configuration file (default:
+                        '/path/to/recon/config/analyzer.toml')
+  -s, --service code    service that should be analyzed (choices: ['dns',
+                        'ftp', 'http', 'isakmp', 'ntp', 'rdp', 'smb', 'ssh',
+                        'tls'])
   -S, --scan name       name of the tool/scan whose results should be parsed
   -r, --recommendations path
-                        path to the recommendations document (default: '/path/to/recon/config/recommendations/<service>/default.toml')
-  -i, --input path      path to the root directory that holds the results to be analysed (default: './recon')
+                        path to the recommendations document (default: '/path/
+                        to/recon/config/recommendations/<service>/default.toml')
+  -i, --input path      path to the root directory that holds the results to
+                        be analysed (default: './recon')
   -l, --language code   language of the analysis (default: 'en')
-  -f, --format code     format of the analysis (choices: ['csv', 'json', 'md']; default: 'md')
-  --template path       path to the Jinja2 template for the analysis; this option overrides '-f/--format'
-  -o, --output path     path to the directory where the analysis result(s) will be saved
+  -f, --format code     format of the analysis (choices: ['csv', 'json',
+                        'md']; default: 'md')
+  --template path       path to the Jinja2 template for the analysis; this
+                        option overrides '-f/--format'
+  -o, --output path     path to the directory where the analysis result(s)
+                        will be saved
 ```
 
 The following analyzers (and parsers) are currently implemented:
