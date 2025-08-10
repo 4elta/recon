@@ -826,6 +826,9 @@ async def process(stdscr, args):
   # hide cursor
   curses.curs_set(0)
 
+  # necessary, otherwise the colors are inverted when running the scanner via SSH
+  curses.use_default_colors()
+
   global DRY_RUN
   DRY_RUN = args.dry_run
 
