@@ -38,7 +38,7 @@ PROGRESS_BAR_STYLES = {
 PROGRESS_BAR_STYLE = 'pipe'
 
 UI = None
-TARGETS = []
+TARGETS = {}
 STOPPING = False
 QUITTING = False
 
@@ -942,7 +942,7 @@ def cancel_tasks():
 
   asyncio.get_running_loop().stop()
 
-async def main(stdscr):
+def main():
   parser = argparse.ArgumentParser(
     description = "Schedule and execute various tools based on the findings of an Nmap service scan."
   )
@@ -1029,15 +1029,17 @@ async def main(stdscr):
     action = 'store_true'
   )
 
-  await process(stdscr, parser.parse_args())
+  args = parser.parse_args()
+
+  try:
+    curses.wrapper(lambda stdscr: asyncio.run(process(stdscr, args)))
+  except RuntimeError:
+    pass
 
 if __name__ == '__main__':
   start_time = datetime.datetime.now()
 
-  try:
-    curses.wrapper(lambda stdscr: asyncio.run(main(stdscr)))
-  except RuntimeError:
-    pass
+  main()
 
   end_time = datetime.datetime.now()
 
