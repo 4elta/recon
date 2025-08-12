@@ -42,6 +42,8 @@ TARGETS = {}
 STOPPING = False
 QUITTING = False
 
+MAIN_PROGRESS_BAR_LENGTH = len("estimated time of completion: yyyy-mm-dd HH:MM") - len(TITLE) - 1
+
 # error/debug log
 LOG_FILE = None
 
@@ -198,7 +200,7 @@ class UserInterface:
         self.render_progress(
           number_of_scans_completed_total,
           number_of_scans_total,
-          length = 25,
+          length = MAIN_PROGRESS_BAR_LENGTH,
           style = 'pipe2'
         ),
         curses.A_BOLD
