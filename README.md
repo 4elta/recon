@@ -94,16 +94,16 @@ options:
   -c, --config path [path ...]
                         path to the scanner configuration file(s); see
                         '/path/to/recon/config/scanner.toml'
-  -t, --concurrent_targets number
+  -t, --concurrent-targets number
                         number of targets that should be scanned concurrently
                         (default: 3)
-  -s, --concurrent_scans number
+  -s, --concurrent-scans number
                         number of scans that should be running concurrently on
                         a single target (default: 2)
-  -m, --max_time seconds
+  -m, --max-time seconds
                         maximum time in seconds each scan is allowed to take
                         (default: 3600)
-  -n, --dry_run         do not run any command; just create/update the
+  -n, --dry-run         do not run any command; just create/update the
                         'commands.csv' file
   -r, --rescan <host>:<protocol>:<port>:<service> 
               [<host>:<protocol>:<port>:<service> ...]
@@ -111,12 +111,12 @@ options:
                         overwrite existing result files; you can use '*' if
                         you cannot or don't want to specify a
                         host/protocol/port/service part
-  -y, --overwrite_results
+  -y, --overwrite-results
                         overwrite existing result files
   -d, --delimiter character
                         character used to delimit columns in the
                         'commands.csv' and 'services.csv' files (default: ',')
-  --ignore_uid          ignore the warning about potentially lacking
+  --ignore-uid          ignore the warning about potentially lacking
                         permissions
 ```
 

@@ -839,7 +839,7 @@ async def process(stdscr, args):
   MAX_TIME = args.max_time
 
   if not os.geteuid() == 0 and not args.ignore_uid:
-    sys.exit('depending on what commands/tools this script executes it might have to be run by the root user (i.e. with "sudo").\nyou could try and ignore this warning by using the `--ignore_uid` flag.')
+    sys.exit('depending on what commands/tools this script executes it might have to be run by the root user (i.e. with "sudo").\nyou could try and ignore this warning by using the `--ignore-uid` flag.')
 
   # limit the number of concurrently scanned targets
   concurrent_targets = asyncio.Semaphore(args.concurrent_targets)
@@ -973,7 +973,7 @@ def main():
   )
 
   parser.add_argument(
-    '-t', '--concurrent_targets',
+    '-t', '--concurrent-targets',
     metavar = 'number',
     help = "number of targets that should be scanned concurrently (default: 3)",
     type = int,
@@ -981,7 +981,7 @@ def main():
   )
 
   parser.add_argument(
-    '-s', '--concurrent_scans',
+    '-s', '--concurrent-scans',
     metavar = 'number',
     help = "number of scans that should be running concurrently on a single target (default: 2)",
     type = int,
@@ -989,7 +989,7 @@ def main():
   )
 
   parser.add_argument(
-    '-m', '--max_time',
+    '-m', '--max-time',
     metavar = 'seconds',
     help = f"maximum time in seconds each scan is allowed to take (default: {MAX_TIME})",
     type = int,
@@ -997,7 +997,7 @@ def main():
   )
 
   parser.add_argument(
-    '-n', '--dry_run',
+    '-n', '--dry-run',
     help = "do not run any command; just create/update the 'commands.csv' file",
     action = 'store_true'
   )
@@ -1011,7 +1011,7 @@ def main():
   )
 
   parser.add_argument(
-    '-y', '--overwrite_results',
+    '-y', '--overwrite-results',
     help = "overwrite existing result files",
     action = 'store_true'
   )
@@ -1024,7 +1024,7 @@ def main():
   )
 
   parser.add_argument(
-    '--ignore_uid',
+    '--ignore-uid',
     help = "ignore the warning about potentially lacking permissions",
     action = 'store_true'
   )
