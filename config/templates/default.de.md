@@ -37,7 +37,7 @@ Die folgenden Schwachstellen und/oder Abweichungen von den empfohlenen Einstellu
 * {{ reference }}
 {% endfor %}
 {% endif %}
-{% if info|length %}
+{% if additional_info|length %}
 
 # zusätzliche informationen
 

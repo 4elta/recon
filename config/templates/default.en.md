@@ -37,7 +37,7 @@ The following vulnerabilities and/or deviations from the recommended settings (`
 * {{ reference }}
 {% endfor %}
 {% endif %}
-{% if info|length %}
+{% if additional_info|length %}
 
 # additional info
 
