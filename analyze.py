@@ -236,6 +236,7 @@ def process(args):
 
   output_directory = None
   analysis_file = None
+  analysis_file_ext = args.fmt
   batch_mode = (args.output and number_of_potential_analyses > 1)
 
   if batch_mode:
@@ -271,6 +272,9 @@ def process(args):
       sys.exit(f"the specified template file '{args.template}' does not exist!")
     else:
       template_file = args.template.resolve()
+      analysis_file_ext = template_file.suffix
+      if '.' in analysis_file_ext:
+        analysis_file_ext = analysis_file_ext[1:]
   else:
     LOGGER.info(f"using output format: '{args.fmt}'")
     if args.fmt not in ('json', 'csv'):
@@ -343,7 +347,7 @@ def process(args):
       if output_directory:
         analysis_file = pathlib.Path(
           output_directory,
-          f"{service},{scan_name},{LANGUAGE}.{args.fmt}"
+          f"{service},{scan_name},{LANGUAGE}.{analysis_file_ext}"
         )
 
       analysis['recommendations_file'] = recommendations_file
