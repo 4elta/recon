@@ -193,7 +193,7 @@ class UserInterface:
     self.main.addstr(line, 0, TITLE, curses.A_BOLD)
     if STOPPING:
       self.main.addstr(line, len(TITLE) + 1, "... stopping ...", curses.A_BOLD)
-      self.main.addstr(1, 0, "waiting for the running scans to finish ...")
+      self.main.addstr(line + 1, 0, "waiting for the running scans to finish ...")
     else:
       self.main.addstr(
         line, len(TITLE) + 1,
@@ -380,8 +380,7 @@ async def run_command(scan: Scan):
     if DRY_RUN:
       # add some random delay, just for fun
       await asyncio.sleep(random.randrange(1, 10))
-
-    if not DRY_RUN:
+    else:
       # create/start the async process
       process = await asyncio.create_subprocess_shell(
         scan.command,
