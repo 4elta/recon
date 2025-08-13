@@ -343,7 +343,7 @@ def process(args):
       if output_directory:
         analysis_file = pathlib.Path(
           output_directory,
-          f"{service},{scan_name}.{args.fmt}"
+          f"{service},{scan_name},{LANGUAGE}.{args.fmt}"
         )
 
       analysis['recommendations_file'] = recommendations_file
