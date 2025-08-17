@@ -44,6 +44,11 @@ QUITTING = False
 
 MAIN_PROGRESS_BAR_LENGTH = len("estimated time of completion: yyyy-mm-dd HH:MM") - len(TITLE) - 1
 
+FOOTER_MESSAGES = [
+  "[q] quit: kill all running scans",
+  "[s] stop gracefully: wait for the currently running scans to finish"
+]
+
 # error/debug log
 LOG_FILE = None
 
@@ -69,7 +74,7 @@ class UserInterface:
 
     self.screen_height = screen_height
     self.main = curses.newpad(screen_height + 1, screen_width + 1)
-    self.footer = curses.newpad(2, screen_width)
+    self.footer = curses.newpad(len(FOOTER_MESSAGES), screen_width)
 
     self.progress_x_pos = None
 
@@ -216,17 +221,12 @@ class UserInterface:
     self.footer.clear()
 
     if not (STOPPING or QUITTING):
-      footer_messages = [
-        "[q] quit: kill all running scans",
-        "[s] stop gracefully: wait for the currently running scans to finish"
-      ]
-
-      for n, msg in enumerate(footer_messages):
+      for n, msg in enumerate(FOOTER_MESSAGES):
         self.footer.addstr(n, 0, msg, curses.A_DIM)
 
       self.footer.refresh(
         0, 0,
-        screen_height - 2, 0,
+        screen_height - len(FOOTER_MESSAGES), 0,
         screen_height - 1, screen_width - 1
       )
 
