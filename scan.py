@@ -189,7 +189,8 @@ class UserInterface:
         if not scan.active:
           continue
 
-        self.main.addstr(line, 0, scan.description, curses.A_DIM)
+        scan_description = ': '.join(scan.description[1:])
+        self.main.addstr(line, 0, scan_description, curses.A_DIM)
         line += 1
 
     self.progress = number_of_scans_completed_total / number_of_scans_total
@@ -263,7 +264,7 @@ class Scan:
     self.target = target
     self.host = host # address or hostname
     self.port = port
-    self.description = description # <host>: <service>: <port>: [<hostname>:] <name>
+    self.description = description # [<host>, <transport protocol>/<port>, <service>, <hostname>, <name>]
     self.command = command # the command string
     self.patterns = patterns
     self.active = False
@@ -372,7 +373,8 @@ async def run_command(scan: Scan):
     scan.active = True
     UI.update()
 
-    log(f"[{scan.description}]\tstarted")
+    scan_description = ': '.join(scan.description)
+    log(f"[{scan_description}]\tstarted")
 
     timestamp_start = time.time()
     return_code = 0
@@ -402,12 +404,12 @@ async def run_command(scan: Scan):
         if return_code not in (0, 'timeout'):
           error_msg = await process.stderr.read()
           error_msg = error_msg.decode().strip()
-          log(f"[{scan.description}]\t{error_msg}")
+          log(f"[{scan_description}]\t{error_msg}")
       except asyncio.exceptions.TimeoutError:
-        log(f"[{scan.description}]\ttimeout")
+        log(f"[{scan_description}]\ttimeout")
         return_code = "timeout"
       except asyncio.exceptions.CancelledError:
-        log(f"[{scan.description}]\tcancelled")
+        log(f"[{scan_description}]\tcancelled")
         return_code = "cancelled"
 
     timestamp_completion = time.time()
@@ -418,7 +420,7 @@ async def run_command(scan: Scan):
     UI.update()
 
     if return_code not in ('timeout', 'cancelled'):
-      log(f"[{scan.description}]\tdone")
+      log(f"[{scan_description}]\tdone")
 
 def find_suitable_scans(application_protocol):
 
@@ -496,9 +498,15 @@ def queue_service_scan_hostname(target: Target, service: Service, scan_definitio
     if scan_ID in target.scans:
       continue # with another hostname 
 
-    description = f"{address}: {scan_definition.service}: {port}: {hostname}: {scan_definition.name}"
+    description = [
+      address,
+      f"{transport_protocol}/{port}",
+      scan_definition.service,
+      hostname,
+      scan_definition.name
+    ]
 
-    log(f"[{description}]")
+    log(f"[{': '.join(description)}]")
 
     target.scans[scan_ID] = Scan(
       target,
@@ -534,7 +542,11 @@ def queue_service_scan_address(target: Target, service: Service, scan_definition
     if result_file_exists(results_directory, file_name):
       return # continue with another service of the target
 
-    description = f"{address}: {scan_definition.service}: {scan_definition.name}"
+    description = [
+      address,
+      scan_definition.service,
+      scan_definition.name
+    ]
 
     scan_ID = (scan_definition.service, scan_definition.name)
 
@@ -549,14 +561,19 @@ def queue_service_scan_address(target: Target, service: Service, scan_definition
     if result_file_exists(results_directory, file_name):
       return # continue with another service of the target
 
-    description = f"{address}: {scan_definition.service}: {transport_protocol}/{port}: {scan_definition.name}"
+    description = [
+      address,
+      f"{transport_protocol}/{port}",
+      scan_definition.service,
+      scan_definition.name
+    ]
 
     scan_ID = (transport_protocol, port, application_protocol, scan_definition.service, scan_definition.name)
 
     if scan_ID in target.scans:
       return # continue with another service of the target
 
-  log(f"[{description}]")
+  log(f"[{': '.join(description)}]")
 
   target.scans[scan_ID] = Scan(
     target,
