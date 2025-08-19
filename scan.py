@@ -856,7 +856,7 @@ async def process(stdscr, args):
   global MAX_TIME
   MAX_TIME = args.max_time
 
-  if not os.geteuid() == 0 and not args.ignore_uid:
+  if not os.geteuid() == 0 and not (args.ignore_uid or DRY_RUN):
     sys.exit('depending on what commands/tools this script executes it might have to be run by the root user (i.e. with "sudo").\nyou could try and ignore this warning by using the `--ignore-uid` flag.')
 
   # limit the number of concurrently scanned targets
