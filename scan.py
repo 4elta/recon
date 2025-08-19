@@ -1062,6 +1062,7 @@ if __name__ == '__main__':
   end_time = datetime.datetime.now()
 
   unsuccessful_scans = []
+  number_of_targets = 0
   number_of_scans = 0
   number_of_completed_scans = 0
   number_of_scanned_targets = 0
@@ -1071,15 +1072,18 @@ if __name__ == '__main__':
       number_of_scanned_targets += 1
       number_of_completed_scans += target.number_of_scans_completed
 
-    for scan in target.scans.values():
-      if scan.completed and scan.return_code != 0:
-        unsuccessful_scans.append(scan.command)
+    if len(target.scans):
+      number_of_targets += 1
+
+      for scan in target.scans.values():
+        if scan.completed and scan.return_code != 0:
+          unsuccessful_scans.append(scan.command)
 
   if QUITTING:
     print("user aborted: some scans might have been killed before they were finished.")
 
   print(f"recon scanner ran {end_time - start_time} (hours:minutes:seconds).")
-  print(f"{number_of_scanned_targets} of {len(TARGETS)} targets were scanned ({100 * number_of_scanned_targets / len(TARGETS):.1f} %).")
+  print(f"{number_of_scanned_targets} of {number_of_targets} targets were scanned ({100 * number_of_scanned_targets / number_of_targets:.1f} %).")
   print(f"{number_of_completed_scans} of {number_of_scans} scans completed ({100 * number_of_completed_scans / number_of_scans:.1f} %).")
   if len(unsuccessful_scans):
     print(f"{len(unsuccessful_scans)} of those scans returned an error, ran into a timeout or were cancelled.")
