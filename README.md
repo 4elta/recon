@@ -134,7 +134,7 @@ options:
   -l code, --language code
                         specify the language in which the analysis should be printed (default: 'en')
   -f code, --format code
-                        specify the output format of the analysis (choices: ['md', 'json', 'csv']; default: 'md')
+                        specify the output format of the analysis (choices: ['md', 'json', 'csv', 'typ']; default: 'md')
   --template path       path to the Jinja2 template for the analysis; this option overrides '-f/--format'
 ```
 
@@ -155,7 +155,7 @@ The following languages are currently available for the analysis:
 * `en`: English
 * `de`: Deutsch
 
-The analyzer can print its results in Markdown, JSON or CSV.
+The analyzer can print its results in Markdown, JSON, CSV or Typst.
 If you need the analysis in a markup format other than Markdown, just [pipe](https://en.wikipedia.org/wiki/Pipeline_(Unix)) the output of the analyzer to [`pandoc`](https://pandoc.org/) and you are good to go.
 Below is an example of a conversion to `docx`:
 

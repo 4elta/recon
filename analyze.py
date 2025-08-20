@@ -23,7 +23,7 @@ for path in ANALYZERS_DIR.iterdir():
     SUPPORTED_SERVICES.append(path.name)
 
 LANGUAGE = 'en'
-SUPPORTED_FORMATS = ['md', 'json', 'csv']
+SUPPORTED_FORMATS = ['md', 'json', 'csv', 'typ']
 
 
 def analyze_service(service, files, recommendations_file, tool=None):
@@ -205,17 +205,21 @@ def process(args):
         print(json.dumps(analysis['services']))
       elif args.fmt == 'csv':
         render_CSV(analysis['services'])
-      else:
+      elif args.fmt in ('md', 'typ'):
         template_file = pathlib.Path(
           pathlib.Path(__file__).resolve().parent,
           "config",
           "templates",
-          f"default.{LANGUAGE}.md"
+          f"default.{LANGUAGE}.{args.fmt}"
         )
         LOGGER.info(f"using default template file: '{template_file}'")
+        
         if not template_file.exists():
           LOGGER.error("the template file does not exist!")
           sys.exit(f"the default template file '{template_file}' does not exist!")
+      else:
+        LOGGER.error("how did we get here?")
+        sys.exit(f"unsupported format {args.fmt}")
 
     if template_file:
       env = jinja2.Environment(
