@@ -124,12 +124,12 @@ def parse_monlist(monlist):
           +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
       16  |  RA   |  LA   | flags | P |M|V|
           +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-      32  | IPv6  |       |  remote ...   |
+      32  | IPv6  |       |
           +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-      48  |... addr (IPv6)|   local ...   |
+      40  |       remote addr (IPv6)      |
           +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-      64  |... addr (IPv6)|
-          +-+-+-+-+-+-+-+-+
+      56  |        local addr (IPv6)      |
+          +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
   avgint: average interval in seconds between packets from this address
   lstint: interval in seconds between the receipt of the most recent packet from this address
