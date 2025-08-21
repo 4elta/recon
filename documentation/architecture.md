@@ -18,7 +18,7 @@ In the example above, Nmap reported an SSH and HTTP service (with TLS) on the ho
 So the scanner might run an Nmap script scan targeting SSH, and Nikto and `testssl.sh` targeting HTTP and TLS.
 
 The selection of tools, and the parameters used for each, is specified in a [TOML](https://toml.io/en/) configuration file.
-Below is an example configuration that results in the default one (i.e. `config/scanner.toml`) being ignored:
+Below is an example configuration that results in the default one (i.e. `config/scanner.toml`) being ignored (`merge_strategy = 'overwrite'`):
 
 ```toml
 # ignore default configuration
@@ -52,11 +52,11 @@ patterns = [ 'https', '^ssl\|', '^tls\|' ]
   command = 'testssl --ip one --nodns min --mapping no-openssl --warnings off --connect-timeout 60 --openssl-timeout 60 --logfile "{result_file}.log" --jsonfile "{result_file}.json" {hostname}:{port}'
 ```
 
-Scans are grouped by the name of the protocol/service (e.g. `[services.http]`, `[services.ssh]` or `[services.tls]`).
+Scans are grouped by the name of the protocol/service (i.e. `[services.<protocol>]`; e.g. `[services.http]`, `[services.ssh]` or `[services.tls]`).
 The `patterns` array specifies the regular expressions on which the service's name (as identified by Nmap; e.g. `https`) is matched against.
 As soon as a single entry matches, all scans in this group will be scheduled/executed.
 
-Each scan at least needs a header (i.e. `[services.<protocol>.scans.<scan name>]`) and a command (i.e. `command = '...'`).
+Each scan at least needs a name (i.e. `[services.<protocol>.scans.<scan name>]`) and a command (i.e. `command = '...'`).
 The scan name can contain tags (e.g. `some-tool#authenticated`).
 The command can make use of the following variables (i.e. `{variable}`):
 
