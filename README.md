@@ -186,7 +186,3 @@ Below is an example of a conversion to `docx`:
 ```text
 $ analyze [...] | pandoc --from=markdown --to=docx --output="/path/to/analysis.docx"
 ```
-
-## contribution
-
-If we have piqued your interest in this project (e.g. to contribute some ideas or a new tool to be included, or even an analyzer), the [architecture documentation](documentation/architecture.md) might be a good place to start to learn how the different components of this tool suite work together.
