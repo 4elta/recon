@@ -53,7 +53,7 @@ FOOTER_MESSAGES = [
 LOG_FILE = None
 
 # <host>:<protocol>:<port>:<service>
-RESCAN_PATTERN = re.compile(r'(?P<host>[^:]+):(?P<protocol>(tcp|udp|\*)):(?P<port>(\d+)|\*):(?P<service>.+)')
+SCAN_FILTER_PATTERN = re.compile(r'(?P<host>[^:]+):(?P<protocol>(tcp|udp|\*)):(?P<port>(\d+)|\*):(?P<service>.+)')
 
 # default timeout (in seconds) after which a command will be cancelled
 MAX_TIME = 60*60
@@ -648,7 +648,7 @@ async def scan_target(semaphore: asyncio.Semaphore, target: Target):
 
     log(f"[{target.address}]\tdone")
 
-def parse_result_file(base_directory, result_file, targets, unique_services, rescan_filters):
+def parse_result_file(base_directory, result_file, targets, unique_services, scan_filters):
   # https://nmap.org/book/nmap-dtd.html
   # nmaprun
   #   host
@@ -716,21 +716,21 @@ def parse_result_file(base_directory, result_file, targets, unique_services, res
 
         description = " ".join(descriptions)
 
-      add_target = (len(rescan_filters) == 0)
-      for rescan_filter in rescan_filters:
-        if not (rescan_filter['host'] == '*' or rescan_filter['host'] == address):
+      add_target = (len(scan_filters) == 0)
+      for scan_filter in scan_filters:
+        if not (scan_filter['host'] == '*' or scan_filter['host'] == address):
           continue
 
-        if not (rescan_filter['protocol'] == '*' or rescan_filter['protocol'] == transport_protocol):
+        if not (scan_filter['protocol'] == '*' or scan_filter['protocol'] == transport_protocol):
           continue
 
-        if not (rescan_filter['port'] == '*' or rescan_filter['port'] == port_ID):
+        if not (scan_filter['port'] == '*' or scan_filter['port'] == port_ID):
           continue
 
-        if not (rescan_filter['service'] == '*' or rescan_filter['service'] == application_protocol):
+        if not (scan_filter['service'] == '*' or scan_filter['service'] == application_protocol):
           continue
 
-        log(f"rescan filter '{json.dumps(rescan_filter)}' matches!")
+        log(f"scan filter '{json.dumps(scan_filter)}' matches!")
         add_target = True
         break
 
@@ -748,7 +748,7 @@ def parse_result_file(base_directory, result_file, targets, unique_services, res
 
   return targets
 
-def parse_result_files(base_directory, result_files, rescan_filters):
+def parse_result_files(base_directory, result_files, scan_filters):
   targets = {}
 
   # a service is uniquely identified by the tuple (host, transport protocol, port number)
@@ -756,7 +756,7 @@ def parse_result_files(base_directory, result_files, rescan_filters):
 
   for result_file in result_files:
     log(f"parsing '{result_file}' ...")
-    parse_result_file(base_directory, result_file, targets, unique_services, rescan_filters)
+    parse_result_file(base_directory, result_file, targets, unique_services, scan_filters)
 
   return targets
 
@@ -898,27 +898,27 @@ async def process(stdscr, args):
     if not input_file.exists():
       sys.exit(f"input file '{input_file}' does not exist!")
 
-  rescan_filters = []
-  for rescan in args.rescan:
-    m = RESCAN_PATTERN.fullmatch(rescan)
+  scan_filters = []
+  for scan_filter in args.filter:
+    m = SCAN_FILTER_PATTERN.fullmatch(scan_filter)
     if not m:
-      sys.exit(f"rescan filter '{rescan}' does not match '{RESCAN_PATTERN.pattern}'")
+      sys.exit(f"scan filter '{scan_filter}' does not match '{SCAN_FILTER_PATTERN.pattern}'")
 
-    rescan_filter = {
+    scan_filter = {
       'host': m.group('host'),
       'protocol': m.group('protocol'),
       'port': m.group('port'),
       'service': m.group('service')
     }
 
-    log(f"parsed rescan filter: {json.dumps(rescan_filter)}")
-    rescan_filters.append(rescan_filter)
+    log(f"parsed scan filter: {json.dumps(scan_filter)}")
+    scan_filters.append(scan_filter)
 
-  if len(rescan_filters):
+  if len(scan_filters):
     OVERWRITE = True
 
   global TARGETS
-  TARGETS = parse_result_files(base_directory, args.input, rescan_filters)
+  TARGETS = parse_result_files(base_directory, args.input, scan_filters)
   log(f"parsed {len(TARGETS)} targets")
 
   # create services.csv file and initialize its header
@@ -1021,9 +1021,9 @@ def main():
   )
 
   parser.add_argument(
-    '-r', '--rescan',
+    '-f', '--filter',
     metavar = '<host>:<protocol>:<port>:<service>',
-    help = "re-scan certain hosts/protocols/ports/services and overwrite existing result files;\nyou can use '*' if you cannot or don't want to specify a host/protocol/port/service part",
+    help = "specify certain hosts/protocols/ports/services you want to (re)scan and overwrite their result files if they exist;\nuse '*' if you cannot or don't want to specify a host/protocol/port/service part",
     nargs = '+',
     default = []
   )
@@ -1083,7 +1083,7 @@ if __name__ == '__main__':
     print("user aborted: some scans might have been killed before they were finished.")
 
   print(f"recon scanner ran {end_time - start_time} (hours:minutes:seconds).")
-  print(f"{number_of_scanned_targets} of {number_of_targets} targets were scanned ({100 * number_of_scanned_targets / number_of_targets:.1f} %).")
-  print(f"{number_of_completed_scans} of {number_of_scans} scans completed ({100 * number_of_completed_scans / number_of_scans:.1f} %).")
+  print(f"{number_of_scanned_targets} of {number_of_targets} targets were scanned ({number_of_scanned_targets / number_of_targets:.1%}).")
+  print(f"{number_of_completed_scans} of {number_of_scans} scans completed ({number_of_completed_scans / number_of_scans:.1%}).")
   if len(unsuccessful_scans):
     print(f"{len(unsuccessful_scans)} of those scans returned an error, ran into a timeout or were cancelled.")
