@@ -179,7 +179,7 @@ class Parser(AbstractParser):
 
       status = server_scan_result['scan_status']
       if not status == 'COMPLETED':
-        print(f"\nconnection error: `{identifier}`")
+        self.__class__.logger.warn(f"connection error: '{identifier}'")
         continue
 
       service = copy.deepcopy(SERVICE_SCHEMA)

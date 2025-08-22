@@ -11,7 +11,7 @@ references = [
 description = "validiert kein DNSSEC: dies könnte zu DNS-Cache-Poisoning führen"
 
 ["ECS: supported"]
-description = "unterstützt ECS: dies könnte die Privatsphäre der Nutzer\\*innen beeinträchtigen und gezielte DNS-Poisoning-Angriffe ermöglichen"
+description = "unterstützt ECS: dies könnte die Privatsphäre der Nutzerinnen und Nutzer beeinträchtigen und gezielte DNS-Poisoning-Angriffe ermöglichen"
 references = [
   "[Understanding the Privacy Implications of ECS](https://yacin.nadji.us/docs/pubs/dimva16_ecs.pdf)",
 ]

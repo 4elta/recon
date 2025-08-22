@@ -43,7 +43,7 @@ class Parser(AbstractParser):
         <heartbleed sslversion="TLSv1.3" vulnerable="0" />
         <heartbleed sslversion="TLSv1.2" vulnerable="0" />
         <cipher cipher="{OpenSSL/IANA name}" [curve="{elliptic_curve}"] ecdhebits="{bits}"] [dhebits="{bits}"]> [multiple]
-        <group name="{group}(\s.+)?" />
+        <group name="{group}(\\s.+)?" />
 
         <group sslversion="TLSv1.3" bits="128" name="secp256r1 (NIST P-256)" id="0x0017" />
         <group sslversion="TLSv1.3" bits="128" name="x25519" id="0x001d" />
@@ -51,7 +51,6 @@ class Parser(AbstractParser):
         <group sslversion="TLSv1.2" bits="128" name="x25519" id="0x001d" />
         <connection-signature-algorithm sslversion="TLSv1.3" name="ecdsa_secp256r1_sha256" id="0x0403" />
         <certificates>
-
     '''
 
     document_node = defusedxml.ElementTree.parse(path).getroot()

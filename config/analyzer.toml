@@ -1,0 +1,10 @@
+[default_parser]
+dns = "nase"
+ftp = "nmap"
+http = "nmap"
+isakmp = "ike"
+ntp = "ntp"
+rdp = "nmap"
+smb = "nmap"
+ssh = "nmap"
+tls = "testssl"

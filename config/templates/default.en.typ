@@ -1,49 +1,47 @@
-# evidence
+= evidence
 
 The following hosts have been analyzed:
 
 {% for asset in services.keys() %}
-* `{{ asset }}`
+- `{{ asset }}`
 {% endfor %}
 
 The following vulnerabilities and/or deviations from the recommended settings (`{{recommendations_file}}`) have been identified:
-{% for description, assets in issues|items %}
+{% for asset, issues in affected_assets.items() %}
 
-## {{ description }}
+== {{ asset }}
 
-This issue has been found in the following assets:
-
-{% for asset in assets %}
-* `{{ asset }}`
+{% for issue in issues %}
+- {{ issue }}
 {% endfor %}
 {% endfor %}
 
-# affected assets
+= affected assets
 
 {% for asset in affected_assets.keys() %}
-* `{{ asset }}`
+- `{{ asset }}`
 {% endfor %}
 {% if recommendations|length %}
 
-# recommendations
+= recommendations
 
 {% for recommendation in recommendations %}
-* {{ recommendation }}
+- {{ recommendation }}
 {% endfor %}
 {% endif %}
 {% if references|length %}
 
-# references
+= references
 
 {% for reference in references %}
-* {{ reference }}
+- {{ reference }}
 {% endfor %}
 {% endif %}
-{% if info|length %}
+{% if additional_info|length %}
 
-# additional info
+= additional info
 
 {% for info in additional_info %}
-* {{ info }}
+- {{ info }}
 {% endfor %}
 {% endif %}

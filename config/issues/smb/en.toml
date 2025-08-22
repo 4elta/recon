@@ -1,20 +1,99 @@
 ["protocol supported"]
-description = "{protocol} protocol supported"
+description = "{protocol}: protocol supported"
+recommendations = [
+  "[disable {protocol} in Windows](https://learn.microsoft.com/en-us/windows-server/storage/file-server/troubleshoot/detect-enable-and-disable-smbv1-v2-v3)"
+]
 
 ["dialect supported"]
 description = "{protocol}: dialect supported: {dialect}"
+recommendations = [
+  "[manage SMB dialects in Windows](https://learn.microsoft.com/en-us/windows-server/storage/file-server/manage-smb-dialects)"
+]
 
-["signing (e:True) (r:True)"]
-description = "{protocol}: signing enabled and required"
+["protocol not supported"]
+description = "{protocol}: not supported"
+recommendations = [
+  "[enable {protocol} in Windows](https://learn.microsoft.com/en-us/windows-server/storage/file-server/troubleshoot/detect-enable-and-disable-smbv1-v2-v3)"
+]
 
-["signing (e:True) (r:False)"]
-description = "{protocol}: signing enabled but not required"
+["dialect not supported"]
+description = "{protocol}: dialect not supported: {dialect}"
+recommendations = [
+  "[manage SMB dialects in Windows](https://learn.microsoft.com/en-us/windows-server/storage/file-server/manage-smb-dialects)"
+]
 
-["signing (e:False) (r:False)"]
-description = "{protocol}: signing not enabled and not required"
+["signing r:True"]
+description = "{protocol}: signing required"
 
-["signing (e:False) (r:True)"]
-description = "{protocol}: signing not enabled but required"
+["signing r:False"]
+description = "{protocol}: signing not required"
+recommendations = [
+  "[enable SMB signing in Windows](https://learn.microsoft.com/en-us/windows-server/storage/file-server/smb-signing-overview)"
+]
+
+["authentication"]
+description = "authentication via {method}"
+
+["authentication: NTLM"]
+description = "authentication via NTLM"
+recommendations = [
+  "[restrict the use of NTLM authentication](https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2008-R2-and-2008/dd560653(v=ws.10))"
+]
+
+["authentication: NTLM: anonymous"]
+description = "NTLM: anonymous access (null session) allowed"
+recommendations = [
+  "[disallow anonymous access](https://learn.microsoft.com/en-us/troubleshoot/windows-server/networking/inter-process-communication-share-null-session)"
+]
+
+["authentication: NTLM: guest"]
+description = "NTLM: guest access allowed"
+recommendations = [
+  "[disable guest access in Windows](https://learn.microsoft.com/en-us/windows-hardware/customize/desktop/unattend/microsoft-windows-workstationservice-allowinsecureguestauth)",
+  "[disable guest access in Samba](https://www.samba.org/samba/docs/current/man-html/smb.conf.5.html#MAPTOGUEST)"
+]
+
+["AD: users: sensitive information"]
+description = "domain: users: sensitive information found: {users}"
+
+["AD: users: AC"]
+description = "domain: users: account control `{name}`: {users}"
+
+["AD: users: AC: missing"]
+description = "domain: users: account control `{name}` missing: {users}"
+
+["AD: domain: force_logoff"]
+description = "domain: logoff policy: inactive session timeout: {value} (days:hours:minutes:seconds)"
+
+["AD: domain: lockout_duration"]
+description = "domain: account lockout policy: lockout duration: {value} (days:hours:minutes:seconds)"
+
+["AD: domain: lockout_observation_window"]
+description = "domain: account lockout policy: reset lockout counter after {value} (days:hours:minutes:seconds)"
+
+["AD: domain: lockout_threshold"]
+description = "domain: account lockout policy: lockout threshold: {value}"
+
+["AD: domain: max_password_age"]
+description = "domain: password policy: maximum password age: {value} (days:hours:minutes:seconds)"
+
+["AD: domain: min_password_age"]
+description = "domain: password policy: minimum password age: {value} (days:hours:minutes:seconds)"
+
+["AD: domain: min_password_length"]
+description = "domain: password policy: minimum password length: {value}"
+
+["AD: domain: password_history_length"]
+description = "domain: password policy: password history count: {value}"
+
+["AD: domain: password_properties: complex: False"]
+description = "domain: password policy: does not require complex passwords"
+
+["AD: domain: password_properties: complex: True"]
+description = "domain: password policy: requires complex passwords"
+
+["AD: domain: password_properties: store_cleartext: True"]
+description = "domain: password policy: store passwords using reversible encryption"
 
 ["additional info"]
 description = "additional information: {info}"

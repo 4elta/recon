@@ -5,13 +5,13 @@ The recon tool suite can help you automate that and analyze/summarize the result
 
 ## motivation
 
-Instead of manually running various tools (e.g. [testssl.sh](https://testssl.sh/), [Nikto](https://cirt.net/nikto2), [feroxbuster](https://github.com/epi052/feroxbuster), etc.) and having to remember all commands and the necessary options, we can configure them once (see [`config/scans.toml`](config/scans.toml)) and have the scanner (i.e. `scan.py`) run the required/appropriate tools based on what the Nmap service scan (e.g. `services.xml`) has found.
+Instead of manually running various tools (e.g. [testssl.sh](https://testssl.sh/), [Nikto](https://cirt.net/nikto2), [feroxbuster](https://github.com/epi052/feroxbuster), etc.) and having to remember all commands and the necessary options, we can configure them once (see [`config/scanner.toml`](config/scanner.toml)) and have the scanner (i.e. `scan.py`) run the required/appropriate tools based on what the Nmap service scan (e.g. `services.xml`) has found.
 In addition to that, the suite also provides a tool to analyze and summarize the results of some scans (e.g. HTTP response headers, various protocol-specific configurations, etc.).
 This allows for an automated and consistent assessment of specific services (i.e. no longer are testers forced to analyze configurations by hand).
 
 ## installation
 
-The tools in this suite (i.e. `analyze.py` and `scan.py`) require Python 3.11+.
+The tools in this suite (i.e. `analyze.py` and `scan.py`) require Python 3.11+ and the [`defusedxml.ElementTree`](https://github.com/tiran/defusedxml) module.
 
 Clone the git repository:
 
@@ -44,7 +44,6 @@ The script will install the following tools:
   * [dnspython](https://www.dnspython.org/)
   * [Impacket](https://github.com/fortra/impacket)
   * [Jinja](https://github.com/pallets/jinja/)
-  * [Rich](https://github.com/Textualize/rich)
 * [RPC support](http://sourceforge.net/projects/rpcbind/)
 * [Samba client](https://www.samba.org/samba/docs/current/man-html/smbclient.1.html)
 * [SecLists](https://github.com/danielmiessler/SecLists)
@@ -52,7 +51,7 @@ The script will install the following tools:
 * [testssl.sh](https://testssl.sh/)
 * [WhatWeb](https://morningstarsecurity.com/research/whatweb)
 
-Based on the scan config (i.e. [`config/scans.toml`](config/scans.toml)) you are using, you might have to install additional tools.
+Based on the scan config (i.e. [`config/scanner.toml`](config/scanner.toml)) you are using, you might have to install additional tools.
 
 Add symbolic links to the scripts to `/usr/local/bin`.
 Please make sure, that the names for `analyze` and `scan` don't [conflict](https://github.com/4elta/recon/issues/31) with any binaries already installed.
@@ -68,7 +67,7 @@ sudo ln --symbolic "$(realpath scan.py)" /usr/local/bin/scan
 2. run the scanner on the results of the Nmap service scan; be aware that this (like the Nmap scan itself) will send requests to the target system(s)
 3. run the analyzer on the results of the scanner; no network traffic will be generated during this step
 
-You can customize the configuration for the scanner (i.e. what tools to run, etc.) by modifying the provided one (i.e. [`config/scans.toml`](config/scans.toml)), or you can specify your own with the `--config` argument.
+You can customize the configuration for the scanner (i.e. what tools to run, etc.) by modifying the provided one (i.e. [`config/scanner.toml`](config/scanner.toml)), or you can specify your own with the `--config` argument.
 Similarly, you can modify the recommendations based on what the analyzers will evaluate certain services.
 Make sure to have a look at the [architecture documentation](documentation/architecture.md) and/or study the provided configuration files.
 
@@ -76,38 +75,56 @@ Make sure to have a look at the [architecture documentation](documentation/archi
 
 ```text
 % scan -h
-usage: scan [-h] [-i path [path ...]] [-o path] [-c path] [-t number] [-s number] [-m seconds] [-n] [-r <host>:<protocol>:<port>:<service> [<host>:<protocol>:<port>:<service> ...]] [-y] [-d character] [--ignore_uid]
+usage: scan [-h] [-i path [path ...]] [-o path] [-c path [path ...]]
+            [-t number] [-s number] [-m seconds] [-n]
+            [-f <host> <protocol> <port> <service> 
+               [<host> <protocol> <port> <service> ...]]
+            [-y] [-d character] [--ignore-uid]
 
-Schedule and execute various tools based on the findings of an Nmap service scan.
+Schedule and execute various tools based on the findings of an Nmap service
+scan.
 
 options:
   -h, --help            show this help message and exit
-  -i path [path ...], --input path [path ...]
-                        the result file(s) of the Nmap service scan (default: 'services.xml')
-  -o path, --output path
-                        where the results are stored (default: './recon')
-  -c path, --config path
-                        path to the scan configuration file (default: '/path/to/recon/config/scans.toml')
-  -t number, --concurrent_targets number
-                        how many targets should be scanned concurrently (default: 3)
-  -s number, --concurrent_scans number
-                        how many scans should be running concurrently on a single target (default: 2)
-  -m seconds, --max_time seconds
-                        maximum time in seconds each scan is allowed to take (default: 3600)
-  -n, --dry_run         do not run any command; just create/update the 'commands.csv' file
-  -r <host>:<protocol>:<port>:<service> [<host>:<protocol>:<port>:<service> ...], --rescan <host>:<protocol>:<port>:<service> [<host>:<protocol>:<port>:<service> ...]
-                        re-scan certain hosts/protocols/ports/services and overwrite existing result files; you can use '*' if you cannot or don't want to specify a host/protocol/port/service part
-  -y, --overwrite_results
+  -i, --input path [path ...]
+                        path to the result file(s) of the Nmap service scan
+                        (default: 'services.xml')
+  -o, --output path     path to where the results are stored (default:
+                        './recon')
+  -c, --config path [path ...]
+                        path to the scanner configuration file(s); see
+                        '/path/to/recon/config/scanner.toml'
+  -t, --concurrent-targets number
+                        number of targets that should be scanned concurrently
+                        (default: 3)
+  -s, --concurrent-scans number
+                        number of scans that should be running concurrently on
+                        a single target (default: 2)
+  -m, --max-time seconds
+                        maximum time in seconds each scan is allowed to take
+                        (default: 3600)
+  -n, --dry-run         do not run any command; just create/update the
+                        'commands.csv' file
+  -f, --filter <host> <protocol> <port> <service> 
+              [<host> <protocol> <port> <service> ...]
+                        specify hosts/protocols/ports/services you want to
+                        (re)scan and overwrite their result files if they
+                        exist; use '*' if you cannot or don't want to specify
+                        a host/protocol/port/service part
+  -y, --overwrite-results
                         overwrite existing result files
-  -d character, --delimiter character
-                        character used to delimit columns in the 'commands.csv' and 'services.csv' files (default: ',')
-  --ignore_uid          ignore the warning about potentially lacking permissions.
+  -d, --delimiter character
+                        character used to delimit columns in the
+                        'commands.csv' and 'services.csv' files (default: ',')
+  --ignore-uid          ignore the warning about potentially lacking
+                        permissions
 ```
 
 After running the scanner, the results directory (e.g. `recon/`) will contain the following files/directories:
 
 * `commands.csv`: contains information about the executed commands (incl. start time, end time and return code)
-* `scan.log`: the debug/error log of the scanner
+* `config_<YYYY-mm-dd_HH-MM-SS>.json`: the scan configuration used for the scan
+* `scanner_<YYYY-mm-dd_HH-MM-SS>.log`: the debug/error log of the scanner
 * `services.csv`: contains information about the identified services (incl. whether they have been scanned or not)
 * `<IP address>/`: each host has its own directory where the result files of the various tools are stored
   * the result files follow a specific naming scheme: `<service>[,<transport protocol>,<port>,...],<tool>.<ext>`
@@ -116,44 +133,51 @@ After running the scanner, the results directory (e.g. `recon/`) will contain th
 ### analyzer
 
 ```text
-usage: analyze [-h] [-t name] [-r path] [-i path] [-l code] [-f code] [--template path] {?,dns,ftp,http,isakmp,ntp,rdp,smb,ssh,tls}
+% analyze -h
+usage: analyze [-h] [-c path] [-s code] [-S name] [-r path] [-i path]
+               [-l code] [-f code] [--template path] [-o path]
 
-Analyze and summarize the results of specific tools previously run by the scanner of the recon tool suite (i.e. 'scan').
-
-positional arguments:
-  {?,dns,ftp,http,isakmp,ntp,rdp,smb,ssh,tls}
-                        specify the service that should be analyzed. use '?' to list services available for analysis.
+Analyze and summarize the results of specific tools previously run by the
+scanner of the recon tool suite (i.e. 'scan').
 
 options:
   -h, --help            show this help message and exit
-  -t name, --tool name  specify the tool whose results are to be parsed
-  -r path, --recommendations path
-                        path to the recommendations document (default: '/path/to/recon/config/recommendations/<service>/default.toml')
-  -i path, --input path
-                        path to the root directory that holds the results to be analysed (default: './recon')
-  -l code, --language code
-                        specify the language in which the analysis should be printed (default: 'en')
-  -f code, --format code
-                        specify the output format of the analysis (choices: ['md', 'json', 'csv']; default: 'md')
-  --template path       path to the Jinja2 template for the analysis; this option overrides '-f/--format'
+  -c, --config path     path to the analyzer configuration file (default:
+                        '/path/to/recon/config/analyzer.toml')
+  -s, --service code    service that should be analyzed (choices: ['dns',
+                        'ftp', 'http', 'isakmp', 'ntp', 'rdp', 'smb', 'ssh',
+                        'tls'])
+  -S, --scan name       name of the tool/scan whose results should be parsed
+  -r, --recommendations path
+                        path to the recommendations document (default: '/path/
+                        to/recon/config/recommendations/<service>/default.toml')
+  -i, --input path      path to the root directory that holds the results to
+                        be analysed (default: './recon')
+  -l, --language code   language of the analysis (default: 'en')
+  -f, --format code     format of the analysis (choices: ['csv', 'json',
+                        'md']; default: 'md')
+  --template path       path to the Jinja2 template for the analysis; this
+                        option overrides '-f/--format'
+  -o, --output path     path to the directory where the analysis result(s)
+                        will be saved
 ```
 
 The following analyzers (and parsers) are currently implemented:
 
 * DNS configuration (`nase`, `nmap`)
 * FTP configuration (`nmap`)
-* HTTP response headers (`nmap`, `curl`)
+* HTTP response headers (`curl`, `nmap`)
 * ISAKMP/IKE configuration (`ike`)
-* NTP configuration (`ntp`, `nmap`)
+* NTP configuration (`nmap`, `ntp`)
 * RDP configuration (`nmap`)
-* SMB configuration (`nmap`)
+* SMB configuration (`enum4linux-ng`, `nmap`)
 * SSH configuration (`nmap`)
-* TLS configuration (`testssl`, `sslscan`, `sslyze`, `nmap`)
+* TLS configuration (`nmap`, `sslscan`, `sslyze`, `testssl`)
 
 The following languages are currently available for the analysis:
 
-* `en`: English
 * `de`: Deutsch
+* `en`: English
 
 The analyzer can print its results in Markdown, JSON or CSV.
 If you need the analysis in a markup format other than Markdown, just [pipe](https://en.wikipedia.org/wiki/Pipeline_(Unix)) the output of the analyzer to [`pandoc`](https://pandoc.org/) and you are good to go.
@@ -162,7 +186,3 @@ Below is an example of a conversion to `docx`:
 ```text
 $ analyze [...] | pandoc --from=markdown --to=docx --output="/path/to/analysis.docx"
 ```
-
-## contribution
-
-If we have piqued your interest in this project (e.g. to contribute some ideas or a new tool to be included, or even an analyzer), the [architecture documentation](documentation/architecture.md) might be a good place to start to learn how the different components of this tool suite work together.

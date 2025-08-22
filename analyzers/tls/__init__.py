@@ -81,11 +81,6 @@ with open(cipher_suites_specifications_document) as f:
 
 class Analyzer(AbstractAnalyzer):
 
-  def __init__(self, name, recommendations):
-    super().__init__(name, recommendations)
-
-    self.set_parser('testssl')
-
   def set_parser(self, tool):
     super().set_parser(tool)
     self.parser.cipher_suites_specifications = CIPHER_SUITES_SPECIFICATIONS
@@ -94,7 +89,7 @@ class Analyzer(AbstractAnalyzer):
     super().analyze(files)
 
     # parse result files
-    services = self.parser.parse_files(files[self.parser_name])
+    services = self.parser.parse_files(files)
     self.services = services
 
     # analyze services based on recommendations

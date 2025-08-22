@@ -25,7 +25,6 @@ if [ "$package_manager" == "apt" ]; then
     python3-dnspython \
     python3-impacket \
     python3-jinja2 \
-    python3-rich \
     rpcbind \
     smbclient \
     testssl.sh \
@@ -42,7 +41,6 @@ elif [ "$package_manager" == "pacman" ]; then
     python-dnspython \
     impacket \
     python-jinja \
-    python-rich \
     rpcbind \
     smbclient \
     testssl \

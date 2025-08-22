@@ -21,24 +21,24 @@ Die folgenden Schwachstellen und/oder Abweichungen von den empfohlenen Einstellu
 {% for asset in affected_assets.keys() %}
 * `{{ asset }}`
 {% endfor %}
-
 {% if recommendations|length %}
+
 # empfehlungen
 
 {% for recommendation in recommendations %}
 * {{ recommendation }}
 {% endfor %}
 {% endif %}
-
 {% if references|length %}
+
 # referenzen
 
 {% for reference in references %}
 * {{ reference }}
 {% endfor %}
 {% endif %}
+{% if additional_info|length %}
 
-{% if info|length %}
 # zusätzliche informationen
 
 {% for info in additional_info %}

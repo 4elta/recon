@@ -4,6 +4,17 @@ import logging
 import pathlib
 import sys
 
+def parse_scan_name(scan_name):
+  '''
+  parse the name of a tool/scan (e.g. 'tool#some#tag')
+  and extract its name ('tool') and tags ('some', 'tag')
+  '''
+
+  tags = scan_name.split('#')
+  cleaned_scan_name = tags.pop(0)
+
+  return (cleaned_scan_name, tags)
+
 class Issue(dict):
 
   logger = logging.getLogger(__name__)
@@ -46,6 +57,7 @@ class Issue(dict):
     for recommendation in recommendations:
       formatted_recommendation = recommendation.format(**self.values)
       self.recommendations.append(formatted_recommendation)
+
     self['recommendations'] = self.recommendations
 
   def _format_references(self, references):
@@ -90,13 +102,28 @@ class AbstractParser:
     this method has to be implemented by each concrete Parser class.
     '''
 
-    self.__class__.logger.info(f"parsing '{path}'")
+    self.__class__.logger.debug(f"parsing '{path}'")
 
-    # extract the application/transport protocol from the filename
+    '''
+    filename structure for most of the scans:
+    <app protocol>,<transport protocol>,<port>,<scan name>.<ext>
+
+    filename structure for scans of web services (HTTP, TLS):
+    <app protocol>,<transport protocol>,<port>,<hostname>,<scan name>.<ext>
+
+    filename structure for scans of services running on multiple ports (eg SMB):
+    <app protocol>,<scan name>.<ext>
+    '''
+
     filename = path.split('/')[-1]
     tokens = filename.split(',')
+
     self.application_protocol = tokens[0]
-    self.transport_protocol = tokens[1]
+
+    if len(tokens) > 2:
+      self.transport_protocol = tokens[1]
+    else:
+      self.transport_protocol = '_'
 
     self.__class__.logger.debug(f"application/transport protocol: '{self.application_protocol}/{self.transport_protocol}'")
 
@@ -107,12 +134,12 @@ class AbstractAnalyzer:
   def __init__(self, name, recommendations):
     '''
     initialize the analyzer.
-    this method may need to be extended by each concrete Analyzer class.
     '''
 
     self.__class__.logger.debug(f"initializing analyzer '{name}'")
 
     self.name = name
+    self.parser_name = None
     self.recommendations = recommendations
     self.services = []
 
@@ -120,6 +147,8 @@ class AbstractAnalyzer:
     '''
     set the parser that will be used to parse the results.
     '''
+
+    parser_name, _ = parse_scan_name(parser_name)
 
     self.__class__.logger.debug(f"setting parser to '{parser_name}'")
 
@@ -129,12 +158,10 @@ class AbstractAnalyzer:
       f'{parser_name}.py'
     )
 
-    self.__class__.logger.debug(f"parser module '{module_path}'")
-
     if not module_path.exists():
-      self.__class__.logger.error("parser does not exist!")
-      sys.exit(f"unknown parser '{parser_name}'")
+      raise RuntimeError(f"parser '{parser_name}' does not exist")
 
+    self.__class__.logger.debug(f"parser module '{module_path}'")
     self.parser_name = parser_name
 
     module_name = f'{__name__}.{self.name}.{parser_name}'
@@ -148,6 +175,10 @@ class AbstractAnalyzer:
     this method has to be extended by each concrete Analyzer class
     '''
 
-    if self.parser_name not in files:
-      self.__class__.logger.error("nothing to analyze")
-      sys.exit("\nnothing to analyze")
+    if not self.parser_name:
+      self.__class__.logger.error("parser not configured!")
+      raise RuntimeError("parser not configured")
+
+    if not files:
+      self.__class__.logger.warn("nothing to analyze")
+      raise Warning("nothing to analyze")

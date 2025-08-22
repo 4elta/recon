@@ -1,49 +1,47 @@
-# evidenz
+= evidenz
 
 Die folgenden Hosts wurden analysiert:
 
 {% for asset in services.keys() %}
-* `{{ asset }}`
+- `{{ asset }}`
 {% endfor %}
 
 Die folgenden Schwachstellen und/oder Abweichungen von den empfohlenen Einstellungen (`{{recommendations_file}}`) wurden identifiziert:
-{% for description, assets in issues|items %}
+{% for asset, issues in affected_assets.items() %}
 
-## {{ description }}
+== {{ asset }}
 
-Dieser Sachverhalt wurde bei folgenden Assets festgestellt:
-
-{% for asset in assets %}
-* `{{ asset }}`
+{% for issue in issues %}
+- {{ issue }}
 {% endfor %}
 {% endfor %}
 
-# betroffene assets
+= betroffene assets
 
 {% for asset in affected_assets.keys() %}
-* `{{ asset }}`
+- `{{ asset }}`
 {% endfor %}
 {% if recommendations|length %}
 
-# empfehlungen
+= empfehlungen
 
 {% for recommendation in recommendations %}
-* {{ recommendation }}
+- {{ recommendation }}
 {% endfor %}
 {% endif %}
 {% if references|length %}
 
-# referenzen
+= zusätzliche informationen
 
 {% for reference in references %}
-* {{ reference }}
+- {{ reference }}
 {% endfor %}
 {% endif %}
-{% if info|length %}
+{% if additional_info|length %}
 
-# zusätzliche informationen
+= additional info
 
 {% for info in additional_info %}
-* {{ info }}
+- {{ info }}
 {% endfor %}
 {% endif %}
