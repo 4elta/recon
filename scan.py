@@ -52,8 +52,8 @@ FOOTER_MESSAGES = [
 # error/debug log
 LOG_FILE = None
 
-# <host>:<protocol>:<port>:<service>
-SCAN_FILTER_PATTERN = re.compile(r'(?P<host>[^:]+):(?P<protocol>(tcp|udp|\*)):(?P<port>(\d+)|\*):(?P<service>.+)')
+# <host> <protocol> <port> <service>
+SCAN_FILTER_PATTERN = re.compile(r'(?P<host>[^ ]+) (?P<protocol>(tcp|udp|\*)) (?P<port>(\d+)|\*) (?P<service>.+)')
 
 # default timeout (in seconds) after which a command will be cancelled
 MAX_TIME = 60*60
@@ -1022,8 +1022,8 @@ def main():
 
   parser.add_argument(
     '-f', '--filter',
-    metavar = '<host>:<protocol>:<port>:<service>',
-    help = "specify certain hosts/protocols/ports/services you want to (re)scan and overwrite their result files if they exist;\nuse '*' if you cannot or don't want to specify a host/protocol/port/service part",
+    metavar = '<host> <protocol> <port> <service>',
+    help = "specify hosts/protocols/ports/services you want to (re)scan and overwrite their result files if they exist; use '*' if you cannot or don't want to specify a host/protocol/port/service part",
     nargs = '+',
     default = []
   )
@@ -1082,8 +1082,15 @@ if __name__ == '__main__':
   if QUITTING:
     print("user aborted: some scans might have been killed before they were finished.")
 
+  if number_of_targets == 0:
+    sys.exit("nothing to scan")
+
   print(f"recon scanner ran {end_time - start_time} (hours:minutes:seconds).")
+
   print(f"{number_of_scanned_targets} of {number_of_targets} targets were scanned ({number_of_scanned_targets / number_of_targets:.1%}).")
-  print(f"{number_of_completed_scans} of {number_of_scans} scans completed ({number_of_completed_scans / number_of_scans:.1%}).")
+
+  if number_of_scans:
+    print(f"{number_of_completed_scans} of {number_of_scans} scans completed ({number_of_completed_scans / number_of_scans:.1%}).")
+
   if len(unsuccessful_scans):
     print(f"{len(unsuccessful_scans)} of those scans returned an error, ran into a timeout or were cancelled.")

@@ -77,9 +77,9 @@ Make sure to have a look at the [architecture documentation](documentation/archi
 % scan -h
 usage: scan [-h] [-i path [path ...]] [-o path] [-c path [path ...]]
             [-t number] [-s number] [-m seconds] [-n]
-            [-r <host>:<protocol>:<port>:<service> 
-               [<host>:<protocol>:<port>:<service> ...]]
-            [-y] [-d character] [--ignore_uid]
+            [-f <host> <protocol> <port> <service> 
+               [<host> <protocol> <port> <service> ...]]
+            [-y] [-d character] [--ignore-uid]
 
 Schedule and execute various tools based on the findings of an Nmap service
 scan.
@@ -105,12 +105,12 @@ options:
                         (default: 3600)
   -n, --dry-run         do not run any command; just create/update the
                         'commands.csv' file
-  -r, --rescan <host>:<protocol>:<port>:<service> 
-              [<host>:<protocol>:<port>:<service> ...]
-                        re-scan certain hosts/protocols/ports/services and
-                        overwrite existing result files; you can use '*' if
-                        you cannot or don't want to specify a
-                        host/protocol/port/service part
+  -f, --filter <host> <protocol> <port> <service> 
+              [<host> <protocol> <port> <service> ...]
+                        specify hosts/protocols/ports/services you want to
+                        (re)scan and overwrite their result files if they
+                        exist; use '*' if you cannot or don't want to specify
+                        a host/protocol/port/service part
   -y, --overwrite-results
                         overwrite existing result files
   -d, --delimiter character
