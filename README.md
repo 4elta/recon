@@ -170,7 +170,7 @@ The following analyzers (and parsers) are currently implemented:
 * ISAKMP/IKE configuration (`ike`)
 * NTP configuration (`nmap`, `ntp`)
 * RDP configuration (`nmap`)
-* SMB configuration (`enum4linux-ng`, `nmap`)
+* SMB (and some AD) configuration (`enum4linux-ng`, `nmap`)
 * SSH configuration (`nmap`)
 * TLS configuration (`nmap`, `sslscan`, `sslyze`, `testssl`)
 
