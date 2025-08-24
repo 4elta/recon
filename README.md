@@ -11,7 +11,7 @@ This allows for an automated and consistent assessment of specific services (i.e
 
 ## installation
 
-The tools in this suite (i.e. `analyze.py` and `scan.py`) require Python 3.11+ and the [`defusedxml.ElementTree`](https://github.com/tiran/defusedxml) module.
+The tools in this suite (i.e. `analyze.py` and `scan.py`) require Python 3.11+, and the [defusedxml](https://github.com/tiran/defusedxml) and [Jinja](https://github.com/pallets/jinja/) modules.
 
 Clone the git repository:
 
