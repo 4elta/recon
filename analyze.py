@@ -287,14 +287,14 @@ def process(args):
         LOGGER.error("the template file does not exist!")
         sys.exit(f"the default template file '{template_file}' does not exist!")
 
-    if template_file:
-      env = jinja2.Environment(
-        loader = jinja2.FileSystemLoader(template_file.parent),
-        trim_blocks = True,
-        autoescape = False
-      )
+  if template_file:
+    env = jinja2.Environment(
+      loader = jinja2.FileSystemLoader(template_file.parent),
+      trim_blocks = True,
+      autoescape = False
+    )
 
-      template = env.get_template(template_file.name)
+    template = env.get_template(template_file.name)
 
   for service, scan_names in potential_analyses.items():
     LOGGER.info(f"analyzing service '{service}' ...")
