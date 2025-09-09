@@ -755,6 +755,7 @@ def parse_result_files(base_directory, result_files, scan_filters):
   unique_services = []
 
   for result_file in result_files:
+    print(f"parsing '{result_file}' ...")
     log(f"parsing '{result_file}' ...")
     parse_result_file(base_directory, result_file, targets, unique_services, scan_filters)
 
