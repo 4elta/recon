@@ -746,8 +746,6 @@ def parse_result_file(base_directory, result_file, targets, unique_services, sca
 
         log(f"{transport_protocol}/{port_ID}: {application_protocol}: {description}")
 
-  return targets
-
 def parse_result_files(base_directory, result_files, scan_filters):
   targets = {}
 
