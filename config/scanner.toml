@@ -88,7 +88,7 @@ patterns = [ '^(.+\|)?http' ] # 'http', 'https', '.+|http'
   command = 'curl --silent --include --insecure --show-error --max-time 10 $([[ "{transport_protocol}" == "udp" ]] && echo "--http3") {scheme}://$([[ "{address_type}" == "IPv6" ]] && echo "[{hostname}]" || echo "{hostname}"):{port}/robots.txt 2>&1 | tee "{result_file}.log"'
 
   [services.http.scans.cewl]
-  command = '#cewl --depth 3 --min_word_length 5 --write "{result_file}.log" {scheme}://{hostname}:{port}'
+  command = '#cewl --depth 3 --min_word_length 5 --write "{result_file}.log" {scheme}://$([[ "{address_type}" == "IPv6" ]] && echo "[{hostname}]" || echo "{hostname}"):{port}'
 
   [services.http.scans.nikto]
   command = '[[ "{transport_protocol}" == "tcp" ]] && nikto -ask no -Cgidirs all -host {hostname} -port {port} -nointeractive -Format json -output "{result_file}.json" 2>&1 | tee "{result_file}.log"'
