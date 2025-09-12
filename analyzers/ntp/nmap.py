@@ -110,7 +110,7 @@ class Parser(AbstractParser):
 
   def _parse_monlist(self, monlist_node):
     # TODO: properly parse this as soon as we have access to an XML result
-    return (f"Nmap script scan result not parsed: 'ntp-monlist'")
+    return ["Nmap script scan result not parsed: 'ntp-monlist'"]
 
   def _parse_info(self, info_node):
     misc = []
