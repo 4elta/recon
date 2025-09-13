@@ -78,29 +78,20 @@ patterns = [ '^(.+\|)?http' ] # 'http', 'https', '.+|http'
   patterns = [ '[Ss]erver: ([^\n]+)', 'WebDAV is ENABLED' ]
 
   [services.http.scans.index]
-  command = 'curl --silent --insecure --max-time 10 $([[ "{transport_protocol}" == "udp" ]] && echo "--http3") {scheme}://{hostname}:{port}/ 2>&1 | tee "{result_file}.html"'
+  command = 'curl --silent --insecure --max-time 10 $([[ "{transport_protocol}" == "udp" ]] && echo "--http3") {scheme}://$([[ "{address_type}" == "IPv6" ]] && echo "[{hostname}]" || echo "{hostname}"):{port}/ 2>&1 | tee "{result_file}.html"'
 
   [services.http.scans.curl]
-  command = 'curl --silent --verbose --insecure --show-error --max-time 10 $([[ "{transport_protocol}" == "udp" ]] && echo "--http3") {scheme}://{hostname}:{port}/ 2>&1 | tee "{result_file}.log"'
+  command = 'curl --silent --verbose --insecure --show-error --max-time 10 $([[ "{transport_protocol}" == "udp" ]] && echo "--http3") {scheme}://$([[ "{address_type}" == "IPv6" ]] && echo "[{hostname}]" || echo "{hostname}"):{port}/ 2>&1 | tee "{result_file}.log"'
   patterns = [ '(?i)Powered by [^\n]+', '[Ss]erver: [^\n]+' ]
 
   [services.http.scans.'robots.txt']
-  command = 'curl --silent --include --insecure --show-error --max-time 10 $([[ "{transport_protocol}" == "udp" ]] && echo "--http3") {scheme}://{hostname}:{port}/robots.txt 2>&1 | tee "{result_file}.log"'
-
-  [services.http.scans.cewl]
-  command = '#cewl --depth 3 --min_word_length 5 --write "{result_file}.log" {scheme}://{hostname}:{port}'
+  command = 'curl --silent --include --insecure --show-error --max-time 10 $([[ "{transport_protocol}" == "udp" ]] && echo "--http3") {scheme}://$([[ "{address_type}" == "IPv6" ]] && echo "[{hostname}]" || echo "{hostname}"):{port}/robots.txt 2>&1 | tee "{result_file}.log"'
 
   [services.http.scans.nikto]
   command = '[[ "{transport_protocol}" == "tcp" ]] && nikto -ask no -Cgidirs all -host {hostname} -port {port} -nointeractive -Format json -output "{result_file}.json" 2>&1 | tee "{result_file}.log"'
 
-  [services.http.scans.feroxbuster]
-  command = '#feroxbuster --insecure --quiet --depth 1 --extensions txt,html,php,asp,aspx,jsp --wordlist /usr/share/seclists/Discovery/Web-Content/common.txt --url {scheme}://{hostname}:{port}/ 2>&1 | tee "{result_file}.log"'
-
-  [services.http.scans.gobuster]
-  command = '#gobuster dir --url {scheme}://{hostname}:{port}/ --wordlist /usr/share/seclists/Discovery/Web-Content/common.txt --no-progress --no-tls-validation --expanded --extensions "txt,html,php,asp,aspx,jsp" 2>&1 | tee "{result_file}.log"'
-
   [services.http.scans.whatweb]
-  command = '[[ "{transport_protocol}" == "tcp" ]] && whatweb --aggression=3 --no-errors --log-verbose="{result_file}.log" --log-json="{result_file}.json" {scheme}://{hostname}:{port}'
+  command = '[[ "{transport_protocol}" == "tcp" ]] && whatweb --aggression=3 --no-errors --log-verbose="{result_file}.log" --log-json="{result_file}.json" {scheme}://$([[ "{address_type}" == "IPv6" ]] && echo "[{hostname}]" || echo "{hostname}"):{port}'
 
 [services.imap]
 patterns = [ 'imap(s|(4-ssl))?' ]
@@ -242,13 +233,6 @@ patterns = [ 'snmp' ]
   [services.snmp.scans.nmap]
   command = 'nmap $([[ "{transport_protocol}" == "udp" ]] && echo "-sU") -Pn -sV -p {port} --script="banner,snmp* and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
 
-  [services.snmp.scans.onesixtyone]
-  command = '#onesixtyone -c /usr/share/seclists/Discovery/SNMP/common-snmp-community-strings-onesixtyone.txt -dd {address} 2>&1 | tee "{result_file}.log"'
-
-  [services.snmp.scans.snmpwalk]
-  command = '#declare -a OIDs=(1.3.6.1.2.1.25.1.6.0 1.3.6.1.2.1.25.4.2.1.2 1.3.6.1.2.1.25.4.2.1.4 1.3.6.1.2.1.25.2.3.1.4 1.3.6.1.2.1.25.6.3.1.2 1.3.6.1.4.1.77.1.2.25 1.3.6.1.2.1.6.13.1.3); for OID in "${{OIDs[@]}}"; do snmpwalk -c public -v 1 {address} $OID 2>&1 | tee --append "{result_file}.log"; echo "scanned OID $OID"; done; snmpwalk -c public -v 1 {address} 2>&1 | tee --append "{result_file}.log"'
-  patterns = [ '^scanned OID (\d+.)*\d+' ]
-
 [services.ssh]
 patterns = [ '^ssh' ]
 
@@ -261,7 +245,8 @@ patterns = [ '^telnet' ]
   [services.telnet.scans.nmap]
   command = 'nmap -Pn -sV -p {port} --script="banner,telnet-encryption,telnet-ntlm-info" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
 
-[services.tls] # services (or service versions) that use TLS by default (i.e. not opportunistic).
+[services.tls]
+# services (or service versions) that use TLS by default (i.e. not opportunistic).
 patterns = [
   # sometimes, Nmap identifies HTTPS as 'http' tunneled through `ssl`.
   # the scanner prepends the tunnel info to the application protocol: '<tunnel>|<application protocol>'
@@ -288,14 +273,8 @@ patterns = [
   [services.tls.scans.nmap]
   command = 'nmap $([[ "{transport_protocol}" == "udp" ]] && echo "-sU") -Pn -sV -p {port} --script="banner,ssl* and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" -oX "{result_file}.xml" {hostname}'
 
-  [services.tls.scans.sslscan]
-  command = '#sslscan --show-certificate --ocsp --show-sigs --xml="{result_file}.xml" {hostname}:{port} 2>&1 | tee "{result_file}.log"'
-
-  [services.tls.scans.sslyze]
-  command = '#sslyze --json_out "{result_file}.json" {hostname}:{port} 2>&1 | tee "{result_file}.log"'
-
   [services.tls.scans.testssl]
-  command = 'testssl --ip one --nodns min --mapping no-openssl --warnings off --connect-timeout 60 --openssl-timeout 60 --logfile "{result_file}.log" --jsonfile "{result_file}.json" {hostname}:{port}'
+  command = 'testssl --ip one --nodns min --mapping no-openssl --warnings off --connect-timeout 60 --openssl-timeout 60 --logfile "{result_file}.log" --jsonfile "{result_file}.json" $([[ "{address_type}" == "IPv6" ]] && echo "[{hostname}]" || echo "{hostname}"):{port}'
 
 [services.tls_misc]
 # services that support opportunistic TLS (e.g. STARTTLS) or use TLS in some other form
@@ -324,14 +303,9 @@ patterns = [
   [services.tls_misc.scans.nmap]
   command = 'nmap $([[ "{transport_protocol}" == "udp" ]] && echo "-sU") -Pn -sV -p {port} --script="banner,ssl* and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
 
-  [services.tls_misc.scans.sslscan]
-  command = '#echo "ftp imap irc ldap pop3 smtp mysql xmpp" | grep --quiet "{application_protocol}" && sslscan --show-certificate --show-sigs --starttls-$(echo {application_protocol} | sed -E "s:irc.*:irc:") --xml="{result_file}.xml" {address}:{port} 2>&1 | tee "{result_file}.log"'
-
-  [services.tls_misc.scans.sslyze]
-  command = '#echo "smtp, xmpp, xmpp_server, pop3, imap, ftp, ldap, ms-wbt-server, postgres" | grep --quiet "{application_protocol}" && sslyze --starttls $(echo {application_protocol} | sed "s:ms-wbt-server:rdp:") --json_out "{result_file}.json" {address}:{port} 2>&1 | tee "{result_file}.log"'
-
   [services.tls_misc.scans.testssl]
-  command = 'echo "ftp, smtp, pop3, imap, xmpp, telnet, ldap, irc, lmtp, nntp, postgres, mysql" | grep --quiet "{application_protocol}" && testssl --ip one --nodns min --mapping no-openssl --warnings off --connect-timeout 60 --openssl-timeout 60 --starttls $(echo {application_protocol} | sed -E "s:irc.*:irc:") --logfile "{result_file}.log" --jsonfile "{result_file}.json" {address}:{port}'
+  # https://github.com/testssl/testssl.sh/wiki/Man-page
+  command = 'echo "ftp smtp pop3 imap xmpp telnet ldap postgres mysql" | grep --quiet "{application_protocol}" && testssl --ip one --nodns min --mapping no-openssl --warnings off --connect-timeout 60 --openssl-timeout 60 --starttls "{application_protocol}" --logfile "{result_file}.log" --jsonfile "{result_file}.json" $([[ "{address_type}" == "IPv6" ]] && echo "[{address}]" || echo "{address}"):{port}'
 
 [services.vnc]
 patterns = [ 'vnc' ]

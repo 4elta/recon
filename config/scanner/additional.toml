@@ -1,0 +1,46 @@
+# some additional scans/tools you could run.
+# they were part of the default config ('scanner.toml'),
+# but have been deactivated (e.g. '#feroxbuster ...').
+
+[services]
+
+[services.http]
+
+  [services.http.scans.cewl]
+  command = 'cewl --depth 3 --min_word_length 5 --write "{result_file}.log" {scheme}://$([[ "{address_type}" == "IPv6" ]] && echo "[{hostname}]" || echo "{hostname}"):{port}'
+
+  [services.http.scans.feroxbuster]
+  command = 'feroxbuster --insecure --quiet --depth 1 --extensions txt,html,php,asp,aspx,jsp --wordlist /usr/share/seclists/Discovery/Web-Content/common.txt --url {scheme}://$([[ "{address_type}" == "IPv6" ]] && echo "[{hostname}]" || echo "{hostname}"):{port}/ 2>&1 | tee "{result_file}.log"'
+
+  [services.http.scans.gobuster]
+  command = 'gobuster dir --url {scheme}://$([[ "{address_type}" == "IPv6" ]] && echo "[{hostname}]" || echo "{hostname}"):{port}/ --wordlist /usr/share/seclists/Discovery/Web-Content/common.txt --no-progress --no-tls-validation --expanded --extensions "txt,html,php,asp,aspx,jsp" 2>&1 | tee "{result_file}.log"'
+
+[services.snmp]
+
+  [services.snmp.scans.onesixtyone]
+  command = 'onesixtyone -c /usr/share/seclists/Discovery/SNMP/common-snmp-community-strings-onesixtyone.txt -dd {address} 2>&1 | tee "{result_file}.log"'
+
+  [services.snmp.scans.snmpwalk]
+  command = 'declare -a OIDs=(1.3.6.1.2.1.25.1.6.0 1.3.6.1.2.1.25.4.2.1.2 1.3.6.1.2.1.25.4.2.1.4 1.3.6.1.2.1.25.2.3.1.4 1.3.6.1.2.1.25.6.3.1.2 1.3.6.1.4.1.77.1.2.25 1.3.6.1.2.1.6.13.1.3); for OID in "${{OIDs[@]}}"; do snmpwalk -c public -v 1 {address} $OID 2>&1 | tee --append "{result_file}.log"; echo "scanned OID $OID"; done; snmpwalk -c public -v 1 {address} 2>&1 | tee --append "{result_file}.log"'
+  patterns = [ '^scanned OID (\d+.)*\d+' ]
+
+[services.tls]
+# services (or service versions) that use TLS by default (i.e. not opportunistic).
+
+  [services.tls.scans.sslscan]
+  command = 'sslscan --show-certificate --ocsp --show-sigs --xml="{result_file}.xml" $([[ "{address_type}" == "IPv6" ]] && echo "[{hostname}]" || echo "{hostname}"):{port} 2>&1 | tee "{result_file}.log"'
+
+  [services.tls.scans.sslyze]
+  command = 'sslyze --json_out "{result_file}.json" $([[ "{address_type}" == "IPv6" ]] && echo "[{hostname}]" || echo "{hostname}"):{port} 2>&1 | tee "{result_file}.log"'
+
+[services.tls_misc]
+# services that support opportunistic TLS (e.g. STARTTLS) or use TLS in some other form
+
+  [services.tls_misc.scans.sslscan]
+  # https://manpages.debian.org/testing/sslscan/sslscan.1.en.html
+  command = 'echo "ftp imap irc ircu ldap pop3 smtp mysql postgresql xmpp" | grep --quiet "{application_protocol}" && sslscan --show-certificate --show-sigs --starttls-$(echo "{application_protocol}" | sed "s:ircu:irc:" | sed "s:postgresql:psql:") --xml="{result_file}.xml" $([[ "{address_type}" == "IPv6" ]] && echo "[{address}]" || echo "{address}"):{port} 2>&1 | tee "{result_file}.log"'
+
+  [services.tls_misc.scans.sslyze]
+  # https://github.com/nabla-c0d3/sslyze/blob/release/sslyze/cli/command_line_parser.py
+  command = 'echo "smtp xmpp xmpp_server pop3 imap ftp ldap ms-wbt-server postgres" | grep --quiet "{application_protocol}" && sslyze --starttls $(echo "{application_protocol}" | sed "s:ms-wbt-server:rdp:") --json_out "{result_file}.json" $([[ "{address_type}" == "IPv6" ]] && echo "[{address}]" || echo "{address}"):{port} 2>&1 | tee "{result_file}.log"'
+
