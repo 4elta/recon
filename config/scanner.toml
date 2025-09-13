@@ -245,7 +245,8 @@ patterns = [ '^telnet' ]
   [services.telnet.scans.nmap]
   command = 'nmap -Pn -sV -p {port} --script="banner,telnet-encryption,telnet-ntlm-info" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
 
-[services.tls] # services (or service versions) that use TLS by default (i.e. not opportunistic).
+[services.tls]
+# services (or service versions) that use TLS by default (i.e. not opportunistic).
 patterns = [
   # sometimes, Nmap identifies HTTPS as 'http' tunneled through `ssl`.
   # the scanner prepends the tunnel info to the application protocol: '<tunnel>|<application protocol>'
@@ -303,7 +304,8 @@ patterns = [
   command = 'nmap $([[ "{transport_protocol}" == "udp" ]] && echo "-sU") -Pn -sV -p {port} --script="banner,ssl* and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
 
   [services.tls_misc.scans.testssl]
-  command = 'echo "ftp, smtp, pop3, imap, xmpp, telnet, ldap, irc, lmtp, nntp, postgres, mysql" | grep --quiet "$(echo "{application_protocol}" | sed "s:ircu:irc:")" && testssl --ip one --nodns min --mapping no-openssl --warnings off --connect-timeout 60 --openssl-timeout 60 --starttls $(echo "{application_protocol}" | sed "s:ircu:irc:") --logfile "{result_file}.log" --jsonfile "{result_file}.json" $([[ "{address_type}" == "IPv6" ]] && echo "[{address}]" || echo "{address}"):{port}'
+  # https://github.com/testssl/testssl.sh/wiki/Man-page
+  command = 'echo "ftp smtp pop3 imap xmpp telnet ldap postgres mysql" | grep --quiet "{application_protocol}" && testssl --ip one --nodns min --mapping no-openssl --warnings off --connect-timeout 60 --openssl-timeout 60 --starttls "{application_protocol}" --logfile "{result_file}.log" --jsonfile "{result_file}.json" $([[ "{address_type}" == "IPv6" ]] && echo "[{address}]" || echo "{address}"):{port}'
 
 [services.vnc]
 patterns = [ 'vnc' ]
