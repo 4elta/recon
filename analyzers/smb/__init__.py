@@ -282,6 +282,8 @@ class Analyzer(AbstractAnalyzer):
     for field_name, field_value in domain_info.items():
       if field_name not in recommendations['AD']['domain']:
         continue
+ 
+      field_value = 0 if field_value == 'None' else field_value
 
       recommendation = recommendations['AD']['domain'][field_name]
 
