@@ -1028,6 +1028,17 @@ def cancel_tasks():
 
   asyncio.get_running_loop().stop()
 
+def int_greater_than_0(arg):
+  try:
+    i = int(arg)
+  except ValueError:
+    raise argparse.ArgumentTypeError("must be an integer number")
+
+  if i < 1:
+    raise argparse.ArgumentTypeError("must be greater than 0")
+
+  return i
+
 def main():
   parser = argparse.ArgumentParser(
     description = "Schedule and execute various tools based on the findings of an Nmap service scan."
@@ -1061,7 +1072,7 @@ def main():
     '-t', '--concurrent-targets',
     metavar = 'number',
     help = "number of targets that should be scanned concurrently (default: 3)",
-    type = int,
+    type = int_greater_than_0,
     default = 3
   )
 
@@ -1069,7 +1080,7 @@ def main():
     '-s', '--concurrent-scans',
     metavar = 'number',
     help = "number of scans that should be running concurrently on a single target (default: 2)",
-    type = int,
+    type = int_greater_than_0,
     default = 2
   )
 
@@ -1077,7 +1088,7 @@ def main():
     '-m', '--max-time',
     metavar = 'seconds',
     help = f"maximum time in seconds each scan is allowed to take (default: {MAX_TIME})",
-    type = int,
+    type = int_greater_than_0,
     default = MAX_TIME
   )
 
