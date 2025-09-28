@@ -154,7 +154,7 @@ def get_CH_TXT(name, nameserver, NSID=False):
 
   for opt in response.options:
     if opt.otype == dns.edns.NSID:
-      nsid = opt.data.decode()
+      nsid = opt.to_wire().decode()
       info['NSID'] = nsid
       print(f"NSID: {nsid}")
       break

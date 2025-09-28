@@ -9,6 +9,7 @@ import curses
 import datetime
 import functools
 import inspect
+import ipaddress
 import json
 import os
 import pathlib
@@ -462,6 +463,17 @@ def result_file_exists(results_directory, file_name):
     log(f"'{results_directory}/{file_name}.*' exists and we must not overwrite them.")
     return True
 
+def get_address_type(address):
+  try:
+    ip_address = ipaddress.ip_address(address)
+    match ip_address.version:
+      case 4:
+        return 'IPv4'
+      case 6:
+        return 'IPv6'
+  except ValueError:
+    return 'hostname'
+
 def queue_service_scan_hostname(target: Target, service: Service, scan_definition: ScanDefinition):
   '''
   queue a scan of a service that recognizes the concept of a hostname in contrast/addition to an IP address (e.g. HTTP, TLS)
@@ -507,6 +519,8 @@ def queue_service_scan_hostname(target: Target, service: Service, scan_definitio
     ]
 
     log(f"[{': '.join(description)}]")
+
+    address_type = get_address_type(hostname)
 
     target.scans[scan_ID] = Scan(
       target,
@@ -574,6 +588,8 @@ def queue_service_scan_address(target: Target, service: Service, scan_definition
       return # continue with another service of the target
 
   log(f"[{': '.join(description)}]")
+
+  address_type = get_address_type(address)
 
   target.scans[scan_ID] = Scan(
     target,
@@ -746,8 +762,6 @@ def parse_result_file(base_directory, result_file, targets, unique_services, sca
 
         log(f"{transport_protocol}/{port_ID}: {application_protocol}: {description}")
 
-  return targets
-
 def parse_result_files(base_directory, result_files, scan_filters):
   targets = {}
 
@@ -755,6 +769,7 @@ def parse_result_files(base_directory, result_files, scan_filters):
   unique_services = []
 
   for result_file in result_files:
+    print(f"parsing '{result_file}' ...")
     log(f"parsing '{result_file}' ...")
     parse_result_file(base_directory, result_file, targets, unique_services, scan_filters)
 

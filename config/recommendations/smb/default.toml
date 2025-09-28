@@ -14,6 +14,13 @@ authentication_methods = [ 'Kerberos' ]
 # https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-nlmp/1e846608-4c5f-41f4-8454-1b91af8a755b
 
 [dialect]
+# "CIFS": https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-cifs/d416ff7c-c536-406e-a951-4f04b2fd1d2b
+# "SMB 1.x" (marketing name): "An SMB Version 1.0 Protocol implementation must implement CIFS"
+# https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-smb/4c49c82d-6ebd-4731-964a-3eb6ed0c1ae4
+# "SMB2": https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-smb2/5606ad47-5ee0-437a-817e-70c366052962
+# "SMB 3.x" (marketing name) is a dialect of "SMB2" (actual protocol name):
+# https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-smb2/e14db7ff-763a-4263-8b10-0c3944f52fc5
+
 # minimum protocol and dialect the server must support
 SMB2 = '3.1.1'
 

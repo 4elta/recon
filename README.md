@@ -51,8 +51,6 @@ The script will install the following tools:
 * [testssl.sh](https://testssl.sh/)
 * [WhatWeb](https://morningstarsecurity.com/research/whatweb)
 
-Based on the scan config (i.e. [`config/scanner.toml`](config/scanner.toml)) you are using, you might have to install additional tools.
-
 Add symbolic links to the scripts to `/usr/local/bin`.
 Please make sure, that the names for `analyze` and `scan` don't [conflict](https://github.com/4elta/recon/issues/31) with any binaries already installed.
 
