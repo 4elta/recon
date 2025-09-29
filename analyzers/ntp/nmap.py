@@ -78,7 +78,6 @@ class Parser(AbstractParser):
                 version = 2,
                 implementation = 3,
                 req_code = 42,
-                amplification_factor = "?"
               )
             )
             service['misc'] += self._parse_monlist(script_node)
@@ -142,6 +141,5 @@ class Parser(AbstractParser):
           "mode 6",
           version = 2,
           opcode = 2,
-          amplification_factor = "?"
         )
       )
