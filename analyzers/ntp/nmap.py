@@ -85,15 +85,7 @@ class Parser(AbstractParser):
             continue
 
           if script_ID == 'ntp-info':
-            service['issues'].append(
-              Issue(
-                "mode 6",
-                version = 2,
-                opcode = 2,
-                amplification_factor = "?"
-              )
-            )
-            service['misc'] += self._parse_info(script_node)
+            self._parse_info(script_node, service)
             continue
 
           if 'ntp' in script_ID:
@@ -132,14 +124,24 @@ class Parser(AbstractParser):
 
     return addresses
 
-  def _parse_info(self, info_node):
-    misc = []
+  def _parse_info(self, info_node, service):
+    mode_6 = False
 
     for elem_node in info_node.iter('elem'):
       key = elem_node.get('key')
       if key == 'receive time stamp':
         continue
-      value = elem_node.text.strip()
-      misc.append(f"`{key}={value}`")
 
-    return misc
+      mode_6 = True
+      value = elem_node.text.strip()
+      service['misc'].append(f"`{key}={value}`")
+
+    if mode_6:
+      service['issues'].append(
+        Issue(
+          "mode 6",
+          version = 2,
+          opcode = 2,
+          amplification_factor = "?"
+        )
+      )
