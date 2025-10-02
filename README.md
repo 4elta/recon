@@ -135,7 +135,7 @@ After running the scanner, the results directory (e.g. `recon/`) will contain th
 ```text
 % analyze -h
 usage: analyze [-h] [-c path] [-s code] [-S name] [-r path] [-i path]
-               [-l code] [-f code] [--template path] [-o path]
+               [-l code] [-f code] [-t path] [-o path]
 
 Analyze and summarize the results of specific tools previously run by the
 scanner of the recon tool suite (i.e. 'scan').
@@ -156,7 +156,7 @@ options:
   -l, --language code   language of the analysis (default: 'en')
   -f, --format code     format of the analysis (choices: ['csv', 'json',
                         'md']; default: 'md')
-  --template path       path to the Jinja2 template for the analysis; this
+  -t, --template path   path to the Jinja2 template for the analysis; this
                         option overrides '-f/--format'
   -o, --output path     path to the directory where the analysis result(s)
                         will be saved

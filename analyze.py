@@ -424,7 +424,7 @@ def main():
   )
 
   parser.add_argument(
-    '--template',
+    '-t', '--template',
     metavar = 'path',
     type = pathlib.Path,
     help = "path to the Jinja2 template for the analysis; this option overrides '-f/--format'"
