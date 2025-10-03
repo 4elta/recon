@@ -26,12 +26,6 @@ for path in ANALYZERS_DIR.iterdir():
   if path.is_dir() and not path.name.startswith('__'):
     SUPPORTED_SERVICES.append(path.name)
 
-DEFAULT_CONFIG = pathlib.Path(
-  pathlib.Path(__file__).resolve().parent,
-  "config",
-  "analyzer.toml"
-)
-
 LANGUAGE = 'en'
 SUPPORTED_FORMATS = ['md', 'json', 'csv']
 
@@ -164,18 +158,6 @@ def process(args):
   if args.service and args.service not in services.keys():
     sys.exit("nothing to analyze")
 
-  if args.config:
-    config_file_path = args.config
-    if not config_file_path.exists():
-      sys.exit(f"the specified configuration file '{config_file_path}' does not exist!")
-  else:
-    config_file_path = DEFAULT_CONFIG
-    if not config_file_path.exists():
-      sys.exit(f"the default configuration file '{config_file_path}' does not exist!")
-
-  with open(config_file_path, 'rb') as f:
-    config = toml.load(f)
-
   selected_tags = []
   if args.scan:
     args.scan, selected_tags = analyzers.parse_scan_name(args.scan)
@@ -186,15 +168,10 @@ def process(args):
     if args.service and service != args.service:
       continue
 
-    default_parser = config['default_parser'][service]
-
     for scan_name in scan_names:
       cleaned_scan_name, tags = analyzers.parse_scan_name(scan_name)
 
       if args.scan and args.scan != cleaned_scan_name:
-        continue
-
-      if args.service and not args.scan and default_parser != cleaned_scan_name:
         continue
 
       if args.scan and not selected_tags and tags:
@@ -216,7 +193,7 @@ def process(args):
     sys.exit("nothing to analyze")
 
   if number_of_potential_analyses > 1 and not args.output:
-    print("scan results relating to the following services (along with the name of the tool/scan) are available for analysis:\n")
+    print("scan results relating to the following services (along with the name of the scan) are available for analysis:\n")
 
     for service, scan_names in dict(sorted(potential_analyses.items())).items():
       print(f"* {service}: {', '.join(sorted(scan_names))}")
@@ -370,13 +347,6 @@ def process(args):
 def main():
   parser = argparse.ArgumentParser(
     description = "Analyze and summarize the results of specific tools previously run by the scanner of the recon tool suite (i.e. 'scan')."
-  )
-
-  parser.add_argument(
-    '-c', '--config',
-    metavar = 'path',
-    type = pathlib.Path,
-    help = "path to the analyzer configuration file (default: '/path/to/recon/config/analyzer.toml')"
   )
 
   parser.add_argument(
