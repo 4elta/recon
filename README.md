@@ -134,7 +134,7 @@ After running the scanner, the results directory (e.g. `recon/`) will contain th
 
 ```text
 % analyze -h
-usage: analyze [-h] [-c path] [-s code] [-S name] [-r path] [-i path]
+usage: analyze [-h] [-s code] [-S name] [-r path] [-i path]
                [-l code] [-f code] [-t path] [-o path]
 
 Analyze and summarize the results of specific tools previously run by the
@@ -142,8 +142,6 @@ scanner of the recon tool suite (i.e. 'scan').
 
 options:
   -h, --help            show this help message and exit
-  -c, --config path     path to the analyzer configuration file (default:
-                        '/path/to/recon/config/analyzer.toml')
   -s, --service code    service that should be analyzed (choices: ['dns',
                         'ftp', 'http', 'isakmp', 'ntp', 'rdp', 'smb', 'ssh',
                         'tls'])
