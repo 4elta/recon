@@ -13,7 +13,7 @@ This allows for an automated and consistent assessment of specific services (i.e
 
 The tools in this suite (i.e. `analyze.py` and `scan.py`) require Python 3.11+, and the [defusedxml](https://github.com/tiran/defusedxml) and [Jinja](https://github.com/pallets/jinja/) modules.
 
-Clone the git repository:
+Clone the repository:
 
 ```shell
 # this step is optional; change the directory name to your preference
@@ -65,7 +65,7 @@ sudo ln --symbolic "$(realpath scan.py)" /usr/local/bin/scan
 2. run the scanner on the results of the Nmap service scan; be aware that this (like the Nmap scan itself) will send requests to the target system(s)
 3. run the analyzer on the results of the scanner; no network traffic will be generated during this step
 
-You can customize the configuration for the scanner (i.e. what tools to run, etc.) by modifying the provided one (i.e. [`config/scanner.toml`](config/scanner.toml)), or you can specify your own with the `--config` argument.
+You can customize the configuration for the scanner (i.e. what tools to run, etc.) by specifying your own with the `--config` argument (see [`config/scanner.toml`](config/scanner.toml)).
 Similarly, you can modify the recommendations based on what the analyzers will evaluate certain services.
 Make sure to have a look at the [architecture documentation](documentation/architecture.md) and/or study the provided configuration files.
 
