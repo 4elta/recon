@@ -205,6 +205,11 @@ on_match = { issue.id = "HPKP" }
 regex = "."
 on_match = { issue.id = "HPKP report-only" }
 
+[header.www-authenticate]
+# https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/WWW-Authenticate
+# https://datatracker.ietf.org/doc/html/rfc7617
+regex = "Basic"
+on_match = { issue.id = "Basic authentication" }
 
 [body.content-security-policy]
 # https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP

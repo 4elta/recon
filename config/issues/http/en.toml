@@ -136,7 +136,7 @@ description = "`access-control-allow-origin`: server allows requests to its reso
 recommendations = [ "`access-control-allow-origin`: limit the origins allowed to requests resources from your server" ]
 references = [
   "[Mozilla: HTTP headers: `access-control-allow-origin`](https://developer.mozilla.org/en-US/docs/web/http/headers/access-control-allow-origin)",
-  "[CORS not supporting Credentials](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS/Errors/CORSNotSupportingCredentials)"
+  "[CORS not supporting Credentials](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS/Errors/CORSNotSupportingCredentials)",
 ]
 
 ["CORS null origin"]
@@ -144,7 +144,7 @@ description = "`access-control-allow-origin`: server allows requests to its reso
 recommendations = [ "`access-control-allow-origin`: do not allow the `null` origin" ]
 references = [
   "[Mozilla: HTTP headers: `access-control-allow-origin`](https://developer.mozilla.org/en-US/docs/web/http/headers/access-control-allow-origin)",
-  "[Avoid returning `access-control-allow-origin: null`](https://w3c.github.io/webappsec-cors-for-developers/#avoid-returning-access-control-allow-origin-null)"
+  "[Avoid returning `access-control-allow-origin: null`](https://w3c.github.io/webappsec-cors-for-developers/#avoid-returning-access-control-allow-origin-null)",
 ]
 
 ["CORS http origin"]
@@ -160,7 +160,7 @@ recommendations = [ "`access-control-allow-credentials`: make sure to not allow 
 references = [
   "[Mozilla: HTTP headers: `access-control-allow-credentials`](https://developer.mozilla.org/en-US/docs/web/http/headers/access-control-allow-credentials)",
   "[Mozilla: HTTP headers: `access-control-allow-origin`](https://developer.mozilla.org/en-US/docs/web/http/headers/access-control-allow-origin)",
-  "[CORS not supporting Credentials](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS/Errors/CORSNotSupportingCredentials)"
+  "[CORS not supporting Credentials](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS/Errors/CORSNotSupportingCredentials)",
 ]
 
 ["server"]
@@ -183,7 +183,7 @@ description = "`public-key-pins`: this is an obsolete security feature that has 
 recommendations = [ "`public-key-pins`: do not send this header" ]
 references = [
   "[RFC7469: Public Key Pinning Extension for HTTP](https://datatracker.ietf.org/doc/html/rfc7469)",
-  "[Using HPKP for evil](https://scotthelme.co.uk/using-security-features-to-do-bad-things/#usinghpkpforevil)"
+  "[Using HPKP for evil](https://scotthelme.co.uk/using-security-features-to-do-bad-things/#usinghpkpforevil)",
 ]
 
 ["HPKP report-only"]
@@ -191,7 +191,18 @@ description = "`public-key-pins-report-only`: this is an obsolete security featu
 recommendations = [ "`public-key-pins-report-only`: do not send this header" ]
 references = [
   "[RFC7469: Public Key Pinning Extension for HTTP](https://datatracker.ietf.org/doc/html/rfc7469)",
-  "[Using HPKP for evil](https://scotthelme.co.uk/using-security-features-to-do-bad-things/#usinghpkpforevil)"
+  "[Using HPKP for evil](https://scotthelme.co.uk/using-security-features-to-do-bad-things/#usinghpkpforevil)",
+]
+
+["Basic authentication"]
+description = "`www-authentication: Basic`: cleartext transmission of passwords"
+recommendations = [
+  "switch to the 'Digest' (`algorithm=SHA-256` or `algorithm=SHA-512-256`) or 'Bearer' (OAuth 2.0) authentication scheme, or let the webapp handle user authentication (e.g. HTTP cookies)",
+]
+references = [
+  "[RFC7617: The 'Basic' HTTP Authentication Scheme](https://datatracker.ietf.org/doc/html/rfc7617#section-4)",
+  "[RFC7616: HTTP Digest Access Authentication](https://datatracker.ietf.org/doc/html/rfc7616)",
+  "[RFC6750: The OAuth 2.0 Authorization Framework: Bearer Token Usage](https://datatracker.ietf.org/doc/html/rfc6750)",
 ]
 
 ["CSP via meta element"]
