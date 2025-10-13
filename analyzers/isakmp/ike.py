@@ -41,7 +41,8 @@ class Parser(AbstractParser):
     handshake = re.compile(r'^(?P<host>[0-9.]+)\s(?P<mode>.+?) Handshake returned .+? SA=\((?P<security_association>[^)]+)\)')
 
     # regular expression of a Security Association (SA) for IKEv1
-    security_association_1 = re.compile(r'Enc=(?P<encryption_algorithm>[^\s]+)(?:\s+KeyLength=(?P<key_length>[^\s]+))?\s+Hash=(?P<hash_algorithm>[^\s]+)\s+Group=(?P<group>[^\s]+)\s+Auth=(?P<authentication_method>[^\s]+)')
+    # https://github.com/royhills/ike-scan/blob/master/check-decode
+    security_association_1 = re.compile(r'Enc=(?P<encryption_algorithm>[^\s]+)(?:\s+KeyLength=(?P<key_length>[^\s]+))?\s+Hash=(?P<hash_algorithm>[^\s]+)\s+Group=(?P<group>[^\s]+)\s+Auth=(?P<authentication_method>[^\s]+)\sLifeType=(?P<life_type>[^\s]+)\sLifeDuration.*?=(?P<life_duration>\d+|0x[0-9a-f]+)')
 
     # regular expression of a Security Association (SA) for IKEv2
     security_association_2 = re.compile(r'Encr=(?P<encryption_algorithm>[^\s,]+)(?:,KeyLength=(?P<key_length>[^\s]+))?\s+Integ=(?P<integrity_algorithm>[^\s]+)\s+Prf=(?P<pseudorandom_function>[^\s]+)\s+DH_Group=(?P<key_exchange_method>[^\s]+)')
@@ -114,6 +115,27 @@ class Parser(AbstractParser):
     group = sa.group('group')
     if group not in s['groups']:
       s['groups'].append(group)
+
+    # parse lifetime (either seconds or kilobytes)
+    # https://www.rfc-editor.org/rfc/rfc2409.html#page-35
+
+    life_type = sa.group('life_type')
+    life_duration = sa.group('life_duration')
+
+    if life_type is None or life_duration is None:
+      return
+
+    life_type = life_type.lower()
+
+    try:
+      lifetime = int(life_duration)
+    except ValueError:
+      lifetime = int(life_duration, 16)
+
+    if life_type not in s['lifetime']:
+      s['lifetime'][life_type] = lifetime
+    elif s['lifetime'][life_type] < lifetime:
+      s['lifetime'][life_type] = lifetime
 
   def _parse_SAv2(self, sa, service):
     version = 'IKEv2'

@@ -1,10 +1,26 @@
 ["protocol: supported"]
 description = "Protokoll wird unterstützt: {deviation}"
-recommendations = [ "deaktivieren Sie {deviation}" ]
+recommendations = [
+  "deaktivieren Sie {deviation}",
+]
 
 ["protocol: not supported"]
 description = "Protokoll wird nicht unterstützt: {deviation}"
-recommendations = [ "unterstützen Sie {deviation}" ]
+recommendations = [
+  "unterstützen Sie {deviation}",
+]
+
+["lifetime too long - seconds"]
+description = "Lebenszeit zu lang: {lifetime} Sekunden"
+recommendations = [
+  "Lebenszeit sollte {recommendation} Sekunden nicht überschreiten",
+]
+
+["lifetime too long - kilobytes"]
+description = "Lebenszeit zu lang: {lifetime} kB"
+recommendations = [
+  "Lebenszeit sollte {recommendation} kB nicht überschreiten",
+]
 
 ["IKEv1: Aggressive Mode supported"]
 description = "IKEv1: \"Aggressive Mode\" wird unterstützt"

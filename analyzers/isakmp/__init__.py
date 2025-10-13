@@ -11,7 +11,8 @@ SERVICE_SCHEMA = {
     'hash_algorithms': [], # https://www.iana.org/assignments/ipsec-registry/ipsec-registry.xhtml#ipsec-registry-6
     'authentication_methods': [], # https://www.iana.org/assignments/ipsec-registry/ipsec-registry.xhtml#ipsec-registry-8
     'groups': [], # https://www.iana.org/assignments/ipsec-registry/ipsec-registry.xhtml#ipsec-registry-12
-    'aggressive': False
+    'lifetime': {}, # 'seconds' and/or 'kilobytes' (https://www.rfc-editor.org/rfc/rfc2409.html#page-35)
+    'aggressive': False,
   },
   'IKEv2': {
     'encryption_algorithms': [], # https://www.iana.org/assignments/ikev2-parameters/ikev2-parameters.xhtml#ikev2-parameters-5
@@ -100,6 +101,24 @@ class Analyzer(AbstractAnalyzer):
         issues,
         'IKEv1 group'
       )
+
+    if 'lifetime' in recommendation and 'lifetime' in service:
+      if 'seconds' in recommendation['lifetime'] and 'seconds' in service['lifetime'] and service['lifetime']['seconds'] > recommendation['lifetime']['seconds']:
+        issues.append(
+          Issue(
+            "lifetime too long - seconds",
+            lifetime = service['lifetime']['seconds'],
+            recommendation = recommendation['lifetime']['seconds']
+          )
+        )
+      if 'kilobytes' in recommendation['lifetime'] and 'kilobytes' in service['lifetime'] and service['lifetime']['kilobytes'] > recommendation['lifetime']['kilobytes']:
+        issues.append(
+          Issue(
+            "lifetime too long - kilobytes",
+            lifetime = service['lifetime']['kilobytes'],
+            recommendation = recommendation['lifetime']['kilobytes']
+          )
+        )
 
     if 'aggressive' in recommendation and service['aggressive'] != recommendation['aggressive']:
       if recommendation['aggressive']:

@@ -2,6 +2,7 @@
 # https://www.nist.gov/publications/guide-ipsec-vpns
 # https://github.com/isaudits/scripts/blob/master/iker.py
 
+# flag services that are supporting versions not listed here
 versions = [ "IKEv2" ]
 
 [IKEv1]
@@ -10,6 +11,11 @@ encryption_algorithms = []
 hash_algorithms = []
 authentication_methods = []
 groups = []
+
+# flag every service that allows a lifetime larger than specified below
+# NIST: pages vii/viii; BSI: page 13
+lifetime = { seconds = 86400 } # 24 hours
+
 aggressive = false
 
 [IKEv2]

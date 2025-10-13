@@ -1,10 +1,26 @@
 ["protocol: supported"]
 description = "protocol supported: {deviation}"
-recommendations = [ "disable {deviation}" ]
+recommendations = [
+  "disable {deviation}",
+]
 
 ["protocol: not supported"]
 description = "protocol not supported: {deviation}"
-recommendations = [ "support {deviation}" ]
+recommendations = [
+  "support {deviation}",
+]
+
+["lifetime too long - seconds"]
+description = "lifetime too long: {lifetime} seconds"
+recommendations = [
+  "lifetime should not exceed {recommendation} seconds",
+]
+
+["lifetime too long - kilobytes"]
+description = "lifetime too long: {lifetime} kB"
+recommendations = [
+  "lifetime should not exceed {recommendation} kB",
+]
 
 ["IKEv1: Aggressive Mode supported"]
 description = "IKEv1: Aggressive Mode supported"
