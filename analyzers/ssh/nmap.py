@@ -91,10 +91,16 @@ class Parser(AbstractParser):
 
           extrainfo = service_node.get('extrainfo')
           if extrainfo:
-            service['protocol_version'] = self._parse_protocol_version(extrainfo)
+            for v in self._parse_protocol_version(extrainfo):
+              if v not in service['versions']:
+                service['versions'].append(v)
 
         for script_node in port_node.iter('script'):
           script_ID = script_node.get('id')
+
+          if script_ID == 'sshv1':
+            if '1.0' not in service['versions']:
+              service['versions'].append('1.0')
 
           if script_ID == 'ssh-hostkey':
             service['server_host_keys'] = self._parse_host_key(script_node)
@@ -124,6 +130,9 @@ class Parser(AbstractParser):
             continue
 
           if script_ID == 'ssh2-enum-algos':
+            if '2.0' not in service['versions']:
+              service['versions'].append('2.0')
+
             for table_node in script_node.iter('table'):
               table_key = table_node.get('key')
 
@@ -152,11 +161,17 @@ class Parser(AbstractParser):
 
   def _parse_protocol_version(self, extrainfo):
     m = re.search(
-      r'protocol (?P<protocol_version>\d+(\.\d+)?)',
+      r'protocol (?P<version>\d+(\.\d+)?)',
       extrainfo
     )
 
-    return m.group('protocol_version')
+    version = m.group('version')
+
+    # https://datatracker.ietf.org/doc/html/rfc4253#section-5.1
+    if version == '1.99':
+      return ('1.0', '2.0')
+
+    return (version, )
 
   def _parse_host_key(self, script_node):
     '''

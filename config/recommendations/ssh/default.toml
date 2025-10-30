@@ -3,7 +3,8 @@
 
 public = false
 
-protocol_versions = [ "2.0" ]
+# protocol versions
+versions = [ "2.0" ]
 
 # the names for methods/algorithms may contain an `@`.
 # these are vendor specific implementations.

@@ -11,7 +11,7 @@ SERVICE_SCHEMA = {
   'transport_protocol': None,
   'banner': None,
   'description': None,
-  'protocol_version': None,
+  'versions': [], # ['1.0', '2.0']
   'key_exchange_methods': [],
   'server_host_keys': {},
   'encryption_algorithms': [],
@@ -50,22 +50,24 @@ class Analyzer(AbstractAnalyzer):
         if 'public' in self.recommendations and not self.recommendations['public']:
           issues.append(Issue("public SSH server"))
 
-      if service['protocol_version'] and service['protocol_version'] not in self.recommendations['protocol_versions']:
-        issues.append(
-          Issue(
-            "protocol: supported",
-            version = service['protocol_version']
-          )
-        )
-
-      for protocol_version in self.recommendations['protocol_versions']:
-        if not protocol_version == service['protocol_version']:
-          issues.append(
-            Issue(
-              "protocol: not supported",
-              version = protocol_version
+      if 'versions' in self.recommendations:
+        for version in service['versions']:
+          if version not in self.recommendations['versions']:
+            issues.append(
+              Issue(
+                "protocol: supported",
+                version = service['version']
+              )
             )
-          )
+
+        for version in self.recommendations['versions']:
+          if version not in service['versions']:
+            issues.append(
+              Issue(
+                "protocol: not supported",
+                version = version
+              )
+            )
 
       for deviation in list(set(service['key_exchange_methods']).difference(self.recommendations['key_exchange_methods'])):
         issues.append(
