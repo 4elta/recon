@@ -102,6 +102,8 @@ class Parser(AbstractParser):
             if '1.0' not in service['versions']:
               service['versions'].append('1.0')
 
+            continue
+
           if script_ID == 'ssh-hostkey':
             service['server_host_keys'] = self._parse_host_key(script_node)
             continue
