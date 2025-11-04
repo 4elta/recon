@@ -106,7 +106,7 @@ command = 'curl --silent --include --insecure --show-error --max-time 10 $([[ "{
 [[services.scans]]
 name = 'nikto'
 transport_protocol = 'tcp'
-command = 'nikto -ask no -Cgidirs all -host {hostname} -port {port} -nointeractive -Format json -output "{result_file}.json" 2>&1 | tee "{result_file}.log"'
+command = '#nikto -ask no -Cgidirs all -host {hostname} -port {port} -nointeractive -Format json -output "{result_file}.json" 2>&1 | tee "{result_file}.log"'
 
 [[services.scans]]
 name = 'whatweb'
@@ -122,6 +122,14 @@ name = 'nmap'
 command = 'nmap -Pn -sV -p {port} --script="banner,imap* and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
 
 [[services]]
+name = 'ipmi'
+application_protocol = 'ipmi|asf-rmcp'
+
+[[services.scans]]
+name = 'nmap'
+command = 'nmap -Pn -sU -sV -p {port} --script="banner,ipmi-version,ipmi-brute,ipmi-cipher-zero" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+
+[[services]]
 name = 'isakmp'
 application_protocol = 'isakmp'
 
@@ -132,6 +140,14 @@ command = '"{PATH_TO_SCANNERS}/ike.py" {address} --port {port} | tee "{result_fi
 [[services.scans]]
 name = 'nmap'
 command = 'nmap -sU -Pn -sV -p {port} --script="banner,ike-version" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+
+[[services]]
+name = 'jdwp'
+application_protocol = 'jdwp|msgsrvr'
+
+[[services.scans]]
+name = 'nmap'
+command = 'nmap -Pn -sT -sV --version-all -p {port} --script="banner,jdwp* and not exploit" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
 
 [[services]]
 name = 'kerberos'
@@ -223,11 +239,19 @@ command = 'nmap $([[ "{transport_protocol}" == "udp" ]] && echo "-sU") -Pn -sV -
 
 [[services]]
 name = 'rmi'
-application_protocol = 'rmiregistry'
+application_protocol = 'rmiregistry|java-rmi'
 
 [[services.scans]]
 name = 'nmap'
 command = 'nmap -Pn -sV -p {port} --script="banner,rmi-vuln-classloader,rmi-dumpregistry" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+
+[[services.scans]]
+name = 'rmg-enum'
+command = 'rmg enum {address} {port} | tee {result_file}.log'
+
+[[services.scans]]
+name = 'rmg-guess'
+command = 'rmg guess {address} {port} | tee {result_file}.log'
 
 [[services]]
 name = 'rpc'
@@ -283,7 +307,7 @@ application_protocol = 'smtp'
 
 [[services.scans]]
 name = 'nmap'
-command = 'nmap -Pn -sV -p {port} --script="banner,smtp* and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+command = 'nmap -Pn -sV -p {port} --script="banner,smtp* and not (brute or dos or exploit)" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
 
 [[services]]
 name = 'snmp'
@@ -291,7 +315,7 @@ application_protocol = 'snmp'
 
 [[services.scans]]
 name = 'nmap'
-command = 'nmap $([[ "{transport_protocol}" == "udp" ]] && echo "-sU") -Pn -sV -p {port} --script="banner,snmp* and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+command = 'nmap $([[ "{transport_protocol}" == "udp" ]] && echo "-sU") -Pn -sV -p {port} --script="banner,snmp* and not (broadcast or dos or external or fuzzer)" --script-args snmp-brute.communitiesdb="/usr/share/seclists/Discovery/SNMP/common-snmp-community-strings-onesixtyone.txt" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
 
 [[services]]
 name = 'ssh'
