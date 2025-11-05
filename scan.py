@@ -947,17 +947,6 @@ async def process(stdscr, args):
 
   scan_filters = []
   for scan_filter in args.filter:
-    m = SCAN_FILTER_PATTERN.fullmatch(scan_filter)
-    if not m:
-      sys.exit(f"scan filter '{scan_filter}' does not match '{SCAN_FILTER_PATTERN.pattern}'")
-
-    scan_filter = {
-      'host': m.group('host'),
-      'protocol': m.group('protocol'),
-      'port': m.group('port'),
-      'service': m.group('service')
-    }
-
     log(f"parsed scan filter: {json.dumps(scan_filter)}")
     scan_filters.append(scan_filter)
 
@@ -1027,6 +1016,18 @@ def cancel_tasks():
   log("aborted by user")
 
   asyncio.get_running_loop().stop()
+
+def scan_filter(arg):
+  m = SCAN_FILTER_PATTERN.fullmatch(arg)
+  if not m:
+    raise argparse.ArgumentTypeError(f"scan filter '{arg}' does not match '{SCAN_FILTER_PATTERN.pattern}'")
+
+  return {
+    'host': m.group('host'),
+    'protocol': m.group('protocol'),
+    'port': m.group('port'),
+    'service': m.group('service')
+  }
 
 def int_greater_than_0(arg):
   try:
@@ -1102,6 +1103,7 @@ def main():
     '-f', '--filter',
     metavar = '<host> <protocol> <port> <service>',
     help = "specify hosts/protocols/ports/services you want to (re)scan and overwrite their result files if they exist; use '*' if you cannot or don't want to specify a host/protocol/port/service part",
+    type = scan_filter,
     nargs = '+',
     default = []
   )
