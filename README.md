@@ -73,51 +73,32 @@ Make sure to have a look at the [architecture documentation](documentation/archi
 
 ```text
 % scan -h
-usage: scan [-h] [-o path] [-c path [path ...]] [-t number] [-s number]
-            [-m seconds] [-n]
-            [-f <host> <protocol> <port> <service> 
-               [<host> <protocol> <port> <service> ...]]
-            [-y] [-d character] [--ignore-uid]
-            path [path ...]
+usage: scan [-h] [-o path] [-c path [path ...]] [-t number] [-s number] [-m seconds] [-n] [-f key=value [key=value ...]] [-y] [-d character] [--ignore-uid] path [path ...]
 
-Schedule and execute various tools based on the findings of an Nmap service
-scan.
+Schedule and execute various tools based on the findings of an Nmap service scan.
 
 positional arguments:
-  path                  path to the Nmap scan result file
-                        (e.g. 'nmap/services.xml')
+  path                  path to the Nmap scan result file (e.g. 'nmap/services.xml')
 
 options:
   -h, --help            show this help message and exit
-  -o, --output path     path to where the results are stored
-                        (default: './recon')
+  -o, --output path     path to where the results are stored (default: './recon')
   -c, --config path [path ...]
-                        path to the scanner configuration file(s);
-                        see '/path/to/recon/config/scanner.toml'
+                        path to additional scanner configuration; default ('/path/to/recon/config/scanner.toml') will be loaded first
   -t, --concurrent-targets number
-                        number of targets that should be scanned concurrently
-                        (default: 3)
+                        number of targets that should be scanned concurrently (default: 3)
   -s, --concurrent-scans number
-                        number of scans that should be running concurrently on
-                        a single target (default: 2)
+                        number of scans that should be running concurrently on a single target (default: 2)
   -m, --max-time seconds
-                        maximum time in seconds each scan is allowed to take
-                        (default: 3600)
-  -n, --dry-run         do not run any command; just create/update the
-                        'commands.csv' file
-  -f, --filter <host> <protocol> <port> <service> 
-              [<host> <protocol> <port> <service> ...]
-                        specify hosts/protocols/ports/services you want to
-                        (re)scan and overwrite their result files if they
-                        exist; use '*' if you cannot or don't want to specify
-                        a host/protocol/port/service part
+                        maximum time in seconds each scan is allowed to take (default: 3600)
+  -n, --dry-run         do not run any command; just create/update the 'commands.csv' file
+  -f, --filter key=value [key=value ...]
+                        only scan targets that match all specified filters (host/protocol/port/service); existing results will get overwritten
   -y, --overwrite-results
                         overwrite existing result files
   -d, --delimiter character
-                        character used to delimit columns in the
-                        'commands.csv' and 'services.csv' files (default: ',')
-  --ignore-uid          ignore the warning about potentially lacking
-                        permissions
+                        character used to delimit columns in the 'commands.csv' and 'services.csv' files (default: ',')
+  --ignore-uid          ignore the warning about potentially lacking permissions
 ```
 
 After running the scanner, the results directory (e.g. `recon/`) will contain the following files/directories:
@@ -134,30 +115,21 @@ After running the scanner, the results directory (e.g. `recon/`) will contain th
 
 ```text
 % analyze -h
-usage: analyze [-h] [-s code] [-S name] [-r path] [-i path]
-               [-l code] [-f code] [-t path] [-o path]
+usage: analyze [-h] [-s code] [-S name] [-r path] [-i path] [-l code] [-f code] [-t path] [-o path]
 
-Analyze and summarize the results of specific tools previously run by the
-scanner of the recon tool suite (i.e. 'scan').
+Analyze and summarize the results of specific tools previously run by the scanner of the recon tool suite (i.e. 'scan').
 
 options:
   -h, --help            show this help message and exit
-  -s, --service code    service that should be analyzed (choices: ['dns',
-                        'ftp', 'http', 'isakmp', 'ntp', 'rdp', 'smb', 'ssh',
-                        'tls'])
+  -s, --service code    service that should be analyzed (choices: ['dns', 'ftp', 'http', 'isakmp', 'ntp', 'rdp', 'smb', 'ssh', 'tls'])
   -S, --scan name       name of the tool/scan whose results should be parsed
   -r, --recommendations path
-                        path to the recommendations document (default: '/path/
-                        to/recon/config/recommendations/<service>/default.toml')
-  -i, --input path      path to the root directory that holds the results to
-                        be analysed (default: './recon')
+                        path to the recommendations document (default: '/path/to/recon/config/recommendations/<service>/default.toml')
+  -i, --input path      path to the root directory that holds the results to be analysed (default: './recon')
   -l, --language code   language of the analysis (default: 'en')
-  -f, --format code     format of the analysis (choices: ['csv', 'json',
-                        'md']; default: 'md')
-  -t, --template path   path to the Jinja2 template for the analysis; this
-                        option overrides '-f/--format'
-  -o, --output path     path to the directory where the analysis result(s)
-                        will be saved
+  -f, --format code     format of the analysis (choices: ['csv', 'json', 'md']; default: 'md')
+  -t, --template path   path to the Jinja2 template for the analysis; this option overrides '-f/--format'
+  -o, --output path     path to the directory where the analysis result(s) will be saved
 ```
 
 The following analyzers (and parsers) are currently implemented:

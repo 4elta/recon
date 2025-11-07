@@ -53,15 +53,18 @@ FOOTER_MESSAGES = [
 # error/debug log
 LOG_FILE = None
 
-# <host> <protocol> <port> <service>
-SCAN_FILTER_PATTERN = re.compile(r'(?P<host>[^ ]+) (?P<protocol>(tcp|udp|\*)) (?P<port>(\d+)|\*) (?P<service>.+)')
-
 # default timeout (in seconds) after which a command will be cancelled
 MAX_TIME = 60*60
 
 PATH_TO_SCANNERS = pathlib.Path(
   pathlib.Path(__file__).resolve().parent,
   "scanners"
+)
+
+PATH_TO_DEFAULT_CONFIG_FILE = pathlib.Path(
+  pathlib.Path(__file__).resolve().parent,
+  "config",
+  "scanner.toml"
 )
 
 class UserInterface:
@@ -715,25 +718,25 @@ def parse_result_file(base_directory, result_file, targets, unique_services, sca
 
         description = " ".join(descriptions)
 
-      add_target = (len(scan_filters) == 0)
-      for scan_filter in scan_filters:
-        if not (scan_filter['host'] == '*' or scan_filter['host'] == address):
-          continue
+      filter_matches = 0
+      for filter_key, filter_value in scan_filters:
+        if filter_key == 'host' and filter_value == address:
+          log(f"scan filter '{filter_key}={filter_value}' matches")
+          filter_matches += 1
 
-        if not (scan_filter['protocol'] == '*' or scan_filter['protocol'] == transport_protocol):
-          continue
+        if filter_key == 'protocol' and filter_value == transport_protocol:
+          log(f"scan filter '{filter_key}={filter_value}' matches")
+          filter_matches += 1
 
-        if not (scan_filter['port'] == '*' or scan_filter['port'] == port_ID):
-          continue
+        if filter_key == 'port' and filter_value == port_ID:
+          log(f"scan filter '{filter_key}={filter_value}' matches")
+          filter_matches += 1
 
-        if not (scan_filter['service'] == '*' or scan_filter['service'] == application_protocol):
-          continue
+        if filter_key == 'service' and filter_value == application_protocol:
+          log(f"scan filter '{filter_key}={filter_value}' matches")
+          filter_matches += 1
 
-        log(f"scan filter '{json.dumps(scan_filter)}' matches!")
-        add_target = True
-        break
-
-      if add_target:
+      if filter_matches == len(scan_filters):
         log(f"adding service '{application_protocol}'")
 
         target.services.append(
@@ -840,20 +843,13 @@ def update_config(config, new_config):
 def load_config(config_files):
   config = None
 
-  # default configuration file
-  config_file_path = pathlib.Path(
-    pathlib.Path(__file__).resolve().parent,
-    "config",
-    "scanner.toml"
-  )
+  log(f"loading default configuration file '{PATH_TO_DEFAULT_CONFIG_FILE}' ...")
 
-  log(f"loading default configuration file '{config_file_path}' ...")
-
-  if not config_file_path.exists():
+  if not PATH_TO_DEFAULT_CONFIG_FILE.exists():
     log("the file does not exist")
     sys.exit("the default configuration file does not exist!")
 
-  with open(config_file_path, 'rb') as f:
+  with open(PATH_TO_DEFAULT_CONFIG_FILE, 'rb') as f:
     config = toml.load(f)
 
   if not config_files:
@@ -1018,16 +1014,13 @@ def cancel_tasks():
   asyncio.get_running_loop().stop()
 
 def scan_filter(arg):
-  m = SCAN_FILTER_PATTERN.fullmatch(arg)
-  if not m:
-    raise argparse.ArgumentTypeError(f"scan filter '{arg}' does not match '{SCAN_FILTER_PATTERN.pattern}'")
+  key_value_pattern = re.compile(r'(host|protocol|port|service)=(.+)')
 
-  return {
-    'host': m.group('host'),
-    'protocol': m.group('protocol'),
-    'port': m.group('port'),
-    'service': m.group('service')
-  }
+  m = key_value_pattern.fullmatch(arg)
+  if not m:
+    raise argparse.ArgumentTypeError(f"scan filter '{arg}' does not match '{key_value_pattern.pattern}'")
+
+  return (m.group(1), m.group(2))
 
 def int_greater_than_0(arg):
   try:
@@ -1064,7 +1057,7 @@ def main():
   parser.add_argument(
     '-c', '--config',
     metavar = 'path',
-    help = "path to the scanner configuration file(s); see '/path/to/recon/config/scanner.toml'",
+    help = f"path to additional scanner configuration; default ('{PATH_TO_DEFAULT_CONFIG_FILE}') will be loaded first",
     type = pathlib.Path,
     nargs = '+'
   )
@@ -1101,8 +1094,8 @@ def main():
 
   parser.add_argument(
     '-f', '--filter',
-    metavar = '<host> <protocol> <port> <service>',
-    help = "specify hosts/protocols/ports/services you want to (re)scan and overwrite their result files if they exist; use '*' if you cannot or don't want to specify a host/protocol/port/service part",
+    metavar = 'key=value',
+    help = "only scan targets that match all specified filters (host/protocol/port/service); existing results will get overwritten",
     type = scan_filter,
     nargs = '+',
     default = []
