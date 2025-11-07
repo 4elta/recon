@@ -93,7 +93,7 @@ options:
                         maximum time in seconds each scan is allowed to take (default: 3600)
   -n, --dry-run         do not run any command; just create/update the 'commands.csv' file
   -f, --filter key=value [key=value ...]
-                        only scan targets that match all specified filters (host/protocol/port/service); existing results will get overwritten
+                        only scan targets that match all specified filters (host/protocol/port/service); regex allowed; existing result files will be overwritten
   -y, --overwrite-results
                         overwrite existing result files
   -d, --delimiter character

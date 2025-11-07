@@ -718,25 +718,29 @@ def parse_result_file(base_directory, result_file, targets, unique_services, sca
 
         description = " ".join(descriptions)
 
-      filter_matches = 0
-      for filter_key, filter_value in scan_filters:
-        if filter_key == 'host' and filter_value == address:
-          log(f"scan filter '{filter_key}={filter_value}' matches")
-          filter_matches += 1
+      match_count = 0
+      for filter_key, filter_pattern in scan_filters:
+        if filter_key == 'host' and re.fullmatch(filter_pattern, address):
+          log(f"{filter_key} '{address}' matches '{filter_pattern}'")
+          match_count += 1
+          continue
 
-        if filter_key == 'protocol' and filter_value == transport_protocol:
-          log(f"scan filter '{filter_key}={filter_value}' matches")
-          filter_matches += 1
+        if filter_key == 'protocol' and re.fullmatch(filter_pattern, transport_protocol):
+          log(f"{filter_key} '{transport_protocol}' matches '{filter_pattern}'")
+          match_count += 1
+          continue
 
-        if filter_key == 'port' and filter_value == port_ID:
-          log(f"scan filter '{filter_key}={filter_value}' matches")
-          filter_matches += 1
+        if filter_key == 'port' and re.fullmatch(filter_pattern, port_ID):
+          log(f"{filter_key} '{port_ID}' matches '{filter_pattern}'")
+          match_count += 1
+          continue
 
-        if filter_key == 'service' and filter_value == application_protocol:
-          log(f"scan filter '{filter_key}={filter_value}' matches")
-          filter_matches += 1
+        if filter_key == 'service' and re.fullmatch(filter_pattern, application_protocol):
+          log(f"{filter_key} '{application_protocol}' matches '{filter_pattern}'")
+          match_count += 1
+          continue
 
-      if filter_matches == len(scan_filters):
+      if match_count == len(scan_filters):
         log(f"adding service '{application_protocol}'")
 
         target.services.append(
@@ -1095,7 +1099,7 @@ def main():
   parser.add_argument(
     '-f', '--filter',
     metavar = 'key=value',
-    help = "only scan targets that match all specified filters (host/protocol/port/service); existing results will get overwritten",
+    help = "only scan targets that match all specified filters (host/protocol/port/service); regex allowed; existing result files will be overwritten",
     type = scan_filter,
     nargs = '+',
     default = []
