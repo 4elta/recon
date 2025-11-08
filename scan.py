@@ -946,13 +946,11 @@ async def process(stdscr, args):
     if not input_file.exists():
       sys.exit(f"input file '{input_file}' does not exist!")
 
-  scan_filters = args.filter
-
-  if len(scan_filters):
+  if len(args.filter):
     OVERWRITE = True
 
   global TARGETS
-  TARGETS = parse_result_files(base_directory, args.input, scan_filters)
+  TARGETS = parse_result_files(base_directory, args.input, args.filter)
   log(f"parsed {len(TARGETS)} targets")
 
   # find suitable scans for each target and queue them for later.
