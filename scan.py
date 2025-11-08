@@ -680,7 +680,7 @@ def parse_result_file(base_directory, result_file, targets, unique_services, sca
     except:
       pass
 
-    log(f"target: {address} ({','.join(target.hostnames)})")
+    log(f"host: {address} ({','.join(target.hostnames)})")
 
     for port in host.findall('./ports/port/state[@state="open"]/..'):
       transport_protocol = port.get('protocol')
@@ -741,7 +741,7 @@ def parse_result_file(base_directory, result_file, targets, unique_services, sca
           continue
 
       if match_count == len(scan_filters):
-        log(f"adding service '{application_protocol}'")
+        log("targeting service")
 
         target.services.append(
           Service(
@@ -763,7 +763,8 @@ def parse_result_files(base_directory, result_files, scan_filters):
     log(f"parsing '{result_file}' ...")
     parse_result_file(base_directory, result_file, targets, unique_services, scan_filters)
 
-  return targets
+  # filter targets with at least 1 service
+  return {adr: target for adr, target in targets.items() if len(target.services) > 0}
 
 def update_scan_config(scan_config, new_scan_config):
   log(f"updating scan '{scan_config['name']}' ...")
@@ -945,10 +946,7 @@ async def process(stdscr, args):
     if not input_file.exists():
       sys.exit(f"input file '{input_file}' does not exist!")
 
-  scan_filters = []
-  for scan_filter in args.filter:
-    log(f"parsed scan filter: {json.dumps(scan_filter)}")
-    scan_filters.append(scan_filter)
+  scan_filters = args.filter
 
   if len(scan_filters):
     OVERWRITE = True
@@ -1098,8 +1096,8 @@ def main():
 
   parser.add_argument(
     '-f', '--filter',
-    metavar = 'key=value',
-    help = "only scan targets that match all specified filters (host/protocol/port/service); regex allowed; existing result files will be overwritten",
+    metavar = 'key=regex',
+    help = "only scan specific services that match all provided filters for host/protocol/port/service; existing result files will be overwritten",
     type = scan_filter,
     nargs = '+',
     default = []

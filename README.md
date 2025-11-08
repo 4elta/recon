@@ -73,7 +73,7 @@ Make sure to have a look at the [architecture documentation](documentation/archi
 
 ```text
 % scan -h
-usage: scan [-h] [-o path] [-c path [path ...]] [-t number] [-s number] [-m seconds] [-n] [-f key=value [key=value ...]] [-y] [-d character] [--ignore-uid] path [path ...]
+usage: scan [-h] [-o path] [-c path [path ...]] [-t number] [-s number] [-m seconds] [-n] [-f key=regex [key=regex ...]] [-y] [-d character] [--ignore-uid] path [path ...]
 
 Schedule and execute various tools based on the findings of an Nmap service scan.
 
@@ -92,8 +92,8 @@ options:
   -m, --max-time seconds
                         maximum time in seconds each scan is allowed to take (default: 3600)
   -n, --dry-run         do not run any command; just create/update the 'commands.csv' file
-  -f, --filter key=value [key=value ...]
-                        only scan targets that match all specified filters (host/protocol/port/service); regex allowed; existing result files will be overwritten
+  -f, --filter key=regex [key=regex ...]
+                        only scan specific services that match all provided filters for host/protocol/port/service; existing result files will be overwritten
   -y, --overwrite-results
                         overwrite existing result files
   -d, --delimiter character
