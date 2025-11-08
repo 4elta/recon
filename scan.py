@@ -32,8 +32,8 @@ TITLE = "recon scanner"
 
 PROGRESS_BAR_LENGTH = 10
 PROGRESS_BAR_STYLES = {
-  'pipe': ['|', '⋅'],
-  'pipe2': ['┃', '⋅'],
+  'pipe': ['|', ':'],
+  'hash': ['#', ':'],
   'dot': ['●', '⋅'],
 }
 PROGRESS_BAR_STYLE = 'pipe'
@@ -220,8 +220,9 @@ class UserInterface:
           number_of_scans_completed_total,
           number_of_scans_total,
           length = MAIN_PROGRESS_BAR_LENGTH,
-          style = 'pipe2'
-        )
+          style = 'hash'
+        ),
+        curses.A_BOLD
       )
       self.header.addstr(2, 0, self.estimate_time_of_completion())
 
