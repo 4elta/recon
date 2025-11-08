@@ -764,7 +764,7 @@ def parse_result_files(base_directory, result_files, scan_filters):
     parse_result_file(base_directory, result_file, targets, unique_services, scan_filters)
 
   # filter targets with at least 1 service
-  return {adr: target for adr, target in targets.items() if len(target.services) > 0}
+  return {key: target for key, target in targets.items() if len(target.services) > 0}
 
 def update_scan_config(scan_config, new_scan_config):
   log(f"updating scan '{scan_config['name']}' ...")
