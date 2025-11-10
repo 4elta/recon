@@ -23,14 +23,13 @@ git clone https://github.com/4elta/recon.git
 cd recon
 ```
 
-Install the required tools:
+To install (and update) the required tools, you can use the provided script:
 
 ```shell
-mkdir --parents $HOME/tools
-./install-required-tools.sh $HOME/tools
+./required-tools.sh install
 ```
 
-The script will install the following tools:
+The script will install the following tools via package manager if possible, otherwise from GitHub to `$HOME/tools`:
 
 * [BIND 9](https://www.isc.org/bind/)
 * [curl](https://curl.se/)
@@ -44,6 +43,7 @@ The script will install the following tools:
   * [dnspython](https://www.dnspython.org/)
   * [Impacket](https://github.com/fortra/impacket)
   * [Jinja](https://github.com/pallets/jinja/)
+* [Remote Method Guesser](https://github.com/qtc-de/remote-method-guesser)
 * [RPC support](http://sourceforge.net/projects/rpcbind/)
 * [Samba client](https://www.samba.org/samba/docs/current/man-html/smbclient.1.html)
 * [SecLists](https://github.com/danielmiessler/SecLists)
@@ -51,7 +51,7 @@ The script will install the following tools:
 * [testssl.sh](https://testssl.sh/)
 * [WhatWeb](https://morningstarsecurity.com/research/whatweb)
 
-Add symbolic links to the scripts to `/usr/local/bin`.
+Then add symbolic links to the scripts to `/usr/local/bin`.
 Please make sure, that the names for `analyze` and `scan` don't [conflict](https://github.com/4elta/recon/issues/31) with any binaries already installed.
 
 ```shell
