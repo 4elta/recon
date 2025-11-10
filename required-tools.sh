@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# script to install required tools via package manager if possible,
+# script to install and update required tools via package manager if possible,
 # otherwise from GitHub to $TOOLS_DIRECTORY.
 
 # unofficial bash strict mode
