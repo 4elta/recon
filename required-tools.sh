@@ -14,11 +14,12 @@ cd "$TOOLS_DIRECTORY"
 # load environment variables (i.e. 'ID' and 'ID_LIKE')
 source /etc/os-release
 
-PACKAGE_MANAGER="apt"
+PACKAGE_MANAGER=
 ID_LIKE=${ID_LIKE:-$ID}
+[[ "$ID_LIKE" == "debian" ]] && PACKAGE_MANAGER="apt" || true
 [[ "$ID_LIKE" == "arch" ]] && PACKAGE_MANAGER="pacman" || true
 
-if [[ "$PACKAGE_MANAGER" != "apt" && "$PACKAGE_MANAGER" != "packman" ]]; then
+if [[ "$ID_LIKE" != "debian" && "$ID_LIKE" != "arch" ]]; then
   printf "this script currently only works on Debian- and Arch-based distributions.\n"
   printf "please create an issue at github.com/4elta/recon if you would like to add support for other distributions."
   exit 1
@@ -133,9 +134,6 @@ install_seclists() {
   local target=$1
 
   printf "installing SecLists ...\n"
-
-  # make sure the target is not a directory, because then it's already installed via package manager
-  [[ -d "$target" ]] && return 0 || true
 
   if [ "$ID" == "kali" ]; then
     sudo apt install --yes seclists
@@ -252,11 +250,11 @@ install_tools() {
       whatweb
   fi
 
-  command -v "nikto" >/dev/null && install_nikto "/usr/local/bin/nikto" || true
-  command -v "enum4linux-ng" >/dev/null && install_enum4linux_ng "/usr/local/bin/enum4linux-ng" || true
-  install_seclists "/usr/share/seclists"
-  command -v "svmap" >/dev/null && install_sipvicious || true
-  command -v "rmg" >/dev/null && install_rmg || true
+  command -v "nikto" &> /dev/null || install_nikto "/usr/local/bin/nikto"
+  command -v "enum4linux-ng" &> /dev/null || install_enum4linux_ng "/usr/local/bin/enum4linux-ng"
+  [[ -d "/usr/share/seclists" ]] || install_seclists "/usr/share/seclists"
+  command -v "svmap" &> /dev/null || install_sipvicious
+  command -v "rmg" &> /dev/null || install_rmg
 }
 
 update_tools() {
