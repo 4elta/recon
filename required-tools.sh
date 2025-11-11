@@ -18,6 +18,12 @@ PACKAGE_MANAGER="apt"
 ID_LIKE=${ID_LIKE:-$ID}
 [[ "$ID_LIKE" == "arch" ]] && PACKAGE_MANAGER="pacman" || true
 
+if [[ "$PACKAGE_MANAGER" != "apt" && "$PACKAGE_MANAGER" != "packman" ]]; then
+  printf "this script currently only works on Debian- and Arch-based distributions.\n"
+  printf "please create an issue at github.com/4elta/recon if you would like to add support for other distributions."
+  exit 1
+fi
+
 usage() {
   echo "usage: $0 <install|update>"
 }
@@ -80,7 +86,11 @@ install_nikto() {
   fi
 
   install_latest_release_github_source "sullo" "nikto"
-  [[ -f "$target" ]] && sudo ln --symbolic "${TOOLS_DIRECTORY}/nikto/program/nikto.pl" "$target" || true
+
+  if [[ -f "$target" ]]; then
+    printf "creating symbolic link '%s' ...\n" "$target"
+    sudo ln --symbolic "${TOOLS_DIRECTORY}/nikto/program/nikto.pl" "$target"
+  fi
 }
 
 install_enum4linux_ng() {
@@ -111,7 +121,11 @@ install_enum4linux_ng() {
     fi
 
     install_latest_release_github_source "cddmp" "enum4linux-ng"
-    [[ ! -f "$target" ]] && sudo ln --symbolic "${TOOLS_DIRECTORY}/enum4linux-ng/enum4linux-ng.py" "$target" || true
+
+    if [[ ! -f "$target" ]]; then
+      printf "creating symbolic link '%s' ...\n" "$target"
+      sudo ln --symbolic "${TOOLS_DIRECTORY}/enum4linux-ng/enum4linux-ng.py" "$target"
+    fi
   fi
 }
 
@@ -130,7 +144,11 @@ install_seclists() {
   else
     # https://github.com/danielmiessler/SecLists
     install_latest_release_github_source "danielmiessler" "SecLists"
-    [ ! -f "$target" ] && sudo ln --symbolic "${TOOLS_DIRECTORY}/SecLists" "$target" || true
+
+    if [ ! -f "$target" ]; then
+      printf "creating symbolic link '%s' ...\n" "$target"
+      sudo ln --symbolic "${TOOLS_DIRECTORY}/SecLists" "$target"
+    fi
   fi
 }
 
@@ -171,7 +189,10 @@ exec java -jar "${TOOLS_DIRECTORY}/rmg-${release}*.jar" "\$@"
 EOF
 
   chmod +x rmg
-  [ ! -f "$target" ] && sudo ln --symbolic "${TOOLS_DIRECTORY}/rmg" "$target" || true
+  if [ ! -f "$target" ]; then
+    printf "creating symbolic link '%s' ...\n" "$target"
+    sudo ln --symbolic "${TOOLS_DIRECTORY}/rmg" "$target"
+  fi
 }
 
 install_rmg() {
