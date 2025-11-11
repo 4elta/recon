@@ -181,8 +181,17 @@ install_rmg() {
     # https://github.com/BlackArch/blackarch/packages/remote-method-guesser/PKGBUILD
     sudo pacman -S --needed --noconfirm remote-method-guesser
   else
-    printf "from GitHub ...\n"
     # https://github.com/qtc-de/remote-method-guesser
+
+    printf "installing requirements ...\n"
+    if [[ "$PACKAGE_MANAGER" == "apt" ]]; then
+      sudo apt install --yes \
+        default-jre-headless
+    elif [[ "$PACKAGE_MANAGER" == "pacman" ]]; then
+      sudo pacman -S --needed --noconfirm \
+        jre-openjdk-headless
+    fi
+
     install_latest_release_github_rmg
   fi
 }
@@ -194,7 +203,6 @@ install_tools() {
       curl \
       dnsutils \
       ike-scan \
-      default-jre-headless \
       nfs-common \
       nmap \
       python3-defusedxml \
@@ -211,7 +219,6 @@ install_tools() {
       curl \
       bind \
       ike-scan \
-      jre-openjdk-headless \
       nfs-common \
       nmap \
       python-defusedxml \
