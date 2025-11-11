@@ -3,6 +3,10 @@
 # script to install and update required tools via package manager if possible,
 # otherwise from GitHub to $TOOLS_DIRECTORY.
 
+# supported distributions:
+# * Debian-based
+# * Arch-based
+
 # unofficial bash strict mode
 set -euo pipefail
 IFS=$'\n\t'
@@ -99,7 +103,7 @@ install_enum4linux_ng() {
 
   printf "installing enum4linux-ng ...\n"
 
-  if [[ "$ID" == "kali" ]]; then
+  if [[ "$ID" == "kali" || "$ID" == "parrot" ]]; then
     sudo apt install --yes enum4linux-ng
   elif [[ "$ID" == "blackarch" ]]; then
     sudo pacman -S --needed --noconfirm enum4linux-ng
@@ -135,15 +139,15 @@ install_seclists() {
 
   printf "installing SecLists ...\n"
 
-  if [ "$ID" == "kali" ]; then
+  if [[ "$ID" == "kali" || "$ID" == "parrot" ]]; then
     sudo apt install --yes seclists
-  elif [ "$ID" == "blackarch" ]; then
+  elif [[ "$ID" == "blackarch" ]]; then
     sudo pacman -S --needed --noconfirm seclists
   else
     # https://github.com/danielmiessler/SecLists
     install_latest_release_github_source "danielmiessler" "SecLists"
 
-    if [ ! -f "$target" ]; then
+    if [[ ! -f "$target" ]]; then
       printf "creating symbolic link '%s' ...\n" "$target"
       sudo ln --symbolic "${TOOLS_DIRECTORY}/SecLists" "$target"
     fi
@@ -204,11 +208,9 @@ install_rmg() {
 
     printf "installing requirements ...\n"
     if [[ "$PACKAGE_MANAGER" == "apt" ]]; then
-      sudo apt install --yes \
-        default-jre-headless
+      sudo apt install --yes default-jre-headless
     elif [[ "$PACKAGE_MANAGER" == "pacman" ]]; then
-      sudo pacman -S --needed --noconfirm \
-        jre-openjdk-headless
+      sudo pacman -S --needed --noconfirm jre-openjdk-headless
     fi
 
     install_latest_release_github_rmg
@@ -260,7 +262,7 @@ install_tools() {
 update_tools() {
   install_latest_release_github_source "sullo" "nikto" || true
 
-  if [[ "$ID" != "kali" && "$ID" != "blackarch" ]]; then
+  if [[ "$ID" != "kali" && "$ID" != "blackarch" && "$ID" != "parrot" ]]; then
     install_latest_release_github_source "cddmp" "enum4linux-ng"
     install_latest_release_github_source "danielmiessler" "SecLists"
   fi
