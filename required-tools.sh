@@ -27,7 +27,7 @@ elif [[ "$ID_LIKE" == "arch" ]]; then
   PACKAGE_MANAGER="pacman"
 else
   printf "this script currently only works on Debian- and Arch-based distributions.\n"
-  printf "please create an issue at github.com/4elta/recon if you would like to add support for other distributions."
+  printf "please create an issue at github.com/4elta/recon if you would like to add support for other distributions.\n"
   exit 1
 fi
 
