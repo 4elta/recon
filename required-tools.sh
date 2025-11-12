@@ -20,10 +20,12 @@ source /etc/os-release
 
 PACKAGE_MANAGER=
 ID_LIKE=${ID_LIKE:-$ID}
-[[ "$ID_LIKE" == "debian" ]] && PACKAGE_MANAGER="apt" || true
-[[ "$ID_LIKE" == "arch" ]] && PACKAGE_MANAGER="pacman" || true
 
-if [[ "$ID_LIKE" != "debian" && "$ID_LIKE" != "arch" ]]; then
+if [[ "$ID_LIKE" == "debian" ]]; then
+  PACKAGE_MANAGER="apt"
+elif [[ "$ID_LIKE" == "arch" ]]; then
+  PACKAGE_MANAGER="pacman"
+else
   printf "this script currently only works on Debian- and Arch-based distributions.\n"
   printf "please create an issue at github.com/4elta/recon if you would like to add support for other distributions."
   exit 1
