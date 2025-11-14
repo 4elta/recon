@@ -302,13 +302,13 @@ class CommandLog:
 
     if not path.exists(): # do not overwrite the log
       with open(cls.path, 'w') as f:
-        csv.writer(f, delimiter=delimiter, quoting=csv.QUOTE_MINIMAL).writerow(header)
+        csv.writer(f, delimiter=delimiter, quoting=csv.QUOTE_MINIMAL, dialect='unix').writerow(header)
 
   @classmethod
   async def add_entry(cls, entry):
     async with cls.lock:
       with open(cls.path, 'a') as f:
-        csv.writer(f, delimiter=cls.delimiter, quoting=csv.QUOTE_MINIMAL).writerow(entry)
+        csv.writer(f, delimiter=cls.delimiter, quoting=csv.QUOTE_MINIMAL, dialect='unix').writerow(entry)
 
 def log(msg):
   if not LOG_FILE:
@@ -977,7 +977,7 @@ async def process(stdscr, args):
 
   # create services.csv file and initialize its header
   with open(pathlib.Path(base_directory, 'services.csv'), 'w') as f:
-    csv.writer(f, delimiter=args.delimiter, quoting=csv.QUOTE_MINIMAL).writerow(['host', 'transport_protocol', 'port', 'service', 'scanned'])
+    csv.writer(f, delimiter=args.delimiter, quoting=csv.QUOTE_MINIMAL, dialect='unix').writerow(['host', 'transport_protocol', 'port', 'service', 'scanned'])
 
   global UI
   UI = UserInterface(stdscr, 80, args.concurrent_targets * (args.concurrent_scans + 2) + 4)

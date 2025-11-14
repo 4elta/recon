@@ -129,12 +129,13 @@ def render_CSV(services):
 
   output = io.StringIO()
 
-  csv.writer(output, delimiter=delimiter, quoting=csv.QUOTE_MINIMAL).writerow(header)
+  csv_writer = csv.writer(output, delimiter=delimiter, quoting=csv.QUOTE_MINIMAL, dialect='unix')
+  csv_writer.writerow(header)
 
   for identifier, service in services.items():
     for issue in service['issues']:
       row = [identifier, issue.description]
-      csv.writer(output, delimiter=delimiter, quoting=csv.QUOTE_MINIMAL).writerow(row)
+      csv_writer.writerow(row)
 
   rendered_analysis = output.getvalue()
 
