@@ -1,9 +1,10 @@
 ["version: supported"]
-description = "version supported: `{version}`"
+description = "version supported: `{version}` (transmits data in cleartext)"
 recommendations = [
   "remove support for {version}",
   "upgrade to SNMPv3 with authentication and encryption",
-  "{version} transmits community strings in cleartext, making it vulnerable to interception"
+  "SNMPv1 and SNMPv2c transmit community strings and data in plaintext, making them vulnerable to interception",
+  "{version} does not provide encryption or authentication capabilities"
 ]
 references = [
   "RFC 3414: User-based Security Model (USM) for version 3 of SNMP",

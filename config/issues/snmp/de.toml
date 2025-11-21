@@ -1,9 +1,10 @@
 ["version: supported"]
-description = "version supported: `{version}`"
+description = "Protokollversion unterstützt: `{version}` (überträgt Daten im Klartext)"
 recommendations = [
-  "remove support for {version}",
-  "upgrade to SNMPv3 with authentication and encryption",
-  "{version} transmits community strings in cleartext, making it vulnerable to interception"
+  "Unterstützung für {version} entfernen",
+  "auf SNMPv3 mit Authentifizierung und Verschlüsselung umstellen",
+  "SNMPv1 und SNMPv2c übertragen Community-Strings und Daten im Klartext und sind daher anfällig für Abhörangriffe",
+  "{version} bietet keine Verschlüsselung oder Authentifizierung"
 ]
 references = [
   "RFC 3414: User-based Security Model (USM) for version 3 of SNMP",
@@ -12,21 +13,21 @@ references = [
 ]
 
 ["version: not supported"]
-description = "version not supported: `{version}`"
+description = "Protokollversion nicht unterstützt: `{version}`"
 recommendations = [
-  "support {version}",
-  "{version} provides User-based Security Model (USM) with authentication and encryption"
+  "{version} unterstützen",
+  "{version} bietet User-based Security Model (USM) mit Authentifizierung und Verschlüsselung"
 ]
 references = [
   "RFC 3414: User-based Security Model (USM) for version 3 of SNMP"
 ]
 
 ["default community string"]
-description = "using default community string: `{community}` ({access})"
+description = "verwendet Standard-Community-String: `{community}` ({access})"
 recommendations = [
-  "change default community strings to complex, unique values",
-  "disable SNMP if not required",
-  "implement SNMPv3 with authentication and encryption"
+  "Standard-Community-Strings durch komplexe, einzigartige Werte ersetzen",
+  "SNMP deaktivieren, falls nicht erforderlich",
+  "SNMPv3 mit Authentifizierung und Verschlüsselung implementieren"
 ]
 references = [
   "CWE-1188: Insecure Default Initialization of Resource",
@@ -34,12 +35,12 @@ references = [
 ]
 
 ["information disclosure"]
-description = "exposes {info_type} via {source}: {details}"
+description = "gibt {info_type} über {source} preis: {details}"
 recommendations = [
-  "review and restrict SNMP information exposure",
-  "configure SNMP views to limit accessible OIDs",
-  "use SNMPv3 with proper authentication and access controls",
-  "consider disabling system description if not needed"
+  "SNMP-Informationsfreigabe überprüfen und einschränken",
+  "SNMP-Views konfigurieren, um zugängliche OIDs einzuschränken",
+  "SNMPv3 mit ordnungsgemäßer Authentifizierung und Zugriffskontrollen verwenden",
+  "Systembeschreibung deaktivieren, falls nicht benötigt"
 ]
 references = [
   "CWE-200: Information Exposure",
@@ -47,12 +48,12 @@ references = [
 ]
 
 ["public server"]
-description = "public server ({protocol}, {version})"
+description = "öffentlicher Server ({protocol}, {version})"
 recommendations = [
-  "restrict SNMP access to management networks only",
-  "use firewall rules to block external SNMP access",
-  "consider using SNMPv3 with encryption for remote access",
-  "implement VPN access for remote SNMP management"
+  "SNMP-Zugriff auf Verwaltungsnetzwerke beschränken",
+  "Firewall-Regeln verwenden, um externen SNMP-Zugriff zu blockieren",
+  "SNMPv3 mit Verschlüsselung für Remote-Zugriff verwenden",
+  "VPN-Zugriff für Remote-SNMP-Verwaltung implementieren"
 ]
 references = [
   "NIST SP 800-53 AC-3: Access Enforcement",
@@ -60,11 +61,11 @@ references = [
 ]
 
 ["unusual transport protocol"]
-description = "using unusual transport protocol: `{protocol}`"
+description = "verwendet ungewöhnliches Transportprotokoll: `{protocol}`"
 recommendations = [
-  "verify SNMP over TCP configuration is intentional",
-  "consider using standard UDP transport for SNMP",
-  "ensure firewall rules account for TCP SNMP traffic"
+  "überprüfen, ob SNMP über TCP absichtlich konfiguriert wurde",
+  "bevorzugt Standard-UDP-Transport für SNMP verwenden",
+  "sicherstellen, dass Firewall-Regeln TCP-SNMP-Verkehr berücksichtigen"
 ]
 references = [
   "IANA: Assigned Internet Protocol Numbers",
