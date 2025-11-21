@@ -1,72 +1,72 @@
-["insecure snmp version"]
-description = "SNMP-Dienst verwendet eine unsichere Version: {version}. Community-Strings werden im Klartext übertragen."
+["version: supported"]
+description = "version supported: `{version}`"
 recommendations = [
-  "Verwenden Sie SNMPv3, da diese Version Authentifizierung und Verschlüsselung bietet.",
-  "Deaktivieren Sie SNMPv1, um Sicherheitsrisiken zu vermeiden.",
-  "Ersetzen Sie unsichere Community-Strings durch starke, einzigartige Werte."
+  "remove support for {version}",
+  "upgrade to SNMPv3 with authentication and encryption",
+  "{version} transmits community strings in cleartext, making it vulnerable to interception"
 ]
 references = [
-  "RFC 3411: SNMP Framework",
-  "https://tools.ietf.org/html/rfc3411"
+  "RFC 3414: User-based Security Model (USM) for version 3 of SNMP",
+  "RFC 1157: Simple Network Management Protocol (SNMP)",
+  "RFC 1901: Introduction to Community-based SNMPv2"
 ]
 
-["weak snmp version"]
-description = "SNMP-Dienst verwendet schwache Version: {version}. Community-Strings werden im Klartext übertragen."
+["version: not supported"]
+description = "version not supported: `{version}`"
 recommendations = [
-  "Verwenden Sie SNMPv3, da diese Version Authentifizierung und Verschlüsselung bietet.",
-  "Deaktivieren Sie SNMPv2c, um das Abhören von Netzwerkverkehr zu verhindern.",
-  "Setzen Sie sichere Community-Strings ein."
+  "support {version}",
+  "{version} provides User-based Security Model (USM) with authentication and encryption"
 ]
 references = [
-  "RFC 3411: SNMP Framework",
-  "https://tools.ietf.org/html/rfc3411"
-]
-
-["unusual transport protocol"]
-description = "SNMP-Dienst verwendet ungewöhnliches Transportprotokoll {protocol}: {details}."
-recommendations = [
-  "Überprüfen Sie, ob SNMP über TCP absichtlich konfiguriert wurde.",
-  "Verwenden Sie bevorzugt SNMP über UDP.",
-  "Passen Sie Firewall-Regeln entsprechend an."
-]
-references = [
-  "IANA: Zuweisung der Internet-Protokollnummern",
-  "RFC 3411: SNMP Framework"
-]
-
-["public snmp exposure"]
-description = "SNMP-Dienst ist öffentlich im Internet erreichbar (Adresse: {address}, Port: {port})."
-recommendations = [
-  "Beschränken Sie SNMP-Zugang auf interne Netzwerke.",
-  "Verwenden Sie Zugangskontrollen und Firewalls, um öffentliche Exposition zu vermeiden.",
-  "Setzen Sie starke Authentifizierung und sichere SNMP-Versionen ein."
-]
-references = [
-  "CIS Controls v7",
-  "OWASP Top 10",
-  "RFC 3411"
+  "RFC 3414: User-based Security Model (USM) for version 3 of SNMP"
 ]
 
 ["default community string"]
-description = "Standard-Community-String erkannt: {community} (Zugriff: {access})."
+description = "using default community string: `{community}` ({access})"
 recommendations = [
-  "Ändern Sie Standard-Community-Strings wie 'public' oder 'private'.",
-  "Verwenden Sie komplexe, einzigartige Strings.",
-  "Überwachen Sie SNMP-Verkehr auf unerlaubte Community-Strings."
+  "change default community strings to complex, unique values",
+  "disable SNMP if not required",
+  "implement SNMPv3 with authentication and encryption"
 ]
 references = [
-  "RFC 3411",
-  "Sicherheitsrichtlinien von Herstellern"
+  "CWE-1188: Insecure Default Initialization of Resource",
+  "OWASP: Default Credentials"
 ]
 
 ["information disclosure"]
-description = "Informationsgewinn: {info_type} via {source}."
+description = "exposes {info_type} via {source}: {details}"
 recommendations = [
-  "Beschränken Sie SNMP-Daten, um vertrauliche Informationen nicht preiszugeben.",
-  "Deaktivieren Sie nicht benötigte MIBs und SNMP-Skripte.",
-  "Überwachen Sie SNMP-Verkehr und Protokolldaten."
+  "review and restrict SNMP information exposure",
+  "configure SNMP views to limit accessible OIDs",
+  "use SNMPv3 with proper authentication and access controls",
+  "consider disabling system description if not needed"
 ]
 references = [
-  "Datenschutzrichtlinien",
-  "RFC 3411 Sicherheitsaspekte"
+  "CWE-200: Information Exposure",
+  "RFC 3415: View-based Access Control Model (VACM) for SNMP"
+]
+
+["public server"]
+description = "public server ({protocol}, {version})"
+recommendations = [
+  "restrict SNMP access to management networks only",
+  "use firewall rules to block external SNMP access",
+  "consider using SNMPv3 with encryption for remote access",
+  "implement VPN access for remote SNMP management"
+]
+references = [
+  "NIST SP 800-53 AC-3: Access Enforcement",
+  "CIS Critical Security Controls: Network Ports and Protocols"
+]
+
+["unusual transport protocol"]
+description = "using unusual transport protocol: `{protocol}`"
+recommendations = [
+  "verify SNMP over TCP configuration is intentional",
+  "consider using standard UDP transport for SNMP",
+  "ensure firewall rules account for TCP SNMP traffic"
+]
+references = [
+  "IANA: Assigned Internet Protocol Numbers",
+  "RFC 3411: SNMP Framework"
 ]

@@ -1,7 +1,18 @@
-# SNMPv1 and SNMPv2c are insecure—only SNMPv3 is acceptable
-acceptable_versions = ["v3"]
+# SNMPv1 and SNMPv2c are insecure — only SNMPv3 is acceptable
+# SNMPv1 (RFC 1157) and SNMPv2c (RFC 1901) transmit community strings in plaintext,
+# making them vulnerable to interception and unauthorized access. These versions
+# lack authentication and encryption capabilities, allowing attackers to:
+# - Intercept and read community strings from network traffic
+# - Perform unauthorized SNMP operations using captured credentials
+# - Access sensitive system information without proper authorization
+# SNMPv3 (RFC 3414) provides User-based Security Model (USM) with authentication
+# and encryption, making it the only secure option for SNMP deployments.
+versions = ["SNMPv3"]
 
 # Default or well‐known community strings to flag
+# Source: https://github.com/danielmiessler/SecLists/blob/master/Discovery/SNMP/common-snmp-community-strings-onesixtyone.txt
+# The SecLists repository contains comprehensive lists of default and common
+# SNMP community strings used by various vendors and devices.
 default_communities = [
   "public",
   "private",
@@ -11,20 +22,100 @@ default_communities = [
   "manager",
   "network",
   "read",
-  "write"
+  "write",
+  "all",
+  "default",
+  "guest",
+  "monitor",
+  "pass",
+  "password",
+  "root",
+  "security",
+  "system",
+  "test",
+  "user",
+  "cisco",
+  "hp",
+  "3com",
+  "admin",
+  "agent",
+  "agent_ro",
+  "agent_rw",
+  "all",
+  "apc",
+  "bintec",
+  "blue",
+  "cable-d",
+  "cable-docsis",
+  "canopy",
+  "cc",
+  "cisc0",
+  "cisco",
+  "cisco-tac",
+  "core",
+  "dilbert",
+  "enable",
+  "field",
+  "fubar",
+  "guest",
+  "hello",
+  "hp",
+  "ibm",
+  "ilmi",
+  "intermec",
+  "internal",
+  "l2",
+  "l3",
+  "manager",
+  "mngt",
+  "monitor",
+  "netman",
+  "network",
+  "none",
+  "openview",
+  "pass",
+  "password",
+  "private",
+  "proxy",
+  "publ1c",
+  "public",
+  "read",
+  "read-only",
+  "read-write",
+  "readwrite",
+  "red",
+  "ro",
+  "root",
+  "router",
+  "rw",
+  "san-fran",
+  "sanfran",
+  "scotty",
+  "secret",
+  "security",
+  "seri",
+  "snmp",
+  "snmpd",
+  "snmptrap",
+  "solarwinds",
+  "sun",
+  "superuser",
+  "switch",
+  "system",
+  "tech",
+  "test",
+  "test2",
+  "tivoli",
+  "trap",
+  "world",
+  "write",
+  "xyzzy",
+  "yellow"
 ]
 
-# Whether SNMP exposed on public IPs is acceptable
+# Whether SNMP exposed on public adress is acceptable
 allow_public_exposure = false
 
 # Whether information from sysdescr or software lists (if any) is acceptable
 allow_system_info_disclosure = false
 allow_software_enumeration = false
-
-# Severity levels for findings
-[severity]
-insecure_snmp_version        = "HIGH"
-weak_snmp_version            = "MEDIUM"
-default_community_string     = "HIGH"
-public_snmp_exposure         = "CRITICAL"
-information_disclosure       = "MEDIUM"
