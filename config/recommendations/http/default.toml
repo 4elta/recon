@@ -14,12 +14,12 @@ regex = '''
 ^
 max-age=(?P<expire_time>[0-9]+)
 (?:
-  [ ]+
+  [ ]*
   ;
   [ ]+
   includeSubDomains
   (?:
-    [ ]+
+    [ ]*
     ;
     [ ]+
     preload
