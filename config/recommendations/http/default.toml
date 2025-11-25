@@ -148,7 +148,7 @@ on_mismatch = { issue.id = "incorrect syntax", issue.header = "x-frame-options" 
 
 [header.x-xss-protection]
 # https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-XSS-Protection
-regex = "0|(?:1; mode=block)"
+regex = "0"
 on_mismatch = { issue.id = "x-xss-protection" }
 
 [header.referrer-policy]
