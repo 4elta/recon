@@ -17,7 +17,15 @@ key_exchange_methods = [
   "ecdh-sha2-nistp256",
   "ecdh-sha2-nistp384",
   "ecdh-sha2-nistp521",
-  "curve25519-sha256@libssh.org", # this is not listed in TR-02102-4
+  # the following methods are not listed in TR-02102-4
+  "curve25519-sha256",
+  "curve25519-sha256@libssh.org",
+  # > The "curve25519-sha256" key exchange method is identical to
+  # > the "curve25519-sha256@libssh.org" key exchange method
+  # > created by Aris Adamantiadis and implemented in libssh and OpenSSH.
+  # > --RFC 8731, https://datatracker.ietf.org/doc/html/rfc8731#section-appendix.a-1
+  # the reason for privately defining "curve25519-sha256@libssh.org" is given at
+  # https://gitlab.com/libssh/libssh-mirror/-/blob/master/doc/curve25519-sha256@libssh.org.txt
 ]
 
 encryption_algorithms = [
