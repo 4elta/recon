@@ -13,7 +13,6 @@ key_exchange_methods = [
   "curve25519-sha256", # estimated security strength: 128 bits
   "curve448-sha512", # estimated security strength: 224 bits
   "ecdh-sha2-nistp(256|384|521)", # recommended by BSI; estimated security strength: 128/192/512 bits
-  "nistp(256|384|521)-sha\\1-", # estimated security strength: 128/192/512 bits
   #"ecmqv-sha2", # EC Menezes-Qu-Vanstone; https://www.rfc-editor.org/rfc/rfc5656.html#section-6.4
 
   # FINITE FIELDS (FFC)
