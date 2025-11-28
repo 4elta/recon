@@ -1,0 +1,30 @@
+# https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/Publications/TechGuidelines/TG02102/BSI-TR-02102-4.html
+# version: 2025-03
+# security level: 120 bits
+
+public = false
+
+# protocol versions
+versions = [ "2.0" ]
+
+key_exchange_methods = [
+  "diffie-hellman-group-exchange-sha256", # use up to 2031+
+  "diffie-hellman-group(15|16)-sha512", # use up to 2031+
+  "ecdh-sha2-nistp(256|384|512)", # use up to 2031+
+]
+
+encryption_algorithms = [
+  "AEAD_AES_(128|256)_GCM", # use up to 2031+
+  "aes(128|192|256)-ctr", # use up to 2031+
+]
+
+MAC_algorithms = [
+  "hmac-sha2-(256|512)", # use up to 2031+
+]
+
+client_authentication_methods = [ "publickey$" ]
+
+[server_host_keys]
+# key type : minimum key size
+"pgp-sign-dss" = 3000 # use up to 2029
+"(x509v3-)?ecdsa-sha2-nistp(256|384|521)" = 250 # use up to 2031+
