@@ -340,7 +340,7 @@ def process(args):
       if analysis_file:
         LOGGER.info(f"writing analysis to '{analysis_file}' ...")
         with open(analysis_file, 'w') as f:
-          f.write(rendered_analysis)
+          f.write(rendered_analysis + '\n')
       else:
         print(rendered_analysis)
 
