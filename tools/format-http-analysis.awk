@@ -2,9 +2,10 @@
 # it requires the HTTP analysis as CSVs.
 # it will print CSVs (the columns are separated by a tabulator).
 
+# the script requires GAWK.
+
 # run this script like this:
-# awk -f /path/to/this/script.awk \
-#     /path/to/services.csv
+# awk -f /path/to/this/script.awk /path/to/services.csv
 
 function reset_row(asset) {
   row["0:asset"] = asset
@@ -32,7 +33,9 @@ function print_row() {
 }
 
 BEGIN {
+  # specify the array traversal: https://www.gnu.org/software/gawk/manual/html_node/Controlling-Scanning.html
   PROCINFO["sorted_in"] = "@ind_str_asc"
+
   FS = ","
   reset_row("")
   print_header()
