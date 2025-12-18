@@ -225,6 +225,7 @@ install_tools() {
     sudo apt install --yes \
       curl \
       dnsutils \
+      gawk \
       ike-scan \
       nfs-common \
       nmap \
@@ -241,6 +242,7 @@ install_tools() {
     sudo pacman -S --needed --noconfirm \
       curl \
       bind \
+      gawk \
       ike-scan \
       nfs-common \
       nmap \

@@ -31,6 +31,7 @@ To install (and update) the required tools, you can use the provided script:
 
 The script will install the following tools via package manager if possible, otherwise from GitHub to `$HOME/tools`:
 
+* [(GNU) awk](https://www.gnu.org/software/gawk/)
 * [BIND 9](https://www.isc.org/bind/)
 * [curl](https://curl.se/)
 * [enum4linux-ng](https://github.com/cddmp/enum4linux-ng)

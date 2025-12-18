@@ -2,10 +2,11 @@
 # it requires the HTTP analysis as CSVs.
 # it will print CSVs (the columns are separated by a tabulator).
 
-# the script requires GAWK.
+# the script requires GNU awk:
+# https://www.gnu.org/software/gawk/
 
 # run this script like this:
-# awk -f /path/to/this/script.awk /path/to/services.csv
+# gawk -f /path/to/this/script.awk /path/to/services.csv
 
 function reset_row(asset) {
   row["0:asset"] = asset
