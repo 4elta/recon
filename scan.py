@@ -1096,7 +1096,7 @@ def main():
   parser.add_argument(
     '-f', '--filter',
     metavar = 'key=regex',
-    help = "only scan specific services that match all provided filters for host/protocol/port/service; existing result files will be overwritten",
+    help = "only scan specific services that match all provided filters ('key' can be 'host', 'protocol', 'port' or 'service'); existing result files will be overwritten",
     type = scan_filter,
     nargs = '+',
     default = []

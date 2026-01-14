@@ -94,7 +94,7 @@ options:
                         maximum time in seconds each scan is allowed to take (default: 3600)
   -n, --dry-run         do not run any command; just create/update the 'commands.csv' file
   -f, --filter key=regex [key=regex ...]
-                        only scan specific services that match all provided filters for host/protocol/port/service; existing result files will be overwritten
+                        only scan specific services that match all provided filters ('key' can be 'host', 'protocol', 'port' or 'service'); existing result files will be overwritten
   -y, --overwrite-results
                         overwrite existing result files
   -d, --delimiter character
