@@ -195,7 +195,7 @@ class Parser(AbstractParser):
       if 'scan_result' in server_scan_result and server_scan_result['scan_result']:
         self._parse_scan_result(
           server_scan_result['scan_result'],
-          service
+          service,
         )
 
 
@@ -203,13 +203,13 @@ class Parser(AbstractParser):
 
     self._parse_certificate_info(
       scan_result['certificate_info'],
-      service
+      service,
     )
 
     for protocol in ('ssl_2_0', 'ssl_3_0', 'tls_1_0', 'tls_1_1', 'tls_1_2', 'tls_1_3'):
       self._parse_protocol(
         scan_result[f'{protocol}_cipher_suites'],
-        service
+        service,
       )
 
     if 'misc' not in service:
@@ -237,12 +237,12 @@ class Parser(AbstractParser):
 
     self._parse_session_renegotiation_result(
       scan_result['session_renegotiation'],
-      service
+      service,
     )
 
     self._parse_elliptic_curves(
       scan_result['elliptic_curves'],
-      service
+      service,
     )
 
   def _parse_certificate_info(self, certificate_info, service):

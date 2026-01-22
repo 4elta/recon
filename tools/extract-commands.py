@@ -19,14 +19,14 @@ def main():
     'input',
     metavar = 'path',
     type = pathlib.Path,
-    help = "path to the command log (i.e. 'commands.csv')"
+    help = "path to the command log (i.e. 'commands.csv')",
   )
 
   parser.add_argument(
     '-d', '--delimiter',
     metavar = 'character',
     help = "character used to delimit columns in the command log (default: ',')",
-    default = ','
+    default = ',',
   )
 
   process(parser.parse_args())

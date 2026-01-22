@@ -33,7 +33,7 @@ def reverse_DNS_lookup(address):
   try:
     response = dns.resolver.resolve(
       dns.reversename.from_address(address),
-      rdtype = dns.rdatatype.PTR
+      rdtype = dns.rdatatype.PTR,
     )
   except:
     return
@@ -65,7 +65,7 @@ def get_SOA(domain, nameserver):
 
   query = dns.message.make_query(
     domain,
-    rdtype = dns.rdatatype.SOA
+    rdtype = dns.rdatatype.SOA,
   )
 
   response = send_query(query, nameserver)
@@ -87,7 +87,7 @@ def test_recursive(domain, nameserver):
   query = dns.message.make_query(
     domain,
     rdtype = dns.rdatatype.A,
-    ednsflags = dns.flags.RA
+    ednsflags = dns.flags.RA,
   )
 
   response = send_query(query, nameserver)
@@ -101,7 +101,7 @@ def test_DNSSEC_validation(invalid_domain, nameserver):
   query = dns.message.make_query(
     invalid_domain,
     rdtype = dns.rdatatype.A,
-    want_dnssec = True
+    want_dnssec = True,
   )
 
   response = send_query(query, nameserver)
@@ -136,7 +136,7 @@ def get_CH_TXT(name, nameserver, NSID=False):
   query = dns.message.make_query(
     name,
     rdtype = dns.rdatatype.TXT,
-    rdclass = dns.rdataclass.CH
+    rdclass = dns.rdataclass.CH,
   )
 
   if NSID:
@@ -196,7 +196,7 @@ def test_AXFR(domain, nameserver):
   try:
     xfr = dns.query.xfr(
       nameserver,
-      domain
+      domain,
     )
 
     zone = dns.zone.from_xfr(xfr)
@@ -279,7 +279,7 @@ def main():
   
   parser.add_argument(
     'address',
-    help = "the IP address of the name server to be scanned"
+    help = "the IP address of the name server to be scanned",
   )
 
   parser.add_argument(
@@ -287,7 +287,7 @@ def main():
     metavar = 'protocol',
     help = f"the transport protocol (i.e. UDP/TCP) which the name server is using (default: '{TRANSPORT_PROTOCOL}')",
     choices = [ 'tcp', 'udp' ],
-    default = TRANSPORT_PROTOCOL
+    default = TRANSPORT_PROTOCOL,
   )
 
   parser.add_argument(
@@ -295,20 +295,20 @@ def main():
     metavar = 'number',
     help = f"the port number where the name server is listening for DNS queries (default: {PORT})",
     type = int,
-    default = PORT
+    default = PORT,
   )
 
   parser.add_argument(
     '--domain',
     metavar = 'FQDN',
-    help = "the domain for which the name server has authority; if not specified, it will be determined via rDNS and SOA"
+    help = "the domain for which the name server has authority; if not specified, it will be determined via rDNS and SOA",
   )
 
   parser.add_argument(
     '--json',
     metavar = 'path',
     help = "in addition to the scan result being printed to STDOUT, also save the analysis as a JSON document",
-    type = pathlib.Path
+    type = pathlib.Path,
   )
 
   parser.add_argument(
@@ -316,7 +316,7 @@ def main():
     metavar = 'number',
     help = f"the number of retries for testing UDP ports (default: {RETRIES})",
     type = int,
-    default = RETRIES
+    default = RETRIES,
   )
   
   process(parser.parse_args())

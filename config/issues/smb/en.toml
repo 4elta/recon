@@ -1,25 +1,25 @@
 ["protocol supported"]
 description = "{protocol}: protocol supported"
 recommendations = [
-  "[disable {protocol} in Windows](https://learn.microsoft.com/en-us/windows-server/storage/file-server/troubleshoot/detect-enable-and-disable-smbv1-v2-v3)"
+  "[disable {protocol} in Windows](https://learn.microsoft.com/en-us/windows-server/storage/file-server/troubleshoot/detect-enable-and-disable-smbv1-v2-v3)",
 ]
 
 ["dialect supported"]
 description = "{protocol}: dialect supported: {dialect}"
 recommendations = [
-  "[manage SMB dialects in Windows](https://learn.microsoft.com/en-us/windows-server/storage/file-server/manage-smb-dialects)"
+  "[manage SMB dialects in Windows](https://learn.microsoft.com/en-us/windows-server/storage/file-server/manage-smb-dialects)",
 ]
 
 ["protocol not supported"]
 description = "{protocol}: not supported"
 recommendations = [
-  "[enable {protocol} in Windows](https://learn.microsoft.com/en-us/windows-server/storage/file-server/troubleshoot/detect-enable-and-disable-smbv1-v2-v3)"
+  "[enable {protocol} in Windows](https://learn.microsoft.com/en-us/windows-server/storage/file-server/troubleshoot/detect-enable-and-disable-smbv1-v2-v3)",
 ]
 
 ["dialect not supported"]
 description = "{protocol}: dialect not supported: {dialect}"
 recommendations = [
-  "[manage SMB dialects in Windows](https://learn.microsoft.com/en-us/windows-server/storage/file-server/manage-smb-dialects)"
+  "[manage SMB dialects in Windows](https://learn.microsoft.com/en-us/windows-server/storage/file-server/manage-smb-dialects)",
 ]
 
 ["signing r:True"]
@@ -28,7 +28,7 @@ description = "{protocol}: signing required"
 ["signing r:False"]
 description = "{protocol}: signing not required"
 recommendations = [
-  "[enable SMB signing in Windows](https://learn.microsoft.com/en-us/windows-server/storage/file-server/smb-signing-overview)"
+  "[enable SMB signing in Windows](https://learn.microsoft.com/en-us/windows-server/storage/file-server/smb-signing-overview)",
 ]
 
 ["authentication"]
@@ -37,20 +37,20 @@ description = "authentication via {method}"
 ["authentication: NTLM"]
 description = "authentication via NTLM"
 recommendations = [
-  "[restrict the use of NTLM authentication](https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2008-R2-and-2008/dd560653(v=ws.10))"
+  "[restrict the use of NTLM authentication](https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2008-R2-and-2008/dd560653(v=ws.10))",
 ]
 
 ["authentication: NTLM: anonymous"]
 description = "NTLM: anonymous access (null session) allowed"
 recommendations = [
-  "[disallow anonymous access](https://learn.microsoft.com/en-us/troubleshoot/windows-server/networking/inter-process-communication-share-null-session)"
+  "[disallow anonymous access](https://learn.microsoft.com/en-us/troubleshoot/windows-server/networking/inter-process-communication-share-null-session)",
 ]
 
 ["authentication: NTLM: guest"]
 description = "NTLM: guest access allowed"
 recommendations = [
   "[disable guest access in Windows](https://learn.microsoft.com/en-us/windows-hardware/customize/desktop/unattend/microsoft-windows-workstationservice-allowinsecureguestauth)",
-  "[disable guest access in Samba](https://www.samba.org/samba/docs/current/man-html/smb.conf.5.html#MAPTOGUEST)"
+  "[disable guest access in Samba](https://www.samba.org/samba/docs/current/man-html/smb.conf.5.html#MAPTOGUEST)",
 ]
 
 ["AD: users: sensitive information"]

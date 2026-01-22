@@ -25,5 +25,5 @@ description = "erlaubt AXFR: dies könnte potenziell sensible Informationen prei
 ["additional info"]
 description = "zusätzliche Informationen: {info}"
 recommendations = [
-  "[deaktivieren Sie \"version reporting\"](https://kb.isc.org/docs/aa-00359)"
+  "[deaktivieren Sie \"version reporting\"](https://kb.isc.org/docs/aa-00359)",
 ]

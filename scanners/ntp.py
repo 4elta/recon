@@ -173,7 +173,7 @@ def test_mode_3(udp_socket, address):
     0,
     0,
     0,
-    0xffffffffffffffff # some time in 2036-02-07
+    0xffffffffffffffff, # some time in 2036-02-07
   )
 
   data = []
@@ -294,7 +294,7 @@ def test_mode_6(udp_socket, address, opcode):
 
     return {
       'amplification_factor': f"{amplification_factor:.1f}",
-      'data': data
+      'data': data,
     }
 
 def mode_7_request(implementation, request_code, version_number=VERSION_NUMBER):
@@ -531,7 +531,7 @@ def process(args):
   version = None
 
   tests = {
-    VERSION_NUMBER: {}
+    VERSION_NUMBER: {},
   }
 
   with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as udp_socket:
@@ -551,7 +551,7 @@ def process(args):
 
     if result:
       tests[VERSION_NUMBER][6] = {
-        opcode: result
+        opcode: result,
       }
 
       # look for version strings in the data array
@@ -559,7 +559,7 @@ def process(args):
       for version_info in [data for data in result['data'] if data.startswith('`version=')]:
         m = re.search(
           r'`version="ntpd (?P<version>[^ ]+)',
-          version_info
+          version_info,
         )
 
         if m:
@@ -574,7 +574,7 @@ def process(args):
     if result:
       tests[VERSION_NUMBER][7] = {
         implementation: {
-          req_code: result
+          req_code: result,
         }
       }
 
@@ -601,27 +601,27 @@ def main():
   
   parser.add_argument(
     'address',
-    help = "the IP address of the NTP server to be scanned"
+    help = "the IP address of the NTP server to be scanned",
   )
 
   parser.add_argument(
     '--port',
     help = f"the port number where the NTP server is listening for queries (default: {PORT})",
     type = int,
-    default = PORT
+    default = PORT,
   )
 
   parser.add_argument(
     '--timeout',
     help = f"time in seconds to wait for the server's response (default: {TIMEOUT})",
     type = int,
-    default = TIMEOUT
+    default = TIMEOUT,
   )
 
   parser.add_argument(
     '--json',
     help = "in addition to the scan result being printed to STDOUT, also save the result as a JSON document",
-    type = pathlib.Path
+    type = pathlib.Path,
   )
 
   process(parser.parse_args())

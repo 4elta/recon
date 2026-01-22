@@ -150,6 +150,6 @@ class Parser(AbstractParser):
           Issue(
             "information disclosure",
             key = key,
-            value = value
+            value = value,
           )
         )

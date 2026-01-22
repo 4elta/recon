@@ -36,7 +36,7 @@ description = "signature based on SHA-1 found within the certificate chain"
 ["certificate: legacy Symantec"]
 description = "certificate chain contains a legacy Symantec certificate"
 references = [
-  "[Distrust of Symantec TLS Certificates](https://blog.mozilla.org/security/2018/03/12/distrust-symantec-tls-certificates/)"
+  "[Distrust of Symantec TLS Certificates](https://blog.mozilla.org/security/2018/03/12/distrust-symantec-tls-certificates/)",
 ]
 
 ["certificate: private IP address"]

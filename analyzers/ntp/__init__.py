@@ -42,7 +42,7 @@ class Analyzer(AbstractAnalyzer):
         self.analyze_version(
           service['version'],
           self.recommendations['version'],
-          issues
+          issues,
         )
 
       for info in service['misc']:
@@ -50,7 +50,7 @@ class Analyzer(AbstractAnalyzer):
           issues.append(
             Issue(
               "additional info",
-              info = info
+              info = info,
             )
           )
 
@@ -67,6 +67,6 @@ class Analyzer(AbstractAnalyzer):
       Issue(
         "protocol version",
         used_version = version,
-        recommended_version = recommendation
+        recommended_version = recommendation,
       )
     )

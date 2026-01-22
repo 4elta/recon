@@ -124,7 +124,7 @@ def scan_ikev1(trans, target, dest_port, source_port, aggressive=False, lifetime
   process = subprocess.run(
     args,
     capture_output = True,
-    text = True
+    text = True,
   )
 
   print(process.stderr)
@@ -152,7 +152,7 @@ def scan_ikev2(target, dest_port, source_port):
   process = subprocess.run(
     args,
     capture_output = True,
-    text = True
+    text = True,
   )
 
   if 'Handshake returned' in process.stdout:
@@ -189,21 +189,21 @@ def main():
   
   parser.add_argument(
     'target',
-    help = "the hostname or IP address of the IKE server to be scanned"
+    help = "the hostname or IP address of the IKE server to be scanned",
   )
 
   parser.add_argument(
     '--port',
     help = f"the destination port (default: {PORT})",
     type = int,
-    default = PORT
+    default = PORT,
   )
 
   parser.add_argument(
     '--source_port',
     help = f"the source port (default: {SOURCE_PORT}); set to '0' to use a random ephemeral port (i.e. 49152–65535)",
     type = int,
-    default = SOURCE_PORT
+    default = SOURCE_PORT,
   )
 
   process(parser.parse_args())

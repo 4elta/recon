@@ -1,25 +1,25 @@
 ["protocol supported"]
 description = "{protocol}: Protokoll unterstützt"
 recommendations = [
-  "[deaktivieren Sie {protocol} in Windows](https://learn.microsoft.com/de-de/windows-server/storage/file-server/troubleshoot/detect-enable-and-disable-smbv1-v2-v3)"
+  "[deaktivieren Sie {protocol} in Windows](https://learn.microsoft.com/de-de/windows-server/storage/file-server/troubleshoot/detect-enable-and-disable-smbv1-v2-v3)",
 ]
 
 ["dialect supported"]
 description = "{protocol}: Dialekt unterstützt: {dialect}"
 recommendations = [
-  "[verwalten Sie SMB-Dialekte in Windows](https://learn.microsoft.com/de-de/windows-server/storage/file-server/manage-smb-dialects)"
+  "[verwalten Sie SMB-Dialekte in Windows](https://learn.microsoft.com/de-de/windows-server/storage/file-server/manage-smb-dialects)",
 ]
 
 ["protocol not supported"]
 description = "{protocol}: Protokoll nicht unterstützt"
 recommendations = [
-  "[aktivieren Sie {protocol} in Windows](https://learn.microsoft.com/de-de/windows-server/storage/file-server/troubleshoot/detect-enable-and-disable-smbv1-v2-v3)"
+  "[aktivieren Sie {protocol} in Windows](https://learn.microsoft.com/de-de/windows-server/storage/file-server/troubleshoot/detect-enable-and-disable-smbv1-v2-v3)",
 ]
 
 ["dialect not supported"]
 description = "{protocol}: Dialekt nicht unterstützt: {dialect}"
 recommendations = [
-  "[verwalten Sie SMB-Dialekte in Windows](https://learn.microsoft.com/de-de/windows-server/storage/file-server/manage-smb-dialects)"
+  "[verwalten Sie SMB-Dialekte in Windows](https://learn.microsoft.com/de-de/windows-server/storage/file-server/manage-smb-dialects)",
 ]
 
 ["signing r:True"]
@@ -28,7 +28,7 @@ description = "{protocol}: Signatur erforderlich"
 ["signing r:False"]
 description = "{protocol}: Signatur nicht erforderlich"
 recommendations = [
-  "[aktivieren Sie SMB-Signatur in Windows](https://learn.microsoft.com/de-de/windows-server/storage/file-server/smb-signing-overview)"
+  "[aktivieren Sie SMB-Signatur in Windows](https://learn.microsoft.com/de-de/windows-server/storage/file-server/smb-signing-overview)",
 ]
 
 ["authentication"]
@@ -37,20 +37,20 @@ description = "Authentifizierung mittels {method}"
 ["authentication: NTLM"]
 description = "Authentifizierung mittels NTLM"
 recommendations = [
-  "[deaktivieren Sie die Verwendung von NTLM-Authentikation](https://learn.microsoft.com/de-de/previous-versions/windows/it-pro/windows-server-2008-R2-and-2008/dd560653(v=ws.10))"
+  "[deaktivieren Sie die Verwendung von NTLM-Authentikation](https://learn.microsoft.com/de-de/previous-versions/windows/it-pro/windows-server-2008-R2-and-2008/dd560653(v=ws.10))",
 ]
 
 ["authentication: NTLM: anonymous"]
 description = "NTLM: anonymer Zugriff (Null-Session) erlaubt"
 recommendations = [
-  "[unterbinden Sie anonymer Zugriff (Null-Session)](https://learn.microsoft.com/de-de/troubleshoot/windows-server/networking/inter-process-communication-share-null-session)"
+  "[unterbinden Sie anonymer Zugriff (Null-Session)](https://learn.microsoft.com/de-de/troubleshoot/windows-server/networking/inter-process-communication-share-null-session)",
 ]
 
 ["authentication: NTLM: guest"]
 description = "NTLM: Gast-Zugriff erlaubt"
 recommendations = [
   "[deaktivieren Sie Gast-Zugriff in Windows](https://learn.microsoft.com/de-de/windows-hardware/customize/desktop/unattend/microsoft-windows-workstationservice-allowinsecureguestauth)",
-  "[deaktivieren Sie Gast-Zugriff in Samba](https://www.samba.org/samba/docs/current/man-html/smb.conf.5.html#MAPTOGUEST)"
+  "[deaktivieren Sie Gast-Zugriff in Samba](https://www.samba.org/samba/docs/current/man-html/smb.conf.5.html#MAPTOGUEST)",
 ]
 
 ["AD: users: sensitive information"]

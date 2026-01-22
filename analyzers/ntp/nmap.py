@@ -97,7 +97,7 @@ class Parser(AbstractParser):
     if version:
       m = re.search(
         r'v(?P<version>[^@]+)', # v4.2.8p15@1.3728-o
-        version
+        version,
       )
 
       return m.group('version')

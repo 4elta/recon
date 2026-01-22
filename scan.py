@@ -47,7 +47,7 @@ MAIN_PROGRESS_BAR_LENGTH = len("estimated time of completion: yyyy-mm-dd HH:MM")
 
 FOOTER_MESSAGES = [
   "[q] quit: kill all running scans",
-  "[s] stop gracefully: wait for the currently running scans to finish"
+  "[s] stop gracefully: wait for the currently running scans to finish",
 ]
 
 # error/debug log
@@ -220,9 +220,9 @@ class UserInterface:
           number_of_scans_completed_total,
           number_of_scans_total,
           length = MAIN_PROGRESS_BAR_LENGTH,
-          style = 'hash'
+          style = 'hash',
         ),
-        curses.A_BOLD
+        curses.A_BOLD,
       )
       self.header.addstr(2, 0, self.estimate_time_of_completion())
 
@@ -383,7 +383,7 @@ async def run_command(scan: Scan):
         scan.command,
         stdout = asyncio.subprocess.PIPE,
         stderr = asyncio.subprocess.PIPE,
-        executable = '/bin/bash'
+        executable = '/bin/bash',
       )
 
       try:
@@ -453,7 +453,7 @@ def find_suitable_scans(transport_protocol, application_protocol):
           service_name,
           scan_name,
           scan_config['command'],
-          scan_config['run_once'] if 'run_once' in scan_config else False
+          scan_config['run_once'] if 'run_once' in scan_config else False,
         )
       )
 
@@ -524,7 +524,7 @@ def queue_service_scan_hostname(target: Target, service: Service, scan_definitio
       f"{transport_protocol}/{port}",
       scan_definition.service,
       hostname,
-      scan_definition.name
+      scan_definition.name,
     ]
 
     log(f"[{': '.join(description)}]")
@@ -536,7 +536,7 @@ def queue_service_scan_hostname(target: Target, service: Service, scan_definitio
       hostname,
       port,
       description,
-      freeze_variables(scan_definition.command)
+      freeze_variables(scan_definition.command),
     )
 
 def queue_service_scan_address(target: Target, service: Service, scan_definition: ScanDefinition):
@@ -568,7 +568,7 @@ def queue_service_scan_address(target: Target, service: Service, scan_definition
     description = [
       address,
       scan_definition.service,
-      scan_definition.name
+      scan_definition.name,
     ]
 
     scan_ID = (scan_definition.service, scan_definition.name)
@@ -588,7 +588,7 @@ def queue_service_scan_address(target: Target, service: Service, scan_definition
       address,
       f"{transport_protocol}/{port}",
       scan_definition.service,
-      scan_definition.name
+      scan_definition.name,
     ]
 
     scan_ID = (transport_protocol, port, application_protocol, scan_definition.service, scan_definition.name)
@@ -605,7 +605,7 @@ def queue_service_scan_address(target: Target, service: Service, scan_definition
     address,
     port,
     description,
-    freeze_variables(scan_definition.command)
+    freeze_variables(scan_definition.command),
   )
   
 async def scan_services(target: Target):
@@ -749,7 +749,7 @@ def parse_result_file(base_directory, result_file, targets, unique_services, sca
             transport_protocol,
             port_ID,
             application_protocol,
-            description
+            description,
           )
         )
 
@@ -992,7 +992,7 @@ async def process(stdscr, args):
       asyncio.create_task(
         scan_target(
           concurrent_targets,
-          target
+          target,
         )
       )
     )
@@ -1052,7 +1052,7 @@ def main():
     metavar = 'path',
     help = "path to where the results are stored (default: './recon')",
     type = pathlib.Path,
-    default = './recon'
+    default = './recon',
   )
 
   parser.add_argument(
@@ -1060,7 +1060,7 @@ def main():
     metavar = 'path',
     help = f"path to additional scanner configuration; default ('{PATH_TO_DEFAULT_CONFIG_FILE}') will be loaded first",
     type = pathlib.Path,
-    nargs = '+'
+    nargs = '+',
   )
 
   parser.add_argument(
@@ -1068,7 +1068,7 @@ def main():
     metavar = 'number',
     help = "number of targets that should be scanned concurrently (default: 3)",
     type = int_greater_than_0,
-    default = 3
+    default = 3,
   )
 
   parser.add_argument(
@@ -1076,7 +1076,7 @@ def main():
     metavar = 'number',
     help = "number of scans that should be running concurrently on a single target (default: 2)",
     type = int_greater_than_0,
-    default = 2
+    default = 2,
   )
 
   parser.add_argument(
@@ -1084,13 +1084,13 @@ def main():
     metavar = 'seconds',
     help = f"maximum time in seconds each scan is allowed to take (default: {MAX_TIME})",
     type = int_greater_than_0,
-    default = MAX_TIME
+    default = MAX_TIME,
   )
 
   parser.add_argument(
     '-n', '--dry-run',
     help = "do not run any command; just create/update the 'commands.csv' file",
-    action = 'store_true'
+    action = 'store_true',
   )
 
   parser.add_argument(
@@ -1099,26 +1099,26 @@ def main():
     help = "only scan specific services that match all provided filters ('key' can be 'host', 'protocol', 'port' or 'service'); existing result files will be overwritten",
     type = scan_filter,
     nargs = '+',
-    default = []
+    default = [],
   )
 
   parser.add_argument(
     '-y', '--overwrite-results',
     help = "overwrite existing result files",
-    action = 'store_true'
+    action = 'store_true',
   )
 
   parser.add_argument(
     '-d', '--delimiter',
     metavar = 'character',
     help = "character used to delimit columns in the 'commands.csv' and 'services.csv' files (default: ',')",
-    default = ','
+    default = ',',
   )
 
   parser.add_argument(
     '--ignore-uid',
     help = "ignore the warning about potentially lacking permissions",
-    action = 'store_true'
+    action = 'store_true',
   )
 
   args = parser.parse_args()

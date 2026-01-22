@@ -99,7 +99,7 @@ class Parser(AbstractParser):
           if script_ID == 'http-headers':
             self.parse_http_headers(
               script_node,
-              service['response_headers']
+              service['response_headers'],
             )
             continue
 

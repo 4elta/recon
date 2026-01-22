@@ -286,7 +286,7 @@ class Parser(AbstractParser):
     if 'Password properties' in domain_password_information:
       self._parse_password_properties(
         domain_password_information['Password properties'],
-        domain_info
+        domain_info,
       )
 
   def _parse_domain_lockout_information(self, domain_lockout_information, domain_info):

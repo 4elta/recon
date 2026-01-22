@@ -19,7 +19,7 @@ preference = "client"
   "TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256",
   "TLS_DHE_RSA_WITH_AES_256_GCM_SHA384",
   "TLS_DHE_RSA_WITH_AES_128_GCM_SHA256",
-  "TLS_DHE_RSA_WITH_CHACHA20_POLY1305_SHA256"
+  "TLS_DHE_RSA_WITH_CHACHA20_POLY1305_SHA256",
 ]
 
 [key_exchange]
@@ -32,7 +32,7 @@ groups = [ "x25519", "prime256v1", "secp384r1" ]
 
 [extensions]
 yes = [
-  "status_request"
+  "status_request",
 ]
 
 [certificate]
@@ -41,7 +41,7 @@ signature_algorithms = [
   "sha256WithRSAEncryption",
   "ecdsa-with-SHA256",
   "ecdsa-with-SHA384",
-  "ecdsa-with-SHA515"
+  "ecdsa-with-SHA515",
 ]
 
 lifespan = 366

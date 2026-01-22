@@ -57,7 +57,7 @@ class Parser(AbstractParser):
                   version = ntp_version,
                   implementation = implementation,
                   req_code = req_code,
-                  amplification_factor = amplification_factor
+                  amplification_factor = amplification_factor,
                 )
               )
 

@@ -102,26 +102,26 @@ class Parser(AbstractParser):
         self._parse_cipher_node(
           cipher_node,
           service['cipher_suites'],
-          service['key_exchange']
+          service['key_exchange'],
         )
 
       for group_node in ssltest_node.iter('group'):
         self._parse_group_node(
           group_node,
-          service['key_exchange']
+          service['key_exchange'],
         )
 
       for connection_signature_algorithm_node in ssltest_node.iter('connection-signature-algorithm'):
         self._parse_connection_signature_algorithm_node(
           connection_signature_algorithm_node,
-          service['signature_algorithms']
+          service['signature_algorithms'],
         )
 
       for certificate_node in ssltest_node.iter('certificate'):
         if certificate_node.get('type') == 'short':
           self._parse_certificate_node(
             certificate_node,
-            service
+            service,
           )
 
       for certificate in service['certificates']:
@@ -219,22 +219,22 @@ class Parser(AbstractParser):
 
     self._parse_certificate_pk_node(
       node.find('pk'),
-      certificate['public_key']
+      certificate['public_key'],
     )
 
     self._parse_certificate_subject_node(
       node.find('subject'),
-      certificate['subjects']
+      certificate['subjects'],
     )
 
     self._parse_certificate_altnames_node(
       node.find('altnames'),
-      certificate['subjects']
+      certificate['subjects'],
     )
 
     self._parse_certificate_self_signed_node(
       node.find('self-signed'),
-      service['issues']
+      service['issues'],
     )
 
     certificate['validity']['not_before'] = self._parse_certificate_validity(node.find('not-valid-before'))
@@ -242,7 +242,7 @@ class Parser(AbstractParser):
 
     self._parse_certificate_expired_node(
       node.find('expired'),
-      service['issues']
+      service['issues'],
     )
 
   def _evaluate_certificate_trust(self, certificate, host):

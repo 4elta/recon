@@ -46,21 +46,21 @@ class Analyzer(AbstractAnalyzer):
           self.recommendations['versions'],
           issues,
           'version',
-          True
+          True,
         )
 
       if 'IKEv1' in self.recommendations:
         self._analyze_IKEv1(
           service['IKEv1'],
           self.recommendations['IKEv1'],
-          issues
+          issues,
         )
 
       if 'IKEv2' in self.recommendations:
         self._analyze_IKEv2(
           service['IKEv2'],
           self.recommendations['IKEv2'],
-          issues
+          issues,
         )
 
     return services
@@ -72,7 +72,7 @@ class Analyzer(AbstractAnalyzer):
         service['encryption_algorithms'],
         recommendation['encryption_algorithms'],
         issues,
-        'IKEv1 encryption algorithm'
+        'IKEv1 encryption algorithm',
       )
 
     if 'hash_algorithms' in recommendation:
@@ -81,7 +81,7 @@ class Analyzer(AbstractAnalyzer):
         service['hash_algorithms'],
         recommendation['hash_algorithms'],
         issues,
-        'IKEv1 hash algorithm'
+        'IKEv1 hash algorithm',
       )
 
     if 'authentication_methods' in recommendation:
@@ -90,7 +90,7 @@ class Analyzer(AbstractAnalyzer):
         service['authentication_methods'],
         recommendation['authentication_methods'],
         issues,
-        'IKEv1 authentication method'
+        'IKEv1 authentication method',
       )
 
     if 'groups' in recommendation:
@@ -99,7 +99,7 @@ class Analyzer(AbstractAnalyzer):
         service['groups'],
         recommendation['groups'],
         issues,
-        'IKEv1 group'
+        'IKEv1 group',
       )
 
     if 'lifetime' in recommendation and 'lifetime' in service:
@@ -108,7 +108,7 @@ class Analyzer(AbstractAnalyzer):
           Issue(
             "lifetime too long - seconds",
             lifetime = service['lifetime']['seconds'],
-            recommendation = recommendation['lifetime']['seconds']
+            recommendation = recommendation['lifetime']['seconds'],
           )
         )
       if 'kilobytes' in recommendation['lifetime'] and 'kilobytes' in service['lifetime'] and service['lifetime']['kilobytes'] > recommendation['lifetime']['kilobytes']:
@@ -116,7 +116,7 @@ class Analyzer(AbstractAnalyzer):
           Issue(
             "lifetime too long - kilobytes",
             lifetime = service['lifetime']['kilobytes'],
-            recommendation = recommendation['lifetime']['kilobytes']
+            recommendation = recommendation['lifetime']['kilobytes'],
           )
         )
 
@@ -133,7 +133,7 @@ class Analyzer(AbstractAnalyzer):
         service['encryption_algorithms'],
         recommendation['encryption_algorithms'],
         issues,
-        'IKEv2 encryption algorithm'
+        'IKEv2 encryption algorithm',
       )
 
     if 'pseudorandom_functions' in recommendation:
@@ -142,7 +142,7 @@ class Analyzer(AbstractAnalyzer):
         service['pseudorandom_functions'],
         recommendation['pseudorandom_functions'],
         issues,
-        'IKEv2 pseudorandom function'
+        'IKEv2 pseudorandom function',
       )
 
     if 'integrity_algorithms' in recommendation:
@@ -151,7 +151,7 @@ class Analyzer(AbstractAnalyzer):
         service['integrity_algorithms'],
         recommendation['integrity_algorithms'],
         issues,
-        'IKEv2 integrity algorithm'
+        'IKEv2 integrity algorithm',
       )
 
     if 'key_exchange_methods' in recommendation:

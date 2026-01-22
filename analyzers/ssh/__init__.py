@@ -57,7 +57,7 @@ class Analyzer(AbstractAnalyzer):
             issues.append(
               Issue(
                 "protocol: supported",
-                version = service['version']
+                version = service['version'],
               )
             )
 
@@ -66,7 +66,7 @@ class Analyzer(AbstractAnalyzer):
             issues.append(
               Issue(
                 "protocol: not supported",
-                version = version
+                version = version,
               )
             )
 
@@ -74,34 +74,34 @@ class Analyzer(AbstractAnalyzer):
         "key exchange method",
         service['key_exchange_methods'],
         self.recommendations['key_exchange_methods'],
-        issues
+        issues,
       )
 
       self._analyze(
         "encryption algorithm",
         service['encryption_algorithms'],
         self.recommendations['encryption_algorithms'],
-        issues
+        issues,
       )
 
       self._analyze(
         "MAC algorithm",
         service['MAC_algorithms'],
         self.recommendations['MAC_algorithms'],
-        issues
+        issues,
       )
 
       self._analyze(
         "client authentication method",
         service['client_authentication_methods'],
         self.recommendations['client_authentication_methods'],
-        issues
+        issues,
       )
 
       self._analyze_server_host_keys(
         service['server_host_keys'],
         self.recommendations['server_host_keys'],
-        issues
+        issues,
       )
 
     return services
@@ -139,6 +139,6 @@ class Analyzer(AbstractAnalyzer):
         issues.append(
           Issue(
             "server host key",
-            key_type_size = f"`{key_type}` {key_size}"
+            key_type_size = f"`{key_type}` {key_size}",
           )
         )

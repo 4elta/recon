@@ -45,7 +45,7 @@ def analyze_service(service, files, recommendations_file, tool):
     "config",
     "issues",
     service,
-    f"{LANGUAGE}.toml"
+    f"{LANGUAGE}.toml",
   )
 
   LOGGER.debug(f"loading issues file '{issues_file}'")
@@ -209,7 +209,7 @@ def process(args):
     filename = f'analyzer_{timestamp}.log',
     filemode = 'w',
     encoding = 'utf-8',
-    level = logging.DEBUG
+    level = logging.DEBUG,
   )
 
   output_directory = None
@@ -258,7 +258,7 @@ def process(args):
         pathlib.Path(__file__).resolve().parent,
         "config",
         "templates",
-        f"default.{LANGUAGE}.md"
+        f"default.{LANGUAGE}.md",
       )
       LOGGER.info(f"using default template file: '{template_file}'")
       if not template_file.exists():
@@ -269,7 +269,7 @@ def process(args):
     env = jinja2.Environment(
       loader = jinja2.FileSystemLoader(template_file.parent),
       trim_blocks = True,
-      autoescape = False
+      autoescape = False,
     )
 
     template = env.get_template(template_file.name)
@@ -283,7 +283,7 @@ def process(args):
         "config",
         "recommendations",
         service,
-        "default.toml"
+        "default.toml",
       )
 
       LOGGER.info(f"using default recommendations file: '{recommendations_file}'")
@@ -306,7 +306,7 @@ def process(args):
           service,
           files,
           recommendations_file,
-          scan_name
+          scan_name,
         )
       except RuntimeError as error:
         LOGGER.error(error)
@@ -354,20 +354,20 @@ def main():
     '-s', '--service',
     metavar = 'code',
     choices = sorted(SUPPORTED_SERVICES),
-    help = f"service that should be analyzed (choices: {sorted(SUPPORTED_SERVICES)})"
+    help = f"service that should be analyzed (choices: {sorted(SUPPORTED_SERVICES)})",
   )
 
   parser.add_argument(
     '-S', '--scan',
     metavar = 'name',
-    help = "name of the tool/scan whose results should be parsed"
+    help = "name of the tool/scan whose results should be parsed",
   )
 
   parser.add_argument(
     '-r', '--recommendations',
     metavar = 'path',
     type = pathlib.Path,
-    help = "path to the recommendations document (default: '/path/to/recon/config/recommendations/<service>/default.toml')"
+    help = "path to the recommendations document (default: '/path/to/recon/config/recommendations/<service>/default.toml')",
   )
 
   parser.add_argument(
@@ -375,14 +375,14 @@ def main():
     metavar = 'path',
     type = pathlib.Path,
     default = './recon',
-    help = "path to the root directory that holds the results to be analysed (default: './recon')"
+    help = "path to the root directory that holds the results to be analysed (default: './recon')",
   )
 
   parser.add_argument(
     '-l', '--language',
     metavar = 'code',
     default = LANGUAGE,
-    help = f"language of the analysis (default: '{LANGUAGE}')"
+    help = f"language of the analysis (default: '{LANGUAGE}')",
   )
 
   parser.add_argument(
@@ -391,21 +391,21 @@ def main():
     metavar = 'code',
     choices = SUPPORTED_FORMATS,
     default = SUPPORTED_FORMATS[0],
-    help = f"format of the analysis (choices: {sorted(SUPPORTED_FORMATS)}; default: '{SUPPORTED_FORMATS[0]}')"
+    help = f"format of the analysis (choices: {sorted(SUPPORTED_FORMATS)}; default: '{SUPPORTED_FORMATS[0]}')",
   )
 
   parser.add_argument(
     '-t', '--template',
     metavar = 'path',
     type = pathlib.Path,
-    help = "path to the Jinja2 template for the analysis; this option overrides '-f/--format'"
+    help = "path to the Jinja2 template for the analysis; this option overrides '-f/--format'",
   )
 
   parser.add_argument(
     '-o', '--output',
     metavar = 'path',
     type = pathlib.Path,
-    help = "path to the directory where the analysis result(s) will be saved"
+    help = "path to the directory where the analysis result(s) will be saved",
   )
 
   process(parser.parse_args())
