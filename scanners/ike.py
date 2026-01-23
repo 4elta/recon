@@ -200,7 +200,7 @@ def main():
   )
 
   parser.add_argument(
-    '--source_port',
+    '--source-port',
     help = f"the source port (default: {SOURCE_PORT}); set to '0' to use a random ephemeral port (i.e. 49152–65535)",
     type = int,
     default = SOURCE_PORT,

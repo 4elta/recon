@@ -283,7 +283,7 @@ def main():
   )
 
   parser.add_argument(
-    '--transport_protocol',
+    '--transport-protocol',
     metavar = 'protocol',
     help = f"the transport protocol (i.e. UDP/TCP) which the name server is using (default: '{TRANSPORT_PROTOCOL}')",
     choices = [ 'tcp', 'udp' ],

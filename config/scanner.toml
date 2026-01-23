@@ -64,7 +64,7 @@ application_protocol = 'domain(-s)?$'
 
 [[services.scans]]
 name = 'nase'
-command = '"{PATH_TO_SCANNERS}/nase.py" --port {port} --transport_protocol {transport_protocol} --json "{result_file}.json" {address} 2>&1 | tee "{result_file}.log"'
+command = '"{PATH_TO_SCANNERS}/nase.py" --port {port} --transport-protocol {transport_protocol} --json "{result_file}.json" {address} 2>&1 | tee "{result_file}.log"'
 
 [[services]]
 name = 'finger'
