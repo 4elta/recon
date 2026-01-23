@@ -277,7 +277,7 @@ class Scan:
     self.host = host # address or hostname
     self.port = port
     self.description = description # [<host>, <transport protocol>/<port>, <service>, <hostname>, <name>]
-    self.command = command # the command string
+    self.command = command.strip() # the command string
     self.active = False
     self.completed = False
     self.return_code = None

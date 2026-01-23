@@ -20,6 +20,10 @@
 # https://nmap.org/book/nmap-services.html
 # /usr/share/nmap/nmap-services
 
+# version scanning DB:
+# https://nmap.org/book/nmap-service-probes.html
+# /usr/share/nmap/nmap-service-probes
+
 # Nmap Script Engine:
 # https://nmap.org/nsedoc/
 
@@ -30,7 +34,16 @@ application_protocol = 'amqp'
 
 [[services.scans]]
 name = 'nmap'
-command = 'nmap -Pn -sV -n -p {port} --script="amqp-info" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+command = """
+  nmap \
+  -Pn \
+  -sV \
+  -n \
+  -p {port} \
+  --script="amqp-info" \
+  -oN "{result_file}.log" -oX "{result_file}.xml" \
+  {address} \
+"""
 
 [[services]]
 name = 'cassandra'
@@ -39,7 +52,16 @@ application_protocol = 'apani1'
 
 [[services.scans]]
 name = 'nmap'
-command = 'nmap -Pn -sV  -p {port} --script="banner,cassandra* and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+command = """
+  nmap \
+  $([[ "{transport_protocol}" == "udp" ]] && echo "-sU") \
+  -Pn \
+  -sV \
+  -p {port} \
+  --script="banner,cassandra* and not (brute or broadcast or dos or external or fuzzer)" \
+  -oN "{result_file}.log" -oX "{result_file}.xml" \
+  {address} \
+"""
 
 [[services]]
 name = 'cups'
@@ -47,7 +69,16 @@ application_protocol = 'ipp'
 
 [[services.scans]]
 name = 'nmap'
-command = 'nmap -Pn -sV -p {port} --script="banner,cups* and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+command = """
+  nmap \
+  $([[ "{transport_protocol}" == "udp" ]] && echo "-sU") \
+  -Pn \
+  -sV \
+  -p {port} \
+  --script="banner,cups* and not (brute or broadcast or dos or external or fuzzer)" \
+  -oN "{result_file}.log" -oX "{result_file}.xml" \
+  {address} \
+"""
 
 [[services]]
 name = 'distcc'
@@ -56,7 +87,15 @@ application_protocol = 'distccd'
 
 [[services.scans]]
 name = 'nmap'
-command = 'nmap -Pn -sV -p {port} --script="banner,distcc-cve2004-2687" --script-args="distcc-cve2004-2687.cmd=id" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+command = """
+  nmap \
+  -Pn \
+  -sV \
+  -p {port} \
+  --script="banner,distcc-cve2004-2687" --script-args="distcc-cve2004-2687.cmd=id" \
+  -oN "{result_file}.log" -oX "{result_file}.xml" \
+  {address} \
+"""
 
 [[services]]
 name = 'dns'
@@ -64,7 +103,14 @@ application_protocol = 'domain(-s)?$'
 
 [[services.scans]]
 name = 'nase'
-command = '"{PATH_TO_SCANNERS}/nase.py" --port {port} --transport-protocol {transport_protocol} --json "{result_file}.json" {address} 2>&1 | tee "{result_file}.log"'
+command = """
+  "{PATH_TO_SCANNERS}/nase.py" \
+  --port {port} \
+  --transport-protocol {transport_protocol} \
+  --json "{result_file}.json" \
+  {address} \
+  2>&1 | tee "{result_file}.log" \
+"""
 
 [[services]]
 name = 'finger'
@@ -73,15 +119,33 @@ application_protocol = 'finger'
 
 [[services.scans]]
 name = 'nmap'
-command = 'nmap -Pn -sV -p {port} --script="banner,finger" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+command = """
+  nmap \
+  $([[ "{transport_protocol}" == "udp" ]] && echo "-sU") \
+  -Pn \
+  -sV \
+  -p {port} \
+  --script="banner,finger" \
+  -oN "{result_file}.log" -oX "{result_file}.xml" \
+  {address} \
+"""
 
 [[services]]
 name = 'ftp'
-application_protocol = 'ftps?(-data)?'
+application_protocol = '^ftps?(-data)?$'
 
 [[services.scans]]
 name = 'nmap'
-command = 'nmap -Pn -v -sV -p {port} --script="banner,ssl-cert,ftp* and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+command = """
+  nmap \
+  $([[ "{transport_protocol}" == "udp" ]] && echo "-sU") \
+  -Pn \
+  -sV \
+  -p {port} \
+  --script="banner,ftp* and not (brute or broadcast or dos or external or fuzzer)" \
+  -oN "{result_file}.log" -oX "{result_file}.xml" \
+  {address} \
+"""
 
 [[services]]
 name = 'http'
@@ -89,37 +153,98 @@ application_protocol = '^(.+\|)?http'
 
 [[services.scans]]
 name = 'nmap'
-command = 'nmap $([[ "{transport_protocol}" == "udp" ]] && echo "-sU") -Pn -v -sV -p {port} --script="banner,http* and not (brute or broadcast or dos or external or http-slowloris* or fuzzer)" -oN "{result_file}.log" -oX "{result_file}.xml" {hostname}'
+command = """
+  nmap \
+  $([[ "{transport_protocol}" == "udp" ]] && echo "-sU") \
+  -Pn \
+  -sV \
+  -p {port} \
+  --script="banner,http* and not (brute or broadcast or dos or external or http-slowloris* or fuzzer)" \
+  -oN "{result_file}.log" -oX "{result_file}.xml" \
+  {hostname} \
+"""
 
 [[services.scans]]
 name = 'index'
-command = 'curl --silent --insecure --max-time 10 $([[ "{transport_protocol}" == "udp" ]] && echo "--http3") {scheme}://$([[ "{address_type}" == "IPv6" ]] && echo "[{hostname}]" || echo "{hostname}"):{port}/ 2>&1 | tee "{result_file}.html"'
+command = """
+  curl \
+  --silent \
+  --insecure \
+  --max-time 10 \
+  $([[ "{transport_protocol}" == "udp" ]] && echo "--http3") \
+  {scheme}://$([[ "{address_type}" == "IPv6" ]] && echo "[{hostname}]" || echo "{hostname}"):{port}/ \
+  2>&1 | tee "{result_file}.html" \
+"""
 
 [[services.scans]]
 name = 'curl'
-command = 'curl --silent --verbose --insecure --show-error --max-time 10 $([[ "{transport_protocol}" == "udp" ]] && echo "--http3") {scheme}://$([[ "{address_type}" == "IPv6" ]] && echo "[{hostname}]" || echo "{hostname}"):{port}/ 2>&1 | tee "{result_file}.log"'
+command = """
+  curl \
+  --silent \
+  --verbose \
+  --insecure \
+  --show-error \
+  --max-time 10 \
+  $([[ "{transport_protocol}" == "udp" ]] && echo "--http3") \
+  {scheme}://$([[ "{address_type}" == "IPv6" ]] && echo "[{hostname}]" || echo "{hostname}"):{port}/ \
+  2>&1 | tee "{result_file}.log" \
+"""
 
 [[services.scans]]
 name = 'robots.txt'
-command = 'curl --silent --include --insecure --show-error --max-time 10 $([[ "{transport_protocol}" == "udp" ]] && echo "--http3") {scheme}://$([[ "{address_type}" == "IPv6" ]] && echo "[{hostname}]" || echo "{hostname}"):{port}/robots.txt 2>&1 | tee "{result_file}.log"'
+command = """
+  curl \
+  --silent \
+  --show-headers \
+  --insecure \
+  --show-error \
+  --max-time 10 \
+  $([[ "{transport_protocol}" == "udp" ]] && echo "--http3") \
+  {scheme}://$([[ "{address_type}" == "IPv6" ]] && echo "[{hostname}]" || echo "{hostname}"):{port}/robots.txt \
+  2>&1 | tee "{result_file}.log" \
+"""
 
 [[services.scans]]
 name = 'nikto'
 transport_protocol = 'tcp'
-command = 'nikto -ask no -Cgidirs all -host {hostname} -port {port} -nointeractive -Format json -output "{result_file}.json" 2>&1 | tee "{result_file}.log"'
+command = """
+  nikto \
+  -ask no \
+  -Cgidirs all \
+  -host {hostname} \
+  -port {port} \
+  -nointeractive \
+  -Format json -output "{result_file}.json" \
+  2>&1 | tee "{result_file}.log" \
+"""
 
 [[services.scans]]
 name = 'whatweb'
 transport_protocol = 'tcp'
-command = 'whatweb --aggression=3 --no-errors --log-verbose="{result_file}.log" --log-json="{result_file}.json" {scheme}://$([[ "{address_type}" == "IPv6" ]] && echo "[{hostname}]" || echo "{hostname}"):{port}'
+command = """
+  whatweb \
+  --aggression=3 \
+  --no-errors \
+  --log-verbose="{result_file}.log" --log-json="{result_file}.json" \
+  {scheme}://$([[ "{address_type}" == "IPv6" ]] && echo "[{hostname}]" || echo "{hostname}"):{port} \
+"""
 
 [[services]]
 name = 'imap'
-application_protocol = 'imap(s|(4-ssl))?'
+application_protocol = '^imap'
 
 [[services.scans]]
 name = 'nmap'
-command = 'nmap -Pn -sV -p {port} --script="banner,imap* and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+command = """
+  nmap \
+  $([[ "{transport_protocol}" == "udp" ]] && echo "-sU") \
+  -Pn \
+  -sV \
+  -p {port} \
+  --script="banner,imap* and not (brute or broadcast or dos or external or fuzzer)" \
+  -oN "{result_file}.log" -oX "{result_file}.xml" \
+  {address} \
+"""
 
 [[services]]
 name = 'isakmp'
@@ -131,7 +256,16 @@ command = '"{PATH_TO_SCANNERS}/ike.py" {address} --port {port} | tee "{result_fi
 
 [[services.scans]]
 name = 'nmap'
-command = 'nmap -sU -Pn -sV -p {port} --script="banner,ike-version" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+command = """
+  nmap \
+  $([[ "{transport_protocol}" == "udp" ]] && echo "-sU") \
+  -Pn \
+  -sV \
+  -p {port} \
+  --script="banner,ike-version" \
+  -oN "{result_file}.log" -oX "{result_file}.xml" \
+  {address} \
+"""
 
 [[services]]
 name = 'kerberos'
@@ -139,15 +273,33 @@ application_protocol = 'kerberos|kpasswd'
 
 [[services.scans]]
 name = 'nmap'
-command = 'nmap $([[ "{transport_protocol}" == "udp" ]] && echo "-sU") -Pn -sV -p {port} --script="banner,krb5-enum-users" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+command = """
+  nmap \
+  $([[ "{transport_protocol}" == "udp" ]] && echo "-sU") \
+  -Pn \
+  -sV \
+  -p {port} \
+  --script="banner,krb5-enum-users" \
+  -oN "{result_file}.log" -oX "{result_file}.xml" \
+  {address} \
+"""
 
 [[services]]
 name = 'ldap'
-application_protocol = 'ldap'
+application_protocol = '^ldap'
 
 [[services.scans]]
 name = 'nmap'
-command = 'nmap -Pn -sV -p {port} --script="banner,ldap* and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+command = """
+  nmap \
+  $([[ "{transport_protocol}" == "udp" ]] && echo "-sU") \
+  -Pn \
+  -sV \
+  -p {port} \
+  --script="banner,ldap* and not (brute or broadcast or dos or external or fuzzer)" \
+  -oN "{result_file}.log" -oX "{result_file}.xml" \
+  {address} \
+"""
 
 [[services]]
 name = 'mongodb'
@@ -155,7 +307,15 @@ application_protocol = 'mongod'
 
 [[services.scans]]
 name = 'nmap'
-command = 'nmap -Pn -sV -p {port} --script="banner,mongodb* and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+command = """
+  nmap \
+  -Pn \
+  -sV \
+  -p {port} \
+  --script="banner,mongodb* and not (brute or broadcast or dos or external or fuzzer)" \
+  -oN "{result_file}.log" -oX "{result_file}.xml" \
+  {address} \
+"""
 
 [[services]]
 name = 'mysql'
@@ -163,18 +323,38 @@ application_protocol = 'mysql'
 
 [[services.scans]]
 name = 'nmap'
-command = 'nmap -Pn -sV -p {port} --script="banner,mysql* and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+command = """
+  nmap \
+  $([[ "{transport_protocol}" == "udp" ]] && echo "-sU") \
+  -Pn \
+  -sV \
+  -p {port} \
+  --script="banner,mysql* and not (brute or broadcast or dos or external or fuzzer)" \
+  -oN "{result_file}.log" -oX "{result_file}.xml" \
+  {address} \
+"""
 
 [[services]]
 name = 'nfs'
-application_protocol = '^nfs'
+application_protocol = '^nfs$'
 
 [[services.scans]]
 name = 'nmap'
-command = 'nmap -Pn -sV -p {port} --script="banner,(rpcinfo or nfs*) and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+command = """
+  nmap \
+  $([[ "{transport_protocol}" == "udp" ]] && echo "-sU") \
+  -Pn \
+  -sV \
+  -p {port} \
+  --script="banner,(rpcinfo or nfs*) and not (brute or broadcast or dos or external or fuzzer)" \
+  -oN "{result_file}.log" -oX "{result_file}.xml" \
+  {address} \
+"""
 
 [[services.scans]]
 name = 'showmount'
+# showmount first tries TCP and if that does not succeed, it tries UDP:
+# see https://salsa.debian.org/kernel-team/nfs-utils/-/blob/debian/latest/utils/showmount/showmount.c (nfs_get_mount_client)
 command = 'showmount -e {address} | tee "{result_file}.log"'
 
 [[services]]
@@ -183,7 +363,16 @@ application_protocol = '^nntp|snews'
 
 [[services.scans]]
 name = 'nmap'
-command = 'nmap -Pn -sV -p {port} --script="banner,nntp-ntlm-info" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+command = """
+  nmap \
+  $([[ "{transport_protocol}" == "udp" ]] && echo "-sU") \
+  -Pn \
+  -sV \
+  -p {port} \
+  --script="banner,nntp-ntlm-info" \
+  -oN "{result_file}.log" -oX "{result_file}.xml" \
+  {address} \
+"""
 
 [[services]]
 name = 'ntp'
@@ -191,11 +380,26 @@ application_protocol = '^ntp'
 
 [[services.scans]]
 name = 'nmap'
-command = 'nmap $([[ "{transport_protocol}" == "udp" ]] && echo "-sU") -Pn -sV -p {port} --script="banner,ntp-info,ntp-monlist" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+command = """
+  nmap \
+  $([[ "{transport_protocol}" == "udp" ]] && echo "-sU") \
+  -Pn \
+  -sV \
+  -p {port} \
+  --script="banner,ntp-info,ntp-monlist" \
+  -oN "{result_file}.log" -oX "{result_file}.xml" \
+  {address} \
+"""
 
 [[services.scans]]
 name = 'ntp'
-command = '"{PATH_TO_SCANNERS}/ntp.py" --port {port} --json "{result_file}.json" {address} 2>&1 | tee "{result_file}.log"'
+command = """
+  "{PATH_TO_SCANNERS}/ntp.py" \
+  --port {port} \
+  --json "{result_file}.json" \
+  {address} \
+  2>&1 | tee "{result_file}.log" \
+"""
 
 [[services]]
 name = 'oracle'
@@ -203,7 +407,16 @@ application_protocol = 'oracle'
 
 [[services.scans]]
 name = 'nmap'
-command = 'nmap -Pn -sV -p {port} --script="banner,oracle* and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+command = """
+  nmap \
+  $([[ "{transport_protocol}" == "udp" ]] && echo "-sU") \
+  -Pn \
+  -sV \
+  -p {port} \
+  --script="banner,oracle* and not (brute or broadcast or dos or external or fuzzer)" \
+  -oN "{result_file}.log" -oX "{result_file}.xml" \
+  {address} \
+"""
 
 [[services]]
 name = 'pop3'
@@ -211,7 +424,16 @@ application_protocol = 'pop3'
 
 [[services.scans]]
 name = 'nmap'
-command = 'nmap -Pn -sV -p {port} --script="banner,pop3* and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+command = """
+  nmap \
+  $([[ "{transport_protocol}" == "udp" ]] && echo "-sU") \
+  -Pn \
+  -sV \
+  -p {port} \
+  --script="banner,pop3* and not (brute or broadcast or dos or external or fuzzer)" \
+  -oN "{result_file}.log" -oX "{result_file}.xml" \
+  {address} \
+"""
 
 [[services]]
 name = 'rdp'
@@ -219,7 +441,16 @@ application_protocol = 'ms-wbt-server'
 
 [[services.scans]]
 name = 'nmap'
-command = 'nmap $([[ "{transport_protocol}" == "udp" ]] && echo "-sU") -Pn -sV -p {port} --script="banner,rdp* and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+command = """
+  nmap \
+  $([[ "{transport_protocol}" == "udp" ]] && echo "-sU") \
+  -Pn \
+  -sV \
+  -p {port} \
+  --script="banner,rdp* and not (brute or broadcast or dos or external or fuzzer)" \
+  -oN "{result_file}.log" -oX "{result_file}.xml" \
+  {address} \
+"""
 
 [[services]]
 name = 'rmi'
@@ -227,7 +458,16 @@ application_protocol = 'rmiregistry'
 
 [[services.scans]]
 name = 'nmap'
-command = 'nmap -Pn -sV -p {port} --script="banner,rmi-vuln-classloader,rmi-dumpregistry" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+command = """
+  nmap \
+  $([[ "{transport_protocol}" == "udp" ]] && echo "-sU") \
+  -Pn \
+  -sV \
+  -p {port} \
+  --script="banner,rmi-vuln-classloader,rmi-dumpregistry" \
+  -oN "{result_file}.log" -oX "{result_file}.xml" \
+  {address} \
+"""
 
 [[services]]
 name = 'rpc'
@@ -235,23 +475,44 @@ application_protocol = '^erpc|msrpc|rpcbind'
 
 [[services.scans]]
 name = 'nmap'
-command = 'nmap -Pn -sV -p {port} --script="banner,msrpc-enum,rpc-grind,rpcinfo" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+command = """
+  nmap \
+  $([[ "{transport_protocol}" == "udp" ]] && echo "-sU") \
+  -Pn \
+  -sV \
+  -p {port} \
+  --script="banner,msrpc-enum,rpc-grind,rpcinfo" \
+  -oN "{result_file}.log" -oX "{result_file}.xml" \
+  {address} \
+"""
 
 [[services.scans]]
 name = 'rpcinfo'
-command = 'rpcinfo {address} 2>&1 | tee "{result_file}.log"'
+command = 'rpcinfo -T "{transport_protocol}" {address} 2>&1 | tee "{result_file}.log"'
 
 [[services.scans]]
 name = 'rpcdump'
+# impacket-rpcdump only supports port 135/tcp (msrpc), or ports 139,443,445,593:
+# https://github.com/fortra/impacket/blob/master/examples/rpcdump.py (KNOWN_PROTOCOLS)
+application_protocol = 'msrpc'
+transport_protocol = 'tcp'
 command = 'impacket-rpcdump -port {port} {address} 2>&1 | tee "{result_file}.log"'
 
 [[services]]
 name = 'sip'
-application_protocol = '^sip|^ventrilo'
+application_protocol = '^sip|ventrilo'
 
 [[services.scans]]
 name = 'nmap'
-command = 'nmap -Pn -sV -p {port} --script="banner,sip-enum-users,sip-methods" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+command = """
+  nmap \
+  -Pn \
+  -sV \
+  -p {port} \
+  --script="banner,sip-enum-users,sip-methods" \
+  -oN "{result_file}.log" -oX "{result_file}.xml" \
+  {address} \
+"""
 
 [[services.scans]]
 name = 'svmap'
@@ -265,11 +526,26 @@ application_protocol = 'microsoft-ds|netbios|smb'
 
 [[services.scans]]
 name = 'nmap'
-command = 'nmap $([[ "{transport_protocol}" == "udp" ]] && echo "-sU") -Pn -sV -p {port} --script="banner,(nbstat or smb*) and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+command = """
+  nmap \
+  $([[ "{transport_protocol}" == "udp" ]] && echo "-sU") \
+  -Pn \
+  -sV \
+  -p {port} \
+  --script="banner,(nbstat or smb*) and not (brute or broadcast or dos or external or fuzzer)" \
+  -oN "{result_file}.log" -oX "{result_file}.xml" \
+  {address} \
+"""
 
 [[services.scans]]
 name = 'smbclient'
-command = 'smbclient --list={address} --no-pass --command="recurse ON; ls" 2>&1 | tee "{result_file}.log"'
+command = """
+  smbclient \
+  --list={address} \
+  --no-pass \
+  --command="recurse ON; ls" \
+  2>&1 | tee "{result_file}.log" \
+"""
 run_once = true
 
 [[services.scans]]
@@ -279,74 +555,126 @@ run_once = true
 
 [[services]]
 name = 'smtp'
-application_protocol = 'smtp'
+application_protocol = '^smtp'
 
 [[services.scans]]
 name = 'nmap'
-command = 'nmap -Pn -sV -p {port} --script="banner,smtp* and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+command = """
+  nmap \
+  $([[ "{transport_protocol}" == "udp" ]] && echo "-sU") \
+  -Pn \
+  -sV \
+  -p {port} \
+  --script="banner,smtp* and not (brute or broadcast or dos or external or fuzzer)" \
+  -oN "{result_file}.log" -oX "{result_file}.xml" \
+  {address} \
+"""
 
 [[services]]
 name = 'snmp'
-application_protocol = 'snmp'
+application_protocol = '^snmp'
 
 [[services.scans]]
 name = 'nmap'
-command = 'nmap $([[ "{transport_protocol}" == "udp" ]] && echo "-sU") -Pn -sV -p {port} --script="banner,snmp* and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+command = """
+  nmap \
+  $([[ "{transport_protocol}" == "udp" ]] && echo "-sU") \
+  -Pn \
+  -sV \
+  -p {port} \
+  --script="banner,snmp* and not (brute or broadcast or dos or external or fuzzer)" \
+  -oN "{result_file}.log" -oX "{result_file}.xml" \
+  {address} \
+"""
 
 [[services]]
 name = 'ssh'
-application_protocol = '^ssh'
+application_protocol = '^ssh$'
 
 [[services.scans]]
 name = 'nmap'
-command = 'nmap -Pn -sV -p {port} --script="banner,sshv1,ssh2-enum-algos,ssh-hostkey,ssh-auth-methods" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+command = """
+  nmap \
+  -Pn \
+  -sV \
+  -p {port} \
+  --script="banner,sshv1,ssh2-enum-algos,ssh-hostkey,ssh-auth-methods" \
+  -oN "{result_file}.log" -oX "{result_file}.xml" \
+  {address} \
+"""
 
 [[services]]
 name = 'telnet'
-application_protocol = '^telnet'
+application_protocol = '^telnets?$'
 
 [[services.scans]]
 name = 'nmap'
-command = 'nmap -Pn -sV -p {port} --script="banner,telnet-encryption,telnet-ntlm-info" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+command = """
+  nmap \
+  $([[ "{transport_protocol}" == "udp" ]] && echo "-sU") \
+  -Pn \
+  -sV \
+  -p {port} \
+  --script="banner,telnet-encryption,telnet-ntlm-info" \
+  -oN "{result_file}.log" -oX "{result_file}.xml" \
+  {address} \
+"""
 
 [[services]]
 name = 'tls'
-# services (or service versions) that use TLS by default (i.e. not opportunistic)
-application_protocol = '^ssl\||^tls\||https|dicom-tls|domain-s|ftps|imaps|imap4-ssl|ircs(-u)?|ldaps|secure-mqtt|ntske|ms-sql-s|radsec|snews|pop3s|sip-tls|smtps|snmpd?tls|telnets'
-# sometimes, Nmap identifies HTTPS as 'http' tunneled through `ssl`.
-# the scanner prepends the tunnel info to the application protocol: '<tunnel>|<application protocol>'
+# services (or service versions) that use TLS by default (i.e. not opportunistic).
+application_protocol = '^ssl\||^tls\||-ssl|-tls|^https|domain-s|ftps|imaps|ircs(-u)?|ldaps|secure-mqtt|ntske|ms-sql-s|radsec|snews|pop3s|smtps|snmpd?tls|telnets'
+# sometimes, Nmap identifies HTTPS as 'http' tunneled through SSL/TLS: '<tunnel>|<application protocol>'
 # HTTP over TLS (443/tcp)
-# DICOM over TLS (2762)
+# DICOM over TLS (2762): dicom-tls
 # DNS over TLS/DTLS/QUIC (853/tcp)
 # FTP over TLS (990)
-# IMAP over TLS (993/585)
+# IMAP over TLS (993/585): imap4-ssl
 # IRC over TLS (994/6697)
 # LDAP over TLS (636)
-# Message Queuing Telemetry Transport (MQTT) supports TLS (883): https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Network_Connections
-# Network Time Security Key Establishment (NTS-KE) uses TLS (4460): https://www.rfc-editor.org/info/rfc8915
+# MQTT supports TLS (883): https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Network_Connections
+# NTS-KE uses TLS (4460): https://www.rfc-editor.org/info/rfc8915
 # MS-SQL supports TLS (1433)
 # RADIUS over TLS (2083): https://www.rfc-editor.org/info/rfc6614
 # NNTP over TLS (563)
 # POP3 over TLS (995)
-# SIP over TLS (5061)
+# SIP over TLS (5061): sip-tls
 # SMTP over TLS (465)
 # SNMP over TLS (10161)
 # telnet over TLS (992)
 
 [[services.scans]]
 name = 'nmap'
-command = 'nmap $([[ "{transport_protocol}" == "udp" ]] && echo "-sU") -Pn -sV -p {port} --script="banner,ssl* and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" -oX "{result_file}.xml" {hostname}'
+command = """
+  nmap \
+  $([[ "{transport_protocol}" == "udp" ]] && echo "-sU") \
+  -Pn \
+  -sV \
+  -p {port} \
+  --script="banner,ssl* and not (brute or broadcast or dos or external or fuzzer)" \
+  -oN "{result_file}.log" -oX "{result_file}.xml" \
+  {hostname} \
+"""
 
 [[services.scans]]
 name = 'testssl'
 transport_protocol = 'tcp'
-command = 'testssl --ip one --nodns min --mapping no-openssl --warnings off --connect-timeout 60 --openssl-timeout 60 --logfile "{result_file}.log" --jsonfile "{result_file}.json" $([[ "{address_type}" == "IPv6" ]] && echo "[{hostname}]" || echo "{hostname}"):{port}'
+command = """
+  testssl \
+  --ip one \
+  --nodns min \
+  --mapping no-openssl \
+  --warnings off \
+  --connect-timeout 60 --openssl-timeout 60 \
+  --logfile "{result_file}.log" --jsonfile "{result_file}.json" \
+  $([[ "{address_type}" == "IPv6" ]] && echo "[{hostname}]" || echo "{hostname}"):{port} \
+"""
 
 [[services]]
 name = 'tls-misc'
-# services that support opportunistic TLS (e.g. STARTTLS) or use TLS in some other form
+# services that support opportunistic TLS (e.g. STARTTLS) or use TLS in some other form:
 # https://www.rfc-editor.org/info/rfc7435
-application_protocol = 'apani1|ipp|ircu?$|ftp(-data)?|imap|ldap|mongod|ms-wbt-server|mysql|nntp|oracle|pop3|radius$|postgresql|sieve|smtp|vnc|xmpp'
+application_protocol = 'apani1|^ipp|ircu?$|^ftp(-data)?$|^imap3?$|^ldap$|mongod|ms-wbt-server|mysql|nntp|^oracle$|pop3$|radius$|postgresql|sieve|^smtp$|^vnc|xmpp'
 # Cassandra supports TLS: https://cassandra.apache.org/doc/4.1/cassandra/configuration/cass_yaml_file.html#server_encryption_options
 # CUPS supports TLS: https://www.cups.org/doc/encryption.html
 # IRC supports STARTTLS: https://ircv3.net/specs/deprecated/tls
@@ -368,22 +696,56 @@ application_protocol = 'apani1|ipp|ircu?$|ftp(-data)?|imap|ldap|mongod|ms-wbt-se
 
 [[services.scans]]
 name = 'nmap'
-command = 'nmap $([[ "{transport_protocol}" == "udp" ]] && echo "-sU") -Pn -sV -p {port} --script="banner,ssl* and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+command = """
+  nmap \
+  $([[ "{transport_protocol}" == "udp" ]] && echo "-sU") \
+  -Pn \
+  -sV \
+  -p {port} \
+  --script="banner,ssl* and not (brute or broadcast or dos or external or fuzzer)" \
+  -oN "{result_file}.log" -oX "{result_file}.xml" \
+  {address} \
+"""
 
 [[services.scans]]
 name = 'testssl'
 # https://github.com/testssl/testssl.sh/wiki/Man-page
 transport_protocol = 'tcp'
-application_protocol = 'ftp|smtp|pop3|imap|xmpp|telnet|ldap|postgresql|mysql'
-command = 'testssl --ip one --nodns min --mapping no-openssl --warnings off --connect-timeout 60 --openssl-timeout 60 --starttls "$(echo "{application_protocol}" | sed "s:postgresql:postgres:")" --logfile "{result_file}.log" --jsonfile "{result_file}.json" $([[ "{address_type}" == "IPv6" ]] && echo "[{address}]" || echo "{address}"):{port}'
+application_protocol = '^ftp(-data)?$|^smtp$|pop3$|^imap3?$|xmpp|^ldap$|postgresql|mysql$'
+command = """
+  testssl \
+  --ip one \
+  --nodns min \
+  --mapping no-openssl \
+  --warnings off \
+  --connect-timeout 60 --openssl-timeout 60 \
+  --starttls $(\
+    echo "{application_protocol}" | \
+      sed -E \
+        -e "s:ftp.+:ftp:" \
+        -e "s:imap.+:imap:" \
+        -e "s:xmpp.+:xmpp:" \
+        -e "s:postgresql:postgres:" \
+  ) \
+  --logfile "{result_file}.log" --jsonfile "{result_file}.json" \
+  $([[ "{address_type}" == "IPv6" ]] && echo "[{address}]" || echo "{address}"):{port} \
+"""
 
 [[services]]
 name = 'vnc'
-application_protocol = 'vnc'
+application_protocol = '^vnc'
 
 [[services.scans]]
 name = 'nmap'
-command = 'nmap -Pn -sV -p {port} --script="banner,(vnc* or realvnc*) and not (brute or broadcast or dos or external or fuzzer)" --script-args="unsafe=1" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+command = """
+  nmap \
+  -Pn \
+  -sV \
+  -p {port} \
+  --script="banner,(vnc* or realvnc*) and not (brute or broadcast or dos or external or fuzzer)" --script-args="unsafe=1" \
+  -oN "{result_file}.log" -oX "{result_file}.xml" \
+  {address} \
+"""
 
 [[services]]
 name = 'xmpp'
@@ -391,4 +753,12 @@ application_protocol = 'xmpp'
 
 [[services.scans]]
 name = 'nmap'
-command = 'nmap -Pn -sV -p {port} --script="banner,xmpp* and not (brute or broadcast or dos or external or fuzzer)" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+command = """
+  nmap \
+  -Pn \
+  -sV \
+  -p {port} \
+  --script="banner,xmpp* and not (brute or broadcast or dos or external or fuzzer)" \
+  -oN "{result_file}.log" -oX "{result_file}.xml" \
+  {address} \
+"""
