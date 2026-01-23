@@ -246,16 +246,16 @@ class UserInterface:
 
 class Service:
   def __init__(self, transport_protocol, port, application_protocol, description):
-    self.transport_protocol = transport_protocol
+    self.transport_protocol = transport_protocol.strip()
     self.port = int(port)
-    self.application_protocol = application_protocol
+    self.application_protocol = application_protocol.strip()
     self.description = description
     self.scanned = False
 
 class Target:
   def __init__(self, address, directory):
     self.semaphore = None # limiting the number of concurrently running scans
-    self.address = address
+    self.address = address.strip()
     self.hostnames = []
     self.directory = directory
     self.services = []
@@ -267,14 +267,14 @@ class ScanDefinition:
   # as parsed from the scanner config (`scanner.toml`)
   def __init__(self, service, name, command, run_once):
     self.service = service
-    self.name = name
-    self.command = command
+    self.name = name.strip()
+    self.command = command.strip()
     self.run_once = run_once
 
 class Scan:
   def __init__(self, target, host, port, description, command):
     self.target = target
-    self.host = host # address or hostname
+    self.host = host.strip() # address or hostname
     self.port = port
     self.description = description # [<host>, <transport protocol>/<port>, <service>, <hostname>, <name>]
     self.command = command.strip() # the command string
