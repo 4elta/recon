@@ -63,7 +63,7 @@ class Analyzer(AbstractAnalyzer):
           issues.append(
             Issue(
               "mandatory header missing",
-              header = missing_header
+              header = missing_header,
             )
           )
 
@@ -73,7 +73,7 @@ class Analyzer(AbstractAnalyzer):
             self._run_check(
               ( 'header', header_name ),
               header_value,
-              issues
+              issues,
             )
 
       if service['response_body']:
@@ -81,7 +81,7 @@ class Analyzer(AbstractAnalyzer):
           self._run_check(
             ( 'body', html_elem ),
             service['response_body'],
-            issues
+            issues,
           )
 
       '''
@@ -148,7 +148,7 @@ class Analyzer(AbstractAnalyzer):
           Issue(
             issue_id,
             value = value,
-            **event_handler['issue']
+            **event_handler['issue'],
           )
         )
 
@@ -164,11 +164,11 @@ class Analyzer(AbstractAnalyzer):
           self._run_check(
             next_check.split('.'),
             value,
-            issues
+            issues,
           )
         else:
           self._run_check(
             (*breadcrumbs, next_check),
             value,
-            issues
+            issues,
           )

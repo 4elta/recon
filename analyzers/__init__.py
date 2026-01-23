@@ -155,7 +155,7 @@ class AbstractAnalyzer:
     module_path = pathlib.Path(
       pathlib.Path(__file__).resolve().parent,
       self.name,
-      f'{parser_name}.py'
+      f'{parser_name}.py',
     )
 
     if not module_path.exists():

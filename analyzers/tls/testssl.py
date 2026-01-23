@@ -80,7 +80,7 @@ class Parser(AbstractParser):
       findings = list(
         filter(
           lambda x: x['ip'].startswith(host) and x['port'] == port,
-          results
+          results,
         )
       )
 
@@ -98,7 +98,7 @@ class Parser(AbstractParser):
         if f['id'] == 'cert_keySize':
           self._parse_public_key(
             f['finding'],
-            certificate['public_key']
+            certificate['public_key'],
           )
           continue
 
@@ -106,7 +106,7 @@ class Parser(AbstractParser):
         if f['id'] == 'cert_signatureAlgorithm':
           self._parse_signature_algorithm(
             f['finding'],
-            certificate['signature_algorithm']
+            certificate['signature_algorithm'],
           )
           continue
 
@@ -115,14 +115,14 @@ class Parser(AbstractParser):
         if f['id'] == 'cert_commonName':
           self._parse_common_name(
             f['finding'],
-            certificate['subjects']
+            certificate['subjects'],
           )
           continue
 
         if f['id'] == 'cert_subjectAltName':
           self._parse_subject_alt_names(
             f['finding'],
-            certificate['subjects']
+            certificate['subjects'],
           )
           continue
 
@@ -140,7 +140,7 @@ class Parser(AbstractParser):
         if f['id'] == 'PFS_ECDHE_curves':
           self._parse_groups(
             f['finding'],
-            service['key_exchange']['groups']
+            service['key_exchange']['groups'],
           )
           continue
 
@@ -158,7 +158,7 @@ class Parser(AbstractParser):
           self._parse_cipher_suite(
             f['finding'],
             service['cipher_suites'],
-            service['key_exchange']
+            service['key_exchange'],
           )
           continue
 
@@ -167,7 +167,7 @@ class Parser(AbstractParser):
         if f['id'] == 'TLS_extensions':
           self._parse_extensions(
             f['finding'],
-            service['extensions']
+            service['extensions'],
           )
           continue
 
@@ -251,7 +251,7 @@ class Parser(AbstractParser):
             service['issues'].append(
               Issue(
                 "certificate: not trusted",
-                info = f['finding']
+                info = f['finding'],
               )
             )
           continue
@@ -261,7 +261,7 @@ class Parser(AbstractParser):
             service['issues'].append(
               Issue(
                 "certificate: not trusted",
-                info = self._parse_chain_of_trust(f['finding'])
+                info = self._parse_chain_of_trust(f['finding']),
               )
             )
           continue
@@ -356,7 +356,7 @@ class Parser(AbstractParser):
   def _parse_extensions(self, description, extensions):
     m = re.findall(
       r"'([^/]+)/#\d+'",
-      description
+      description,
     )
 
     for ext in m:
@@ -367,7 +367,7 @@ class Parser(AbstractParser):
   def _parse_HSTS_time(self, description):
     m = re.search(
       r'\(=(?P<time>\d+) seconds\)',
-      description
+      description,
     )
 
     if m:
@@ -378,7 +378,7 @@ class Parser(AbstractParser):
   def _parse_chain_of_trust(self, description):
     m = re.search(
       r'\((?P<reason>[^)]+)\)',
-      description
+      description,
     )
 
     if m:

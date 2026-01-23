@@ -164,7 +164,7 @@ class Parser(AbstractParser):
   def _parse_protocol_version(self, extrainfo):
     m = re.search(
       r'protocol (?P<version>\d+(\.\d+)?)',
-      extrainfo
+      extrainfo,
     )
 
     version = m.group('version')
@@ -191,7 +191,7 @@ class Parser(AbstractParser):
     for table_node in script_node.iter('table'):
       key = {
         'type': None,
-        'size': None
+        'size': None,
       }
 
       for elem_node in table_node.iter('elem'):

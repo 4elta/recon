@@ -32,8 +32,8 @@ TITLE = "recon scanner"
 
 PROGRESS_BAR_LENGTH = 10
 PROGRESS_BAR_STYLES = {
-  'pipe': ['|', '⋅'],
-  'pipe2': ['┃', '⋅'],
+  'pipe': ['|', ':'],
+  'hash': ['#', ':'],
   'dot': ['●', '⋅'],
 }
 PROGRESS_BAR_STYLE = 'pipe'
@@ -47,14 +47,11 @@ MAIN_PROGRESS_BAR_LENGTH = len("estimated time of completion: yyyy-mm-dd HH:MM")
 
 FOOTER_MESSAGES = [
   "[q] quit: kill all running scans",
-  "[s] stop gracefully: wait for the currently running scans to finish"
+  "[s] stop gracefully: wait for the currently running scans to finish",
 ]
 
 # error/debug log
 LOG_FILE = None
-
-# <host> <protocol> <port> <service>
-SCAN_FILTER_PATTERN = re.compile(r'(?P<host>[^ ]+) (?P<protocol>(tcp|udp|\*)) (?P<port>(\d+)|\*) (?P<service>.+)')
 
 # default timeout (in seconds) after which a command will be cancelled
 MAX_TIME = 60*60
@@ -62,6 +59,12 @@ MAX_TIME = 60*60
 PATH_TO_SCANNERS = pathlib.Path(
   pathlib.Path(__file__).resolve().parent,
   "scanners"
+)
+
+PATH_TO_DEFAULT_CONFIG_FILE = pathlib.Path(
+  pathlib.Path(__file__).resolve().parent,
+  "config",
+  "scanner.toml"
 )
 
 class UserInterface:
@@ -217,8 +220,9 @@ class UserInterface:
           number_of_scans_completed_total,
           number_of_scans_total,
           length = MAIN_PROGRESS_BAR_LENGTH,
-          style = 'pipe2'
-        )
+          style = 'hash',
+        ),
+        curses.A_BOLD,
       )
       self.header.addstr(2, 0, self.estimate_time_of_completion())
 
@@ -273,7 +277,7 @@ class Scan:
     self.host = host # address or hostname
     self.port = port
     self.description = description # [<host>, <transport protocol>/<port>, <service>, <hostname>, <name>]
-    self.command = command # the command string
+    self.command = command.strip() # the command string
     self.active = False
     self.completed = False
     self.return_code = None
@@ -298,13 +302,13 @@ class CommandLog:
 
     if not path.exists(): # do not overwrite the log
       with open(cls.path, 'w') as f:
-        csv.writer(f, delimiter=delimiter, quoting=csv.QUOTE_MINIMAL).writerow(header)
+        csv.writer(f, delimiter=delimiter, quoting=csv.QUOTE_MINIMAL, dialect='unix').writerow(header)
 
   @classmethod
   async def add_entry(cls, entry):
     async with cls.lock:
       with open(cls.path, 'a') as f:
-        csv.writer(f, delimiter=cls.delimiter, quoting=csv.QUOTE_MINIMAL).writerow(entry)
+        csv.writer(f, delimiter=cls.delimiter, quoting=csv.QUOTE_MINIMAL, dialect='unix').writerow(entry)
 
 def log(msg):
   if not LOG_FILE:
@@ -379,7 +383,7 @@ async def run_command(scan: Scan):
         scan.command,
         stdout = asyncio.subprocess.PIPE,
         stderr = asyncio.subprocess.PIPE,
-        executable = '/bin/bash'
+        executable = '/bin/bash',
       )
 
       try:
@@ -449,7 +453,7 @@ def find_suitable_scans(transport_protocol, application_protocol):
           service_name,
           scan_name,
           scan_config['command'],
-          scan_config['run_once'] if 'run_once' in scan_config else False
+          scan_config['run_once'] if 'run_once' in scan_config else False,
         )
       )
 
@@ -520,7 +524,7 @@ def queue_service_scan_hostname(target: Target, service: Service, scan_definitio
       f"{transport_protocol}/{port}",
       scan_definition.service,
       hostname,
-      scan_definition.name
+      scan_definition.name,
     ]
 
     log(f"[{': '.join(description)}]")
@@ -532,7 +536,7 @@ def queue_service_scan_hostname(target: Target, service: Service, scan_definitio
       hostname,
       port,
       description,
-      freeze_variables(scan_definition.command)
+      freeze_variables(scan_definition.command),
     )
 
 def queue_service_scan_address(target: Target, service: Service, scan_definition: ScanDefinition):
@@ -564,7 +568,7 @@ def queue_service_scan_address(target: Target, service: Service, scan_definition
     description = [
       address,
       scan_definition.service,
-      scan_definition.name
+      scan_definition.name,
     ]
 
     scan_ID = (scan_definition.service, scan_definition.name)
@@ -584,7 +588,7 @@ def queue_service_scan_address(target: Target, service: Service, scan_definition
       address,
       f"{transport_protocol}/{port}",
       scan_definition.service,
-      scan_definition.name
+      scan_definition.name,
     ]
 
     scan_ID = (transport_protocol, port, application_protocol, scan_definition.service, scan_definition.name)
@@ -601,7 +605,7 @@ def queue_service_scan_address(target: Target, service: Service, scan_definition
     address,
     port,
     description,
-    freeze_variables(scan_definition.command)
+    freeze_variables(scan_definition.command),
   )
   
 async def scan_services(target: Target):
@@ -677,7 +681,7 @@ def parse_result_file(base_directory, result_file, targets, unique_services, sca
     except:
       pass
 
-    log(f"target: {address} ({','.join(target.hostnames)})")
+    log(f"host: {address} ({','.join(target.hostnames)})")
 
     for port in host.findall('./ports/port/state[@state="open"]/..'):
       transport_protocol = port.get('protocol')
@@ -715,33 +719,37 @@ def parse_result_file(base_directory, result_file, targets, unique_services, sca
 
         description = " ".join(descriptions)
 
-      add_target = (len(scan_filters) == 0)
-      for scan_filter in scan_filters:
-        if not (scan_filter['host'] == '*' or scan_filter['host'] == address):
+      match_count = 0
+      for filter_key, filter_pattern in scan_filters:
+        if filter_key == 'host' and re.fullmatch(filter_pattern, address):
+          log(f"{filter_key} '{address}' matches '{filter_pattern}'")
+          match_count += 1
           continue
 
-        if not (scan_filter['protocol'] == '*' or scan_filter['protocol'] == transport_protocol):
+        if filter_key == 'protocol' and re.fullmatch(filter_pattern, transport_protocol):
+          log(f"{filter_key} '{transport_protocol}' matches '{filter_pattern}'")
+          match_count += 1
           continue
 
-        if not (scan_filter['port'] == '*' or scan_filter['port'] == port_ID):
+        if filter_key == 'port' and re.fullmatch(filter_pattern, port_ID):
+          log(f"{filter_key} '{port_ID}' matches '{filter_pattern}'")
+          match_count += 1
           continue
 
-        if not (scan_filter['service'] == '*' or scan_filter['service'] == application_protocol):
+        if filter_key == 'service' and re.fullmatch(filter_pattern, application_protocol):
+          log(f"{filter_key} '{application_protocol}' matches '{filter_pattern}'")
+          match_count += 1
           continue
 
-        log(f"scan filter '{json.dumps(scan_filter)}' matches!")
-        add_target = True
-        break
-
-      if add_target:
-        log(f"adding service '{application_protocol}'")
+      if match_count == len(scan_filters):
+        log("targeting service")
 
         target.services.append(
           Service(
             transport_protocol,
             port_ID,
             application_protocol,
-            description
+            description,
           )
         )
 
@@ -756,7 +764,8 @@ def parse_result_files(base_directory, result_files, scan_filters):
     log(f"parsing '{result_file}' ...")
     parse_result_file(base_directory, result_file, targets, unique_services, scan_filters)
 
-  return targets
+  # filter targets with at least 1 service
+  return {key: target for key, target in targets.items() if len(target.services) > 0}
 
 def update_scan_config(scan_config, new_scan_config):
   log(f"updating scan '{scan_config['name']}' ...")
@@ -840,20 +849,13 @@ def update_config(config, new_config):
 def load_config(config_files):
   config = None
 
-  # default configuration file
-  config_file_path = pathlib.Path(
-    pathlib.Path(__file__).resolve().parent,
-    "config",
-    "scanner.toml"
-  )
+  log(f"loading default configuration file '{PATH_TO_DEFAULT_CONFIG_FILE}' ...")
 
-  log(f"loading default configuration file '{config_file_path}' ...")
-
-  if not config_file_path.exists():
+  if not PATH_TO_DEFAULT_CONFIG_FILE.exists():
     log("the file does not exist")
     sys.exit("the default configuration file does not exist!")
 
-  with open(config_file_path, 'rb') as f:
+  with open(PATH_TO_DEFAULT_CONFIG_FILE, 'rb') as f:
     config = toml.load(f)
 
   if not config_files:
@@ -945,27 +947,11 @@ async def process(stdscr, args):
     if not input_file.exists():
       sys.exit(f"input file '{input_file}' does not exist!")
 
-  scan_filters = []
-  for scan_filter in args.filter:
-    m = SCAN_FILTER_PATTERN.fullmatch(scan_filter)
-    if not m:
-      sys.exit(f"scan filter '{scan_filter}' does not match '{SCAN_FILTER_PATTERN.pattern}'")
-
-    scan_filter = {
-      'host': m.group('host'),
-      'protocol': m.group('protocol'),
-      'port': m.group('port'),
-      'service': m.group('service')
-    }
-
-    log(f"parsed scan filter: {json.dumps(scan_filter)}")
-    scan_filters.append(scan_filter)
-
-  if len(scan_filters):
+  if len(args.filter):
     OVERWRITE = True
 
   global TARGETS
-  TARGETS = parse_result_files(base_directory, args.input, scan_filters)
+  TARGETS = parse_result_files(base_directory, args.input, args.filter)
   log(f"parsed {len(TARGETS)} targets")
 
   # find suitable scans for each target and queue them for later.
@@ -991,7 +977,7 @@ async def process(stdscr, args):
 
   # create services.csv file and initialize its header
   with open(pathlib.Path(base_directory, 'services.csv'), 'w') as f:
-    csv.writer(f, delimiter=args.delimiter, quoting=csv.QUOTE_MINIMAL).writerow(['host', 'transport_protocol', 'port', 'service', 'scanned'])
+    csv.writer(f, delimiter=args.delimiter, quoting=csv.QUOTE_MINIMAL, dialect='unix').writerow(['host', 'transport_protocol', 'port', 'service', 'scanned'])
 
   global UI
   UI = UserInterface(stdscr, 80, args.concurrent_targets * (args.concurrent_scans + 2) + 4)
@@ -1006,7 +992,7 @@ async def process(stdscr, args):
       asyncio.create_task(
         scan_target(
           concurrent_targets,
-          target
+          target,
         )
       )
     )
@@ -1027,6 +1013,15 @@ def cancel_tasks():
   log("aborted by user")
 
   asyncio.get_running_loop().stop()
+
+def scan_filter(arg):
+  key_value_pattern = re.compile(r'(host|protocol|port|service)=(.+)')
+
+  m = key_value_pattern.fullmatch(arg)
+  if not m:
+    raise argparse.ArgumentTypeError(f"scan filter '{arg}' does not match '{key_value_pattern.pattern}'")
+
+  return (m.group(1), m.group(2))
 
 def int_greater_than_0(arg):
   try:
@@ -1057,15 +1052,15 @@ def main():
     metavar = 'path',
     help = "path to where the results are stored (default: './recon')",
     type = pathlib.Path,
-    default = './recon'
+    default = './recon',
   )
 
   parser.add_argument(
     '-c', '--config',
     metavar = 'path',
-    help = "path to the scanner configuration file(s); see '/path/to/recon/config/scanner.toml'",
+    help = f"path to additional scanner configuration; default ('{PATH_TO_DEFAULT_CONFIG_FILE}') will be loaded first",
     type = pathlib.Path,
-    nargs = '+'
+    nargs = '+',
   )
 
   parser.add_argument(
@@ -1073,7 +1068,7 @@ def main():
     metavar = 'number',
     help = "number of targets that should be scanned concurrently (default: 3)",
     type = int_greater_than_0,
-    default = 3
+    default = 3,
   )
 
   parser.add_argument(
@@ -1081,7 +1076,7 @@ def main():
     metavar = 'number',
     help = "number of scans that should be running concurrently on a single target (default: 2)",
     type = int_greater_than_0,
-    default = 2
+    default = 2,
   )
 
   parser.add_argument(
@@ -1089,40 +1084,41 @@ def main():
     metavar = 'seconds',
     help = f"maximum time in seconds each scan is allowed to take (default: {MAX_TIME})",
     type = int_greater_than_0,
-    default = MAX_TIME
+    default = MAX_TIME,
   )
 
   parser.add_argument(
     '-n', '--dry-run',
     help = "do not run any command; just create/update the 'commands.csv' file",
-    action = 'store_true'
+    action = 'store_true',
   )
 
   parser.add_argument(
     '-f', '--filter',
-    metavar = '<host> <protocol> <port> <service>',
-    help = "specify hosts/protocols/ports/services you want to (re)scan and overwrite their result files if they exist; use '*' if you cannot or don't want to specify a host/protocol/port/service part",
+    metavar = 'key=regex',
+    help = "only scan specific services that match all provided filters ('key' can be 'host', 'protocol', 'port' or 'service'); existing result files will be overwritten",
+    type = scan_filter,
     nargs = '+',
-    default = []
+    default = [],
   )
 
   parser.add_argument(
     '-y', '--overwrite-results',
     help = "overwrite existing result files",
-    action = 'store_true'
+    action = 'store_true',
   )
 
   parser.add_argument(
     '-d', '--delimiter',
     metavar = 'character',
     help = "character used to delimit columns in the 'commands.csv' and 'services.csv' files (default: ',')",
-    default = ','
+    default = ',',
   )
 
   parser.add_argument(
     '--ignore-uid',
     help = "ignore the warning about potentially lacking permissions",
-    action = 'store_true'
+    action = 'store_true',
   )
 
   args = parser.parse_args()

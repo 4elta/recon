@@ -187,25 +187,25 @@ class Parser(AbstractParser):
     if 'enabled and required' in value:
       signing_info = {
         "enabled": True,
-        "required": True
+        "required": True,
       }
 
     if 'enabled but not required' in value:
       signing_info = {
         "enabled": True,
-        "required": False
+        "required": False,
       }
 
     if 'disabled and not required!' in value:
       signing_info = {
         "enabled": False,
-        "required": False
+        "required": False,
       }
 
     if 'disabled!' in value:
       signing_info = {
         "enabled": False,
-        "required": True
+        "required": True,
       }
 
     service['signing']['SMB2'] = signing_info
@@ -220,19 +220,19 @@ class Parser(AbstractParser):
         if 'required' in value:
           signing_info = {
             "enabled": True,
-            "required": True
+            "required": True,
           }
 
         if 'supported' in value:
           signing_info = {
             "enabled": True,
-            "required": False
+            "required": False,
           }
 
         if 'disabled' in value:
           signing_info = {
             "enabled": False,
-            "required": False
+            "required": False,
           }
 
         service['signing']['CIFS'] = signing_info

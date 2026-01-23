@@ -49,7 +49,7 @@ integrity_algorithms = [
 key_exchange_methods = [
   "15:modp3072", "16:modp4096",
   "19:ecp256", "20:ecp384", "21:ecp521",
-  "28:brainpoolP256r1", "29:brainpoolP384r1", "30:brainpoolP512r1"
+  "28:brainpoolP256r1", "29:brainpoolP384r1", "30:brainpoolP512r1",
 ]
 
 authentication_methods = [

@@ -101,7 +101,7 @@ class Analyzer(AbstractAnalyzer):
         self._analyze_protocol_versions(
           service['protocol_versions'],
           self.recommendations['protocol_versions'],
-          issues
+          issues,
         )
 
       # certificates
@@ -117,7 +117,7 @@ class Analyzer(AbstractAnalyzer):
             is_private_host,
             certificate,
             self.recommendations['certificate'],
-            issues
+            issues,
           )
 
       # preference
@@ -125,7 +125,7 @@ class Analyzer(AbstractAnalyzer):
         self._analyze_preference(
           service['preference'],
           self.recommendations['preference'],
-          issues
+          issues,
         )
 
       # cipher suites
@@ -134,7 +134,7 @@ class Analyzer(AbstractAnalyzer):
           service['cipher_suites'],
           self.recommendations['cipher_suites'],
           service,
-          issues
+          issues,
         )
 
       # key exchange
@@ -142,7 +142,7 @@ class Analyzer(AbstractAnalyzer):
         self._analyze_key_exchange(
           service['key_exchange'],
           self.recommendations['key_exchange'],
-          issues
+          issues,
         )
 
       # signature algorithms
@@ -150,7 +150,7 @@ class Analyzer(AbstractAnalyzer):
         self._analyze_signature_algorithms(
           service['signature_algorithms'],
           self.recommendations['signature_algorithms'],
-          issues
+          issues,
         )
 
       # extensions
@@ -158,7 +158,7 @@ class Analyzer(AbstractAnalyzer):
         self._analyze_extensions(
           service['extensions'],
           self.recommendations['extensions'],
-          issues
+          issues,
         )
 
     return services
@@ -168,7 +168,7 @@ class Analyzer(AbstractAnalyzer):
       issues.append(
         Issue(
           "protocol: supported",
-          protocol = deviation
+          protocol = deviation,
         )
       )
 
@@ -176,7 +176,7 @@ class Analyzer(AbstractAnalyzer):
       issues.append(
         Issue(
           "protocol: not supported",
-          protocol = deviation
+          protocol = deviation,
         )
       )
 
@@ -193,7 +193,7 @@ class Analyzer(AbstractAnalyzer):
             issues.append(
               Issue(
                 "certificate: private IP address",
-                address = subject
+                address = subject,
               )
             )
         except ValueError:
@@ -212,7 +212,7 @@ class Analyzer(AbstractAnalyzer):
       issues.append(
         Issue(
           "certificate: lifespan",
-          lifespan = livespan_in_days
+          lifespan = livespan_in_days,
         )
       )
 
@@ -222,7 +222,7 @@ class Analyzer(AbstractAnalyzer):
       issues.append(
         Issue(
           "certificate: public key",
-          key_info = pub_key['type']
+          key_info = pub_key['type'],
         )
       )
     else:
@@ -230,7 +230,7 @@ class Analyzer(AbstractAnalyzer):
         issues.append(
           Issue(
             "certificate: public key",
-            key_info = f"{pub_key['type']} {pub_key['bits']} bits"
+            key_info = f"{pub_key['type']} {pub_key['bits']} bits",
           )
         )
 
@@ -238,7 +238,7 @@ class Analyzer(AbstractAnalyzer):
       issues.append(
         Issue(
           "certificate: public key: curve",
-          curve = pub_key['curve']
+          curve = pub_key['curve'],
         )
       )
 
@@ -248,7 +248,7 @@ class Analyzer(AbstractAnalyzer):
       issues.append(
         Issue(
           "certificate: signature algorithm",
-          algorithm = sig_alg
+          algorithm = sig_alg,
         )
       )
 
@@ -257,7 +257,7 @@ class Analyzer(AbstractAnalyzer):
       issues.append(
         Issue(
           "cipher preference",
-          preference = preference
+          preference = preference,
         )
       )
 
@@ -265,7 +265,7 @@ class Analyzer(AbstractAnalyzer):
     if len(cipher_suites) == 0:
       issues.append(
         Issue(
-          "cipher suites: none"
+          "cipher suites: none",
         )
       )
       return
@@ -305,7 +305,7 @@ class Analyzer(AbstractAnalyzer):
       issues.append(
         Issue(
           "cipher suites: supported",
-          cipher_suite = deviation
+          cipher_suite = deviation,
         )
       )
 
@@ -315,7 +315,7 @@ class Analyzer(AbstractAnalyzer):
         issues.append(
           Issue(
             "key exchange",
-            info = kex_method
+            info = kex_method,
           )
         )
         continue
@@ -324,7 +324,7 @@ class Analyzer(AbstractAnalyzer):
         issues.append(
           Issue(
             "key exchange",
-            info = f"{kex_method} {kex_bits} bits"
+            info = f"{kex_method} {kex_bits} bits",
           )
         )
 
@@ -332,7 +332,7 @@ class Analyzer(AbstractAnalyzer):
       issues.append(
         Issue(
           "key exchange: group",
-          group = deviation
+          group = deviation,
         )
       )
 
@@ -342,14 +342,14 @@ class Analyzer(AbstractAnalyzer):
         issues.append(
           Issue(
             "signature algorithm",
-            info = "server accepts any signature algorithm"
+            info = "server accepts any signature algorithm",
           )
         )
       else:
         issues.append(
           Issue(
             "signature algorithm",
-            info = f"`{deviation}`"
+            info = f"`{deviation}`",
           )
         )
 
@@ -359,7 +359,7 @@ class Analyzer(AbstractAnalyzer):
         issues.append(
           Issue(
             "extensions: not supported",
-            extension = deviation
+            extension = deviation,
           )
         )
 
@@ -368,6 +368,6 @@ class Analyzer(AbstractAnalyzer):
         issues.append(
           Issue(
             "extensions: supported",
-            extension = deviation
+            extension = deviation,
           )
         )

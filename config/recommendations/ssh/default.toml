@@ -1,58 +1,51 @@
-# version: 2023-01
 # https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/Publications/TechGuidelines/TG02102/BSI-TR-02102-4.html
+# https://www.iana.org/assignments/ssh-parameters/ssh-parameters.xhtml
+# https://www.ietf.org/archive/id/draft-ietf-curdle-ssh-kex-sha2-15.html
 
 public = false
 
 # protocol versions
 versions = [ "2.0" ]
 
-# the names for methods/algorithms may contain an `@`.
-# these are vendor specific implementations.
-# see https://www.rfc-editor.org/rfc/rfc4251#section-6
-
 key_exchange_methods = [
-  "diffie-hellman-group-exchange-sha256",
-  "diffie-hellman-group15-sha512",
-  "diffie-hellman-group16-sha512",
-  "ecdh-sha2-nistp256",
-  "ecdh-sha2-nistp384",
-  "ecdh-sha2-nistp521",
-  "curve25519-sha256@libssh.org", # this is not listed in TR-02102-4
+  # ELLIPTIC CURVES (ECC)
+  # https://www.ietf.org/archive/id/draft-ietf-curdle-ssh-kex-sha2-15.html#name-elliptic-curve-cryptography-
+  "curve25519-sha256", # estimated security strength: 128 bits
+  "curve448-sha512", # estimated security strength: 224 bits
+  "ecdh-sha2-nistp(256|384|521)", # recommended by BSI; estimated security strength: 128/192/512 bits
+  #"ecmqv-sha2", # EC Menezes-Qu-Vanstone; https://www.rfc-editor.org/rfc/rfc5656.html#section-6.4
+
+  # FINITE FIELDS (FFC)
+  # https://www.ietf.org/archive/id/draft-ietf-curdle-ssh-kex-sha2-15.html#name-finite-field-cryptography-ff
+  "diffie-hellman-group-exchange-sha256", # recommended by BSI
+  "diffie-hellman-group(15|16|17|18)-sha512", # groups 15+16 recommended by BSI
+
+  # INTEGER FACTORIZATION (IFC)
+  # key exchange methods based on RSA are no longer recommended by BSI
+
+  # SECURE SHELL EXTENSION NEGOTIATION
+  # https://www.ietf.org/archive/id/draft-ietf-curdle-ssh-kex-sha2-15.html#name-secure-shell-extension-nego
+  #"ext-info-s", # https://www.rfc-editor.org/rfc/rfc8308.html
+  #"kex-strict-s", # https://www.ietf.org/archive/id/draft-miller-sshm-strict-kex-01.html
 ]
 
 encryption_algorithms = [
-  "AEAD_AES_128_GCM",
-  "AEAD_AES_256_GCM",
-  "aes128-cbc",
-  "aes192-cbc",
-  "aes256-cbc",
-  "aes128-ctr",
-  "aes192-ctr",
-  "aes256-ctr",
-  # the following algorithms are not listed in TR-02102-4
-  "aes128-gcm@openssh.com",
-  "aes256-gcm@openssh.com",
-  "chacha20-poly1305@openssh.com",
+  "AEAD_AES_(128|256)_GCM", # recommended by BSI
+  "aes(128|192|256)-ctr", # recommended by BSI
+  "aes(128|256)-gcm",
+  "chacha20-poly1305",
 ]
 
 MAC_algorithms = [
-  "hmac-sha2-256",
-  "hmac-sha2-512",
-  # the following algorithms are not listed in TR-02102-4
-  "hmac-sha2-256-etm@openssh.com", # ETM: encrypt-then-MAC
-  "hmac-sha2-512-etm@openssh.com",
-  "umac-128@openssh.com",
-  "umac-128-etm@openssh.com",
+  "hmac-sha2-(256|512)", # recommended by BSI
+  "hmac-sha2-(256|512)-etm", # encrypt-then-MAC
+  "umac-128(-etm)?",
 ]
 
-client_authentication_methods = [ "publickey" ]
+client_authentication_methods = [ "publickey$" ]
 
 [server_host_keys]
-"pgp-sign-dss" = 3000
-"ecdsa-sha2-nistp256" = 250
-"ecdsa-sha2-nistp384" = 250
-"ecdsa-sha2-nistp521" = 250
-"x509v3-ecdsa-sha2-nistp256" = 250
-"x509v3-ecdsa-sha2-nistp384" = 250
-"x509v3-ecdsa-sha2-nistp521" = 250
-"ssh-ed25519" = 250 # this is not listed in TR-02102-4
+# key type : minimum key size
+"pgp-sign-dss" = 3000 # recommended by BSI
+"(x509v3-)?ecdsa-sha2-nistp(256|384|521)" = 250 # recommended by BSI
+"ssh-ed(25519|448)" = 250

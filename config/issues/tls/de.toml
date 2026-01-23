@@ -36,7 +36,7 @@ description = "Signature auf Grundlage von SHA-1 in der Zertifikatskette gefunde
 ["certificate: legacy Symantec"]
 description = "Zertifikatskette enthält ein altes Symantec-Zertifikat"
 references = [
-  "[Distrust of Symantec TLS Certificates](https://blog.mozilla.org/security/2018/03/12/distrust-symantec-tls-certificates/)"
+  "[Distrust of Symantec TLS Certificates](https://blog.mozilla.org/security/2018/03/12/distrust-symantec-tls-certificates/)",
 ]
 
 ["certificate: private IP address"]

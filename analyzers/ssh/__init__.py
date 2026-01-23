@@ -1,5 +1,6 @@
 import ipaddress
 import json
+import re
 import sys
 
 from .. import Issue, AbstractAnalyzer
@@ -56,7 +57,7 @@ class Analyzer(AbstractAnalyzer):
             issues.append(
               Issue(
                 "protocol: supported",
-                version = service['version']
+                version = service['version'],
               )
             )
 
@@ -65,49 +66,79 @@ class Analyzer(AbstractAnalyzer):
             issues.append(
               Issue(
                 "protocol: not supported",
-                version = version
+                version = version,
               )
             )
 
-      for deviation in list(set(service['key_exchange_methods']).difference(self.recommendations['key_exchange_methods'])):
-        issues.append(
-          Issue(
-            "key exchange method",
-            method = deviation
-          )
-        )
+      self._analyze(
+        "key exchange method",
+        service['key_exchange_methods'],
+        self.recommendations['key_exchange_methods'],
+        issues,
+      )
 
-      for server_host_key in service['server_host_keys']:
-        if server_host_key['type'] not in self.recommendations['server_host_keys'] or server_host_key['size'] < self.recommendations['server_host_keys'][server_host_key['type']]:
-          issues.append(
-            Issue(
-              "server host key",
-              key_type_size = f"`{server_host_key['type']}` {server_host_key['size']}"
-            )
-          )
+      self._analyze(
+        "encryption algorithm",
+        service['encryption_algorithms'],
+        self.recommendations['encryption_algorithms'],
+        issues,
+      )
 
-      for deviation in list(set(service['encryption_algorithms']).difference(self.recommendations['encryption_algorithms'])):
-        issues.append(
-          Issue(
-            "encryption algorithm",
-            algorithm = deviation
-          )
-        )
+      self._analyze(
+        "MAC algorithm",
+        service['MAC_algorithms'],
+        self.recommendations['MAC_algorithms'],
+        issues,
+      )
 
-      for deviation in list(set(service['MAC_algorithms']).difference(self.recommendations['MAC_algorithms'])):
-        issues.append(
-          Issue(
-            "MAC algorithm",
-            algorithm = deviation
-          )
-        )
+      self._analyze(
+        "client authentication method",
+        service['client_authentication_methods'],
+        self.recommendations['client_authentication_methods'],
+        issues,
+      )
 
-      for deviation in list(set(service['client_authentication_methods']).difference(self.recommendations['client_authentication_methods'])):
-        issues.append(
-          Issue(
-            "client authentication method",
-            method = deviation
-          )
-        )
+      self._analyze_server_host_keys(
+        service['server_host_keys'],
+        self.recommendations['server_host_keys'],
+        issues,
+      )
 
     return services
+
+  def _analyze(self, parameter_type, parameters, recommendations, issues):
+    for parameter in parameters:
+      match_found = False
+      for pattern in recommendations:
+        if re.match(pattern, parameter):
+          match_found = True
+          break
+
+      if not match_found:
+        issues.append(
+          Issue(
+            parameter_type,
+            method = parameter, algorithm = parameter # some parameters are "methods", some are "algorithms"
+          )
+        )
+
+  def _analyze_server_host_keys(self, keys, recommendations, issues):
+    for key in keys:
+      key_type = key['type']
+      key_size = key['size']
+      type_match = False
+      size_OK = False
+      for pattern, min_size in recommendations.items():
+        if re.match(pattern, key_type):
+          type_match = True
+          if key_size > min_size:
+            size_OK = True
+          break
+
+      if not type_match or not size_OK:
+        issues.append(
+          Issue(
+            "server host key",
+            key_type_size = f"`{key_type}` {key_size}",
+          )
+        )

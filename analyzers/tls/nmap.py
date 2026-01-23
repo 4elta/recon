@@ -166,25 +166,25 @@ class Parser(AbstractParser):
       if table_key == 'subject':
         self._parse_certificate_subject_node(
           table_node,
-          certificate['subjects']
+          certificate['subjects'],
         )
 
       elif table_key == 'pubkey':
         self._parse_certificate_pk_node(
           table_node,
-          certificate['public_key']
+          certificate['public_key'],
         )
 
       elif table_key == 'extensions':
         self._parse_certificate_SAN_node(
           table_node,
-          certificate['subjects']
+          certificate['subjects'],
         )
 
       elif table_key == 'validity':
         self._parse_certificate_validity_node(
           table_node,
-          certificate['validity']
+          certificate['validity'],
         )
 
     sig_algo_node = script_node.find('./elem[@key="sig_algo"]')
@@ -256,6 +256,6 @@ class Parser(AbstractParser):
       if 'TLS' in table_key or 'SSL' in table_key:
         self._parse_protocol_node(
           protocol_table,
-          service
+          service,
         )
 
