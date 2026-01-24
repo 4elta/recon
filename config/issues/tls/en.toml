@@ -87,7 +87,7 @@ description = "extension supported: `{extension}`"
 description = "vulnerable to client-initiated renegotiation DoS"
 references = [
   "[CVE-2011-1473](https://nvd.nist.gov/vuln/detail/CVE-2011-1473)",
-  "[RFC5746: TLS Renegotiation Indication Extenstion](https://www.rfc-editor.org/rfc/rfc5746.html#section-4.4)",
+  "[RFC 5746: TLS Renegotiation Indication Extenstion](https://www.rfc-editor.org/rfc/rfc5746.html#section-4.4)",
 ]
 
 # CBC vulnerability in SSL 3.0 and TLS 1.0

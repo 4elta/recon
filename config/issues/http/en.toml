@@ -9,7 +9,7 @@ references = [
 description = "`strict-transport-security`: an HSTS host must not include this header in responses conveyed over non-secure transport (e.g. HTTP)"
 recommendations = [ "only send the STS header over HTTPS" ]
 references = [
-  "[RFC6797: HTTP Strict Transport Security](https://datatracker.ietf.org/doc/html/rfc6797)",
+  "[RFC 6797: HTTP Strict Transport Security](https://www.rfc-editor.org/rfc/rfc6797.html)",
 ]
 
 ["mandatory header missing"]
@@ -182,7 +182,7 @@ recommendations = [ "do not send the `x-host` header" ]
 description = "`public-key-pins`: this is an obsolete security feature that has the [potential to do more harm than good](https://scotthelme.co.uk/using-security-features-to-do-bad-things/#usinghpkpforevil)"
 recommendations = [ "`public-key-pins`: do not send this header" ]
 references = [
-  "[RFC7469: Public Key Pinning Extension for HTTP](https://datatracker.ietf.org/doc/html/rfc7469)",
+  "[RFC 7469: Public Key Pinning Extension for HTTP](https://www.rfc-editor.org/rfc/rfc7469.html)",
   "[Using HPKP for evil](https://scotthelme.co.uk/using-security-features-to-do-bad-things/#usinghpkpforevil)",
 ]
 
@@ -190,7 +190,7 @@ references = [
 description = "`public-key-pins-report-only`: this is an obsolete security feature that has the [potential to do more harm than good](https://scotthelme.co.uk/using-security-features-to-do-bad-things/#usinghpkpforevil)"
 recommendations = [ "`public-key-pins-report-only`: do not send this header" ]
 references = [
-  "[RFC7469: Public Key Pinning Extension for HTTP](https://datatracker.ietf.org/doc/html/rfc7469)",
+  "[RFC 7469: Public Key Pinning Extension for HTTP](https://www.rfc-editor.org/rfc/rfc7469.html)",
   "[Using HPKP for evil](https://scotthelme.co.uk/using-security-features-to-do-bad-things/#usinghpkpforevil)",
 ]
 
@@ -200,9 +200,9 @@ recommendations = [
   "switch to the 'Digest' (`algorithm=SHA-256` or `algorithm=SHA-512-256`) or 'Bearer' (OAuth 2.0) authentication scheme, or let the webapp handle user authentication (e.g. HTTP cookies)",
 ]
 references = [
-  "[RFC7617: The 'Basic' HTTP Authentication Scheme](https://datatracker.ietf.org/doc/html/rfc7617#section-4)",
-  "[RFC7616: HTTP Digest Access Authentication](https://datatracker.ietf.org/doc/html/rfc7616)",
-  "[RFC6750: The OAuth 2.0 Authorization Framework: Bearer Token Usage](https://datatracker.ietf.org/doc/html/rfc6750)",
+  "[RFC 7617: The 'Basic' HTTP Authentication Scheme](https://www.rfc-editor.org/rfc/rfc7617.html#section-4)",
+  "[RFC 7616: HTTP Digest Access Authentication](https://www.rfc-editor.org/rfc/rfc7616.html)",
+  "[RFC 6750: The OAuth 2.0 Authorization Framework: Bearer Token Usage](https://www.rfc-editor.org/rfc/rfc6750.html)",
 ]
 
 ["CSP via meta element"]
