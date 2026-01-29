@@ -57,7 +57,7 @@ class Analyzer(AbstractAnalyzer):
             issues.append(
               Issue(
                 "protocol: supported",
-                version = service['version'],
+                version = version,
               )
             )
 
