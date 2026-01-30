@@ -122,7 +122,7 @@ Analyze and summarize the results of specific tools previously run by the scanne
 
 options:
   -h, --help            show this help message and exit
-  -s, --service code    service that should be analyzed (choices: ['dns', 'ftp', 'http', 'isakmp', 'ntp', 'rdp', 'smb', 'ssh', 'tls'])
+  -s, --service code    service that should be analyzed (choices: ['dns', 'ftp', 'http', 'isakmp', 'ntp', 'rdp', 'smb', 'snmp', 'ssh', 'tls'])
   -S, --scan name       name of the tool/scan whose results should be parsed
   -r, --recommendations path
                         path to the recommendations document (default: '/path/to/recon/config/recommendations/<service>/default.toml')
@@ -142,6 +142,7 @@ The following analyzers (and parsers) are currently implemented:
 * NTP configuration (`nmap`, `ntp`)
 * RDP configuration (`nmap`)
 * SMB (and some AD) configuration (`enum4linux-ng`, `nmap`)
+* SNMP configuration (`nmap`)
 * SSH configuration (`nmap`)
 * TLS configuration (`nmap`, `sslscan`, `sslyze`, `testssl`)
 

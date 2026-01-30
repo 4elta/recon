@@ -1,0 +1,10 @@
+# flag services that are publicly accessible (i.e. estimated primarily via the IP address)
+public = false
+
+# flag services that are supporting versions not listed below
+versions = [ 'SNMPv3' ]
+
+# flag the use of the following community strings
+community_strings = [
+  "file:///usr/share/seclists/Discovery/SNMP/common-snmp-community-strings-onesixtyone.txt",
+]
