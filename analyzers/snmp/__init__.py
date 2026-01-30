@@ -103,11 +103,16 @@ class Analyzer(AbstractAnalyzer):
           )
 
       for key, value in service['MIB'].items():
-        info = value['_info']
+        if '_info' in value:
+          info = value['_info']
+          info_str = f"[{info['ID']}]({info['URL']})"
+        else:
+          info_str = f'`{key}` (MIB)'
+
         issues.append(
           Issue(
             "information disclosure",
-            info = f"entries from [{info['ID']}-MIB]({info['URL']})",
+            info = info_str,
           )
         )
 

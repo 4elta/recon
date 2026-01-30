@@ -208,7 +208,7 @@ class Parser(AbstractParser):
     service['MIB']['hh3cUser'] = "see 'h3cUser'"
     service['MIB']['h3cUser'] = {
       '_info': {
-        'ID': 'H3C-USER',
+        'ID': 'H3C-USER-MIB',
         'URL': 'https://mibs.observium.org/mib/H3C-USER-MIB/',
       },
       'h3cUserObjects': {
@@ -262,7 +262,7 @@ class Parser(AbstractParser):
     # https://mibs.observium.org/mib/SNMP-FRAMEWORK-MIB
     service['MIB']['snmpFrameworkMIB'] = {
       '_info': {
-        'ID': 'SNMP-FRAMEWORK',
+        'ID': 'SNMP-FRAMEWORK-MIB',
         'URL': 'https://mibs.observium.org/mib/SNMP-FRAMEWORK-MIB/',
       },
       'snmpFrameworkMIBObjects': {
@@ -312,7 +312,7 @@ class Parser(AbstractParser):
 
     service['MIB']['interfaces'] = {
       '_info': {
-        'ID': 'IF',
+        'ID': 'IF-MIB',
         'URL': 'https://mibs.observium.org/mib/IF-MIB/',
       },
       'ifTable': [],
@@ -375,7 +375,7 @@ class Parser(AbstractParser):
 
     service['MIB']['ciscoConfigCopy'] = {
       '_info': {
-        'ID': 'CISCO-CONFIG-COPY',
+        'ID': 'CISCO-CONFIG-COPY-MIB',
         'URL': 'https://mibs.observium.org/mib/CISCO-CONFIG-COPY-MIB/',
       },
       'config': output.strip(),
@@ -407,7 +407,7 @@ class Parser(AbstractParser):
 
     service['MIB']['tcp'] = {
       '_info': {
-        'ID': 'TCP',
+        'ID': 'TCP-MIB',
         'URL': 'https://mibs.observium.org/mib/TCP-MIB/',
       },
       'tcpConnTable': []
@@ -416,7 +416,7 @@ class Parser(AbstractParser):
 
     service['MIB']['udp'] = {
       '_info': {
-        'ID': 'UDP',
+        'ID': 'UDP-MIB',
         'URL': 'https://mibs.observium.org/mib/UDP-MIB/',
       },
       'udpTable': []
@@ -472,7 +472,7 @@ class Parser(AbstractParser):
     if 'host' not in service['MIB'] or 'hrSWRun' not in service['MIB']['host']:
       service['MIB']['host'] = {
         '_info': {
-          'ID': 'HOST-RESOURCES',
+          'ID': 'HOST-RESOURCES-MIB',
           'URL': 'https://mibs.observium.org/mib/HOST-RESOURCES-MIB/',
         },
         'hrSWRun': {
@@ -536,7 +536,7 @@ class Parser(AbstractParser):
 
     service['MIB']['system'] = {
       '_info': {
-        'ID': 'SNMPv2',
+        'ID': 'SNMPv2-MIB',
         'URL': 'https://mibs.observium.org/mib/SNMPv2-MIB/',
       },
       'sysDescr': descr,
@@ -566,7 +566,7 @@ class Parser(AbstractParser):
     if 'lanmanager' not in service['MIB']:
       service['MIB']['lanmanager'] = {
         '_info': {
-          'ID': 'LanMgr-Mib-II',
+          'ID': 'LanMgr-Mib-II-MIB',
           'URL': 'https://mibs.observium.org/mib/LanMgr-Mib-II-MIB/',
         },
         'lanmgr-2': {
@@ -608,7 +608,7 @@ class Parser(AbstractParser):
     if 'lanmanager' not in service['MIB']:
       service['MIB']['lanmanager'] = {
         '_info': {
-          'ID': 'LanMgr-Mib-II',
+          'ID': 'LanMgr-Mib-II-MIB',
           'URL': 'https://mibs.observium.org/mib/LanMgr-Mib-II-MIB/',
         },
         'lanmgr-2': {
@@ -661,7 +661,7 @@ class Parser(AbstractParser):
     if 'host' not in service['MIB'] or 'hrSWRun' not in service['MIB']['host']:
       service['MIB']['host'] = {
         '_info': {
-          'ID': 'HOST-RESOURCES',
+          'ID': 'HOST-RESOURCES-MIB',
           'URL': 'https://mibs.observium.org/mib/HOST-RESOURCES-MIB/',
         },
         'hrSWInstalled': {
@@ -708,7 +708,7 @@ class Parser(AbstractParser):
     if 'lanmanager' not in service['MIB']:
       service['MIB']['lanmanager'] = {
         '_info': {
-          'ID': 'LanMgr-Mib-II',
+          'ID': 'LanMgr-Mib-II-MIB',
           'URL': 'https://mibs.observium.org/mib/LanMgr-Mib-II-MIB/',
         },
         'lanmgr-2': {
