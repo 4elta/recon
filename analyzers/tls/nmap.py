@@ -8,7 +8,7 @@ try:
 except ImportError:
   sys.exit("this script requires the 'defusedxml' module.\nplease install it via 'pip3 install defusedxml'.")
 
-from .. import AbstractParser
+from .. import Issue, AbstractParser
 from . import CERTIFICATE_SCHEMA, SERVICE_SCHEMA
 
 PROTOCOL_VERSIONS = {
@@ -100,6 +100,7 @@ class Parser(AbstractParser):
         service['transport_protocol'] = transport_protocol
 
         service['info'] = []
+        service['vulnerabilities'] = set()
 
         service_node = port_node.find('service')
         if service_node is not None:
@@ -116,10 +117,21 @@ class Parser(AbstractParser):
             self._parse_cipher_suites(script_node, service)
             continue
 
+          if script_ID == 'ssl-poodle':
+            service['vulnerabilities'].add('POODLE')
+            continue
+
+          if script_ID == 'ssl-ccs-injection':
+            service['vulnerabilities'].add('OpenSSL CCS injection')
+            continue
+
           if 'ssl' in script_ID and script_ID not in ('ssl-date', 'ssl-dh-params', ):
             self.__class__.logger.info(f"Nmap script scan result not parsed: '{script_ID}'")
             service['info'].append(f"Nmap script scan result not parsed: '{script_ID}'")
             #TODO: parse results
+
+      for vulnerability in service['vulnerabilities']:
+        service['issues'].append(Issue(f"vuln: {vulnerability}"))
 
   def _parse_certificate_subject_node(self, node, subjects):
     common_name_node = node.find('./elem[@key="commonName"]')
@@ -235,8 +247,7 @@ class Parser(AbstractParser):
 
     compressor_node = node.find('./table[@key="compressors"]')
     if compressor_node is not None and compressor_node.find('./elem').text != 'NULL':
-      if 'CRIME' not in service['vulnerabilities']:
-        service['vulnerabilities'].append('CRIME')
+      service['vulnerabilities'].add('CRIME')
 
     cipher_pref_node = node.find('./elem[@key="cipher preference"]')
     if cipher_pref_node is not None:
