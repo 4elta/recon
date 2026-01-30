@@ -93,7 +93,13 @@ class Parser(AbstractParser):
         service['transport_protocol'] = transport_protocol
         service['port'] = port
 
-        for script_node in host_node.findall('./ports/port/script'):
+        service_node = port_node.find('./service')
+        extrainfo = service_node.get('extrainfo')
+        if extrainfo:
+          service['community_strings'].add(extrainfo)
+          #TODO: add reference that this field always/only contains the used community string
+
+        for script_node in port_node.findall('./script'):
           script_ID = script_node.get('id')
 
           if script_ID == 'snmp-brute':
