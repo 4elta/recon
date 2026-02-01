@@ -105,7 +105,7 @@ options:
 After running the scanner, the results directory (e.g. `recon/`) will contain the following files/directories:
 
 * `commands.csv`: contains information about the executed commands (incl. start time, end time and return code)
-* `config_<YYYY-mm-dd_HH-MM-SS>.json`: the scan configuration used for the scan
+* `config_<YYYY-mm-dd_HH-MM-SS>.json`: the scan configuration used for the scan; this can be used in re-scans (`-c path/to/this/config.json`)
 * `scanner_<YYYY-mm-dd_HH-MM-SS>.log`: the debug/error log of the scanner
 * `services.csv`: contains information about the identified services (incl. whether they have been scanned or not)
 * `<IP address>/`: each host has its own directory where the result files of the various tools are stored

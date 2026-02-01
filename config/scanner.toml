@@ -1,10 +1,7 @@
-# the default config is always loaded first.
-# user-provided configs are loaded next, in the order they are specified on the command line.
-# normally, config files are merged:
+# this is the default config for the scanner.
+# when a user provides their own configs they are loaded in the order they are specified on the command line.
 # globals and service configs (transport/application protocol regex, command, run-once flag)
 # defined in a later config overwrite those with the same name from previous configs.
-# if you want to completely overwrite previous configs, provide the following in your config:
-# merge_strategy = 'overwrite'
 
 [globals]
 # variables defined in this group can be used in `command` declarations.

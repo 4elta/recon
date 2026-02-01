@@ -849,16 +849,16 @@ def update_config(config, new_config):
 def load_config(config_files):
   config = None
 
-  log(f"loading default configuration file '{PATH_TO_DEFAULT_CONFIG_FILE}' ...")
-
-  if not PATH_TO_DEFAULT_CONFIG_FILE.exists():
-    log("the file does not exist")
-    sys.exit("the default configuration file does not exist!")
-
-  with open(PATH_TO_DEFAULT_CONFIG_FILE, 'rb') as f:
-    config = toml.load(f)
-
   if not config_files:
+    log(f"loading default configuration file '{PATH_TO_DEFAULT_CONFIG_FILE}' ...")
+
+    if not PATH_TO_DEFAULT_CONFIG_FILE.exists():
+      log("the file does not exist")
+      sys.exit("the default configuration file does not exist!")
+
+    with open(PATH_TO_DEFAULT_CONFIG_FILE, 'rb') as f:
+      config = toml.load(f)
+
     return config
 
   # user-specified configuration files
@@ -866,14 +866,20 @@ def load_config(config_files):
     log(f"loading config '{config_file_path}'")
 
     if not config_file_path.exists():
-      log(f"the specified configuration file does not exist")
+      log("the specified configuration file does not exist")
       continue
 
     with open(config_file_path, 'rb') as f:
-      new_config = toml.load(f)
+      match config_file_path.suffix.strip('.'):
+        case 'toml':
+          new_config = toml.load(f)
+        case 'json':
+          new_config = json.load(f)
+        case _:
+          log(f"unsupported file type: {config_file_path.suffix}")
+          continue
 
-    if 'merge_strategy' in new_config and new_config['merge_strategy'] == 'overwrite':
-      log("overwriting config")
+    if config is None:
       config = new_config
     else:
       log("updating config ...")
@@ -932,8 +938,9 @@ async def process(stdscr, args):
     f'config_{timestamp}.json'
   )
 
+  log(f"writing configuration to '{config_file}' ...")
   with open(config_file, 'w') as f:
-    json.dump(CONFIG, f, indent=4)
+    json.dump(CONFIG, f)
 
   CommandLog.init(
     pathlib.Path(base_directory, 'commands.csv'),
@@ -1058,7 +1065,7 @@ def main():
   parser.add_argument(
     '-c', '--config',
     metavar = 'path',
-    help = f"path to additional scanner configuration; default ('{PATH_TO_DEFAULT_CONFIG_FILE}') will be loaded first",
+    help = f"path to the scanner configuration files (default: '{PATH_TO_DEFAULT_CONFIG_FILE}')",
     type = pathlib.Path,
     nargs = '+',
   )

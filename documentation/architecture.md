@@ -18,12 +18,9 @@ In the example above, Nmap reported an SSH and HTTP service (with TLS) on the ho
 So the scanner might run an Nmap script scan targeting SSH, and Nikto and `testssl.sh` targeting HTTP and TLS.
 
 The selection of tools, and the parameters used for each, is specified in a [TOML](https://toml.io/en/) configuration file.
-Below is an example configuration that results in the default one (i.e. `config/scanner.toml`) being ignored (`merge_strategy = 'overwrite'`):
+Below is an example configuration:
 
 ```toml
-# ignore default configuration
-merge_strategy = 'overwrite'
-
 [globals]
 username = 'user'
 password = 'pa$Sw0rd'
@@ -35,7 +32,16 @@ application_protocol = 'http'
 [[services.scans]]
 name = 'nikto'
 transport_protocol = 'tcp'
-command = 'nikto -ask no -Cgidirs all -host {hostname} -port {port} -nointeractive -Format xml -output "{result_file}.xml" 2>&1 | tee "{result_file}.log"'
+command = """
+  nikto \
+  -ask no \
+  -Cgidirs all \
+  -host {hostname} \
+  -port {port} \
+  -nointeractive \
+  -Format xml -output "{result_file}.xml" \
+  2>&1 | tee "{result_file}.log" \
+"""
 
 [[services.scans]]
 name = 'some-tool#authenticated'
@@ -47,7 +53,15 @@ application_protocol = '^ssh'
 
 [[services.scans]]
 name = 'nmap'
-command = 'nmap -Pn -sV -p {port} --script="banner,ssh2-enum-algos,ssh-hostkey,ssh-auth-methods" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+command = """
+  nmap \
+  -Pn \
+  -sV \
+  -p {port} \
+  --script="banner,ssh2-enum-algos,ssh-hostkey,ssh-auth-methods" \
+  -oN "{result_file}.log" -oX "{result_file}.xml" \
+  {address} \
+"""
 
 [[services]]
 name = 'tls'
@@ -56,7 +70,16 @@ application_transport = '^ssl\||^tls\||https'
 [[services.scans]]
 name = 'testssl'
 transport_protocol = 'tcp'
-command = 'testssl --ip one --nodns min --mapping no-openssl --warnings off --connect-timeout 60 --openssl-timeout 60 --logfile "{result_file}.log" --jsonfile "{result_file}.json" {hostname}:{port}'
+command = """
+  testssl \
+  --ip one \
+  --nodns min \
+  --mapping no-openssl \
+  --warnings off \
+  --connect-timeout 60 --openssl-timeout 60 \
+  --logfile "{result_file}.log" --jsonfile "{result_file}.json" \
+  {hostname}:{port} \
+"""
 ```
 
 Scans are grouped by services (i.e. `[[services]]`).
