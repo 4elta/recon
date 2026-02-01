@@ -85,7 +85,7 @@ options:
   -h, --help            show this help message and exit
   -o, --output path     path to where the results are stored (default: './recon')
   -c, --config path [path ...]
-                        path to additional scanner configuration; default ('/path/to/recon/config/scanner.toml') will be loaded first
+                        path to the scanner configuration files (default: '/home/user/tools/recon/config/scanner.toml')
   -t, --concurrent-targets number
                         number of targets that should be scanned concurrently (default: 3)
   -s, --concurrent-scans number
