@@ -1,8 +1,8 @@
 import copy
 import json
 
-from .. import Issue, AbstractParser
-from . import CERTIFICATE_SCHEMA, SERVICE_SCHEMA
+from ... import Issue, AbstractParser
+from .. import CERTIFICATE_SCHEMA, SERVICE_SCHEMA
 
 PROTOCOL_VERSIONS = {
   'SSL_2_0': 'SSL 2.0',

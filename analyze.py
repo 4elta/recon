@@ -42,9 +42,9 @@ def analyze_service(service, files, recommendations_file, tool):
 
   issues_file = pathlib.Path(
     pathlib.Path(__file__).resolve().parent,
-    "config",
-    "issues",
+    "analyzers",
     service,
+    "issues",
     f"{LANGUAGE}.toml",
   )
 
@@ -280,9 +280,9 @@ def process(args):
     if not args.recommendations:
       recommendations_file = pathlib.Path(
         pathlib.Path(__file__).resolve().parent,
-        "config",
-        "recommendations",
+        "analyzers",
         service,
+        "recommendations",
         "default.toml",
       )
 
@@ -367,7 +367,7 @@ def main():
     '-r', '--recommendations',
     metavar = 'path',
     type = pathlib.Path,
-    help = "path to the recommendations document (default: '/path/to/recon/config/recommendations/<service>/default.toml')",
+    help = "path to the recommendations document (default: '/path/to/recon/analyzers/<service>/recommendations/default.toml')",
   )
 
   parser.add_argument(

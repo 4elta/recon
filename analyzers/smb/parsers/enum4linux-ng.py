@@ -3,8 +3,8 @@ import datetime
 import json
 import re
 
-from .. import Issue, AbstractParser
-from . import SERVICE_SCHEMA, USER_SCHEMA
+from ... import Issue, AbstractParser
+from .. import SERVICE_SCHEMA, USER_SCHEMA
 
 SMB_DIALECT_PATTERN = re.compile(r'SMB (?P<major>\d+)\.(?P<minor>\d+)(\.(?P<patch>\d+))?')
 

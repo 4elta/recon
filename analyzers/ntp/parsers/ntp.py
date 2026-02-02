@@ -1,8 +1,8 @@
 import copy
 import json
 
-from .. import Issue, AbstractParser
-from . import SERVICE_SCHEMA
+from ... import Issue, AbstractParser
+from .. import SERVICE_SCHEMA
 
 class Parser(AbstractParser):
   '''

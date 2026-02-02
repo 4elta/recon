@@ -7,8 +7,8 @@ try:
 except:
   sys.exit("this script requires the 'defusedxml' module.\nplease install it via 'pip3 install defusedxml'.")
 
-from .. import Issue, AbstractParser
-from . import SERVICE_SCHEMA
+from ... import Issue, AbstractParser
+from .. import SERVICE_SCHEMA
 
 class Parser(AbstractParser):
   '''
@@ -111,7 +111,7 @@ class Parser(AbstractParser):
             continue
 
           if script_ID == 'snmp-info':
-            self._parse_snmp_info(script_node, service)
+            self._parse_snmp.info(script_node, service)
             continue
 
           if script_ID == 'snmp-interfaces':
@@ -213,7 +213,7 @@ class Parser(AbstractParser):
 
     service['MIB']['hh3cUser'] = "see 'h3cUser'"
     service['MIB']['h3cUser'] = {
-      '_info': {
+      '.info': {
         'ID': 'H3C-USER-MIB',
         'URL': 'https://mibs.observium.org/mib/H3C-USER-MIB/',
       },
@@ -243,7 +243,7 @@ class Parser(AbstractParser):
       if len(h3cUserInfoEntry):
         h3cUserInfoTable.append(h3cUserInfoEntry)
 
-  def _parse_snmp_info(self, script_node, service):
+  def _parse_snmp.info(self, script_node, service):
     # https://svn.nmap.org/nmap/scripts/snmp-info.nse
 
     if script_node.get('output') == '':
@@ -267,7 +267,7 @@ class Parser(AbstractParser):
 
     # https://mibs.observium.org/mib/SNMP-FRAMEWORK-MIB
     service['MIB']['snmpFrameworkMIB'] = {
-      '_info': {
+      '.info': {
         'ID': 'SNMP-FRAMEWORK-MIB',
         'URL': 'https://mibs.observium.org/mib/SNMP-FRAMEWORK-MIB/',
       },
@@ -317,7 +317,7 @@ class Parser(AbstractParser):
     service['versions'].add('SNMPv1')
 
     service['MIB']['interfaces'] = {
-      '_info': {
+      '.info': {
         'ID': 'IF-MIB',
         'URL': 'https://mibs.observium.org/mib/IF-MIB/',
       },
@@ -380,7 +380,7 @@ class Parser(AbstractParser):
     service['versions'].add('SNMPv1')
 
     service['MIB']['ciscoConfigCopy'] = {
-      '_info': {
+      '.info': {
         'ID': 'CISCO-CONFIG-COPY-MIB',
         'URL': 'https://mibs.observium.org/mib/CISCO-CONFIG-COPY-MIB/',
       },
@@ -412,7 +412,7 @@ class Parser(AbstractParser):
     service['versions'].add('SNMPv1')
 
     service['MIB']['tcp'] = {
-      '_info': {
+      '.info': {
         'ID': 'TCP-MIB',
         'URL': 'https://mibs.observium.org/mib/TCP-MIB/',
       },
@@ -421,7 +421,7 @@ class Parser(AbstractParser):
     tcpConnTable = service['MIB']['tcp']['tcpConnTable']
 
     service['MIB']['udp'] = {
-      '_info': {
+      '.info': {
         'ID': 'UDP-MIB',
         'URL': 'https://mibs.observium.org/mib/UDP-MIB/',
       },
@@ -477,7 +477,7 @@ class Parser(AbstractParser):
 
     if 'host' not in service['MIB'] or 'hrSWRun' not in service['MIB']['host']:
       service['MIB']['host'] = {
-        '_info': {
+        '.info': {
           'ID': 'HOST-RESOURCES-MIB',
           'URL': 'https://mibs.observium.org/mib/HOST-RESOURCES-MIB/',
         },
@@ -541,7 +541,7 @@ class Parser(AbstractParser):
     match = re.search(r'^(?P<uptime_formatted>.+?) \((?P<uptime_raw>\d+) timeticks\)', uptime)
 
     service['MIB']['system'] = {
-      '_info': {
+      '.info': {
         'ID': 'SNMPv2-MIB',
         'URL': 'https://mibs.observium.org/mib/SNMPv2-MIB/',
       },
@@ -571,7 +571,7 @@ class Parser(AbstractParser):
 
     if 'lanmanager' not in service['MIB']:
       service['MIB']['lanmanager'] = {
-        '_info': {
+        '.info': {
           'ID': 'LanMgr-Mib-II-MIB',
           'URL': 'https://mibs.observium.org/mib/LanMgr-Mib-II-MIB/',
         },
@@ -613,7 +613,7 @@ class Parser(AbstractParser):
 
     if 'lanmanager' not in service['MIB']:
       service['MIB']['lanmanager'] = {
-        '_info': {
+        '.info': {
           'ID': 'LanMgr-Mib-II-MIB',
           'URL': 'https://mibs.observium.org/mib/LanMgr-Mib-II-MIB/',
         },
@@ -666,7 +666,7 @@ class Parser(AbstractParser):
 
     if 'host' not in service['MIB'] or 'hrSWRun' not in service['MIB']['host']:
       service['MIB']['host'] = {
-        '_info': {
+        '.info': {
           'ID': 'HOST-RESOURCES-MIB',
           'URL': 'https://mibs.observium.org/mib/HOST-RESOURCES-MIB/',
         },
@@ -713,7 +713,7 @@ class Parser(AbstractParser):
 
     if 'lanmanager' not in service['MIB']:
       service['MIB']['lanmanager'] = {
-        '_info': {
+        '.info': {
           'ID': 'LanMgr-Mib-II-MIB',
           'URL': 'https://mibs.observium.org/mib/LanMgr-Mib-II-MIB/',
         },

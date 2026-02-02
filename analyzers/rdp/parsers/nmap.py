@@ -8,8 +8,8 @@ except ImportError:
   import sys
   sys.exit("this script requires the 'defusedxml' module.\nplease install it via 'pip3 install defusedxml'.")
 
-from .. import Issue, AbstractParser
-from . import SERVICE_SCHEMA
+from ... import Issue, AbstractParser
+from .. import SERVICE_SCHEMA
 
 ENCRYPTION_LEVELS = {
   'Low': 'ENCRYPTION_LEVEL_LOW',

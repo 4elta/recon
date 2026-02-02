@@ -103,7 +103,7 @@ class Analyzer(AbstractAnalyzer):
           )
 
       for key, value in service['MIB'].items():
-        if '_info' in value:
+        if '.info' in value:
           info = value['_info']
           info_str = f"[{info['ID']}]({info['URL']})"
         else:

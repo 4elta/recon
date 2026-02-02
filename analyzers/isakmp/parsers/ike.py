@@ -1,8 +1,8 @@
 import copy
 import re
 
-from .. import AbstractParser
-from . import SERVICE_SCHEMA
+from ... import AbstractParser
+from .. import SERVICE_SCHEMA
 
 class Parser(AbstractParser):
   '''

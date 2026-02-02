@@ -8,8 +8,8 @@ try:
 except ImportError:
   sys.exit("this script requires the 'defusedxml' module.\nplease install it via 'pip3 install defusedxml'.")
 
-from .. import Issue, AbstractParser
-from . import CERTIFICATE_SCHEMA, SERVICE_SCHEMA
+from ... import Issue, AbstractParser
+from .. import CERTIFICATE_SCHEMA, SERVICE_SCHEMA
 
 PROTOCOL_VERSIONS = {
   'SSLv2': 'SSL 2.0',

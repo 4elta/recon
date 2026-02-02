@@ -125,7 +125,7 @@ options:
   -s, --service code    service that should be analyzed (choices: ['dns', 'ftp', 'http', 'isakmp', 'ntp', 'rdp', 'smb', 'snmp', 'ssh', 'tls'])
   -S, --scan name       name of the tool/scan whose results should be parsed
   -r, --recommendations path
-                        path to the recommendations document (default: '/path/to/recon/config/recommendations/<service>/default.toml')
+                        path to the recommendations document (default: '/path/to/recon/<service>/recommendations/default.toml')
   -i, --input path      path to the root directory that holds the results to be analysed (default: './recon')
   -l, --language code   language of the analysis (default: 'en')
   -f, --format code     format of the analysis (choices: ['csv', 'json', 'md']; default: 'md')

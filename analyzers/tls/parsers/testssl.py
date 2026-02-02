@@ -3,8 +3,8 @@ import json
 import re
 import sys
 
-from .. import Issue, AbstractParser
-from . import CERTIFICATE_SCHEMA, SERVICE_SCHEMA
+from ... import Issue, AbstractParser
+from .. import CERTIFICATE_SCHEMA, SERVICE_SCHEMA
 
 PROTOCOL_VERSIONS = {
   'SSLv2': 'SSL 2.0',
