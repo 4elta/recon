@@ -36,8 +36,9 @@ class Parser(AbstractParser):
 
     <nmaprun ...>
       <host ...>
-        <address addr="192.168.42.1" addrtype="ipv4"/>
-        <address addr="aa:bb:cc:dd:ee:ff" addrtype="mac" vendor="Vendor"/>
+        <address addr="192.0.2.42" addrtype="ipv4"/>
+        <address addr="2001:db8:a:b:c:d:e:f" addrtype="ipv6"/>
+        <address addr="00:00:5e:00:53:00" addrtype="mac" vendor="Vendor"/>
         <hostnames>
           <hostname name="example.com" type="PTR"/>
         </hostname>
@@ -106,7 +107,7 @@ class Parser(AbstractParser):
 
   def _parse_xyz(self, script_node, service):
     # TODO: add a link to the script's source
-    # e.g.: https://svn.nmap.org/nmap/scripts/xyq.nse
+    # e.g.: https://svn.nmap.org/nmap/scripts/xyz.nse
 
     if script_node.get('output') == '':
       return
