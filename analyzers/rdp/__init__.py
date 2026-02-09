@@ -101,13 +101,3 @@ class Analyzer(AbstractAnalyzer):
           protocol = deviation,
         )
       )
-
-    '''
-    for deviation in list(set(recommendation).difference(protocol_versions)):
-      issues.append(
-        Issue(
-          "protocol: not supported",
-          protocol = deviation,
-        )
-      )
-    '''

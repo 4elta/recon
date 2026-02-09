@@ -1,10 +1,11 @@
 # flag RDP servers that are publicly accessible
 public = false
 
-# flag RDP servers that do not support the following protocols
+# flag protocols not listed here
 protocols = [
   'PROTOCOL_HYBRID', # Enhanced RDP Security + CredSSP
   'PROTOCOL_HYBRID_EX', # Enhanced RDP Security + CredSSP with Early User Authorization
+  'PROTOCOL_RDSTLS' # Enhanced RDP Security + RDSTLS; this protocol cannot be disabled; we have to accept it when NLA is enabled; see https://github.com/4elta/recon/issues/124
 ]
 # Enhanced RDP Security + CredSSP enables the use of Network Level Authentication (NLA).
 # -- https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-rdpbcgr/592a0337-dc91-4de3-a901-e1829665291d
