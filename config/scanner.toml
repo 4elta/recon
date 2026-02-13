@@ -205,7 +205,7 @@ command = """
 name = 'nikto'
 transport_protocol = 'tcp'
 command = """
-  nikto \
+  #nikto \
   -ask no \
   -Cgidirs all \
   -host {hostname} \
@@ -244,6 +244,14 @@ command = """
 """
 
 [[services]]
+name = 'ipmi'
+application_protocol = 'ipmi|asf-rmcp'
+
+[[services.scans]]
+name = 'nmap'
+command = 'nmap -Pn -sU -sV -p {port} --script="banner,ipmi-version,ipmi-brute,ipmi-cipher-zero" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
+
+[[services]]
 name = 'isakmp'
 application_protocol = 'isakmp'
 
@@ -263,6 +271,14 @@ command = """
   -oN "{result_file}.log" -oX "{result_file}.xml" \
   {address} \
 """
+
+[[services]]
+name = 'jdwp'
+application_protocol = 'jdwp|msgsrvr'
+
+[[services.scans]]
+name = 'nmap'
+command = 'nmap -Pn -sT -sV --version-all -p {port} --script="banner,jdwp* and not exploit" -oN "{result_file}.log" -oX "{result_file}.xml" {address}'
 
 [[services]]
 name = 'kerberos'
@@ -451,7 +467,7 @@ command = """
 
 [[services]]
 name = 'rmi'
-application_protocol = 'rmiregistry'
+application_protocol = 'rmiregistry|java-rmi'
 
 [[services.scans]]
 name = 'nmap'
@@ -465,6 +481,14 @@ command = """
   -oN "{result_file}.log" -oX "{result_file}.xml" \
   {address} \
 """
+
+[[services.scans]]
+name = 'rmg-enum'
+command = 'rmg enum {address} {port} | tee {result_file}.log'
+
+[[services.scans]]
+name = 'rmg-guess'
+command = 'rmg guess {address} {port} | tee {result_file}.log'
 
 [[services]]
 name = 'rpc'
@@ -562,7 +586,7 @@ command = """
   -Pn \
   -sV \
   -p {port} \
-  --script="banner,smtp* and not (brute or broadcast or dos or external or fuzzer)" \
+  --script="banner,smtp* and not (brute or broadcast or dos or exploit)" \
   -oN "{result_file}.log" -oX "{result_file}.xml" \
   {address} \
 """
@@ -580,6 +604,7 @@ command = """
   -sV \
   -p {port} \
   --script="banner,snmp* and not (brute or broadcast or dos or external or fuzzer)" \
+  --script-args snmp-brute.communitiesdb="/usr/share/seclists/Discovery/SNMP/common-snmp-community-strings-onesixtyone.txt" \
   -oN "{result_file}.log" -oX "{result_file}.xml" \
   {address} \
 """
