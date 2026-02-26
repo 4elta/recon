@@ -67,7 +67,7 @@ class Analyzer(AbstractAnalyzer):
         self._analyze_protocols(
           service['protocols'],
           self.recommendations['protocols'],
-          issues
+          issues,
         )
 
       if 'encryption_level' in self.recommendations:
@@ -75,7 +75,7 @@ class Analyzer(AbstractAnalyzer):
           issues.append(
             Issue(
               "encryption level",
-              level = service['encryption_level']
+              level = service['encryption_level'],
             )
           )
 
@@ -87,7 +87,7 @@ class Analyzer(AbstractAnalyzer):
         issues.append(
           Issue(
             "additional info",
-            info = info
+            info = info,
           )
         )
 
@@ -98,16 +98,6 @@ class Analyzer(AbstractAnalyzer):
       issues.append(
         Issue(
           "protocol: supported",
-          protocol = deviation
+          protocol = deviation,
         )
       )
-
-    '''
-    for deviation in list(set(recommendation).difference(protocol_versions)):
-      issues.append(
-        Issue(
-          "protocol: not supported",
-          protocol = deviation
-        )
-      )
-    '''

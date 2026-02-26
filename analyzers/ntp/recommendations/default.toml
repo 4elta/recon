@@ -1,0 +1,7 @@
+public = false
+
+version = "4.2.8p18"
+# https://www.ntp.org/dev/releasetimeline/
+
+# filter the server's responses to the various test commands based on the following regex:
+additional_info_filter = '(`(version|processor|system|refid)=)|remote address|alternative target interface|(public|private) (client|server|peer)|other association'

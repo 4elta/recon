@@ -67,6 +67,17 @@ DH_GROUPS = [
   "24", # 2048-bit MODP with 256-bit Prime Order Subgroup
 ]
 
+'''
+The SA lifetime should be defined depending on the security requirements of the application.
+This applies to both IKE-SAs and IPsec-SAs.
+In ordinary operating scenarios, the IKE-SA lifetime should not exceed 24 h and the IPsec-SA lifetime should not exceed 4 h.
+For special scenarios, longer SA lifetimes can be used after consultation with an expert.
+
+from [TR-02102-3](https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/Publications/TechGuidelines/TG02102/BSI-TR-02102-3.html), section 3.4
+'''
+LIFETIME_4H = 14400
+LIFETIME_24H = 86400
+
 def port_in_use(port: int) -> bool:
   with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
     try:
@@ -85,12 +96,16 @@ def exponential_backoff(attempt: int) -> float:
 
   return random.gauss(mu=2**attempt, sigma=attempt*0.5)
 
-def scan_ikev1(trans, target, dest_port, source_port, aggressive=False):
+def scan_ikev1(trans, target, dest_port, source_port, aggressive=False, lifetime=None):
   args = [
     'ike-scan',
     f'--sport={source_port}',
-    f'--trans={",".join(trans)}',
   ]
+
+  if lifetime:
+    args.append(f'--lifetime={lifetime}')
+
+  args.append(f'--trans={",".join(trans)}')
 
   if dest_port == 4500:
     args.append('--nat-t')
@@ -109,7 +124,7 @@ def scan_ikev1(trans, target, dest_port, source_port, aggressive=False):
   process = subprocess.run(
     args,
     capture_output = True,
-    text = True
+    text = True,
   )
 
   print(process.stderr)
@@ -137,7 +152,7 @@ def scan_ikev2(target, dest_port, source_port):
   process = subprocess.run(
     args,
     capture_output = True,
-    text = True
+    text = True,
   )
 
   if 'Handshake returned' in process.stdout:
@@ -160,7 +175,8 @@ def process(args):
     attempt += 1
 
   for trans in itertools.product(ENCRYPTION_ALGORITHMS, HASH_ALGORITHMS, AUTHENTICATION_METHODS, DH_GROUPS):
-    if scan_ikev1(trans, args.target, args.port, args.source_port):
+    if scan_ikev1(trans, args.target, args.port, args.source_port, lifetime=LIFETIME_4H):
+      scan_ikev1(trans, args.target, args.port, args.source_port, lifetime=(LIFETIME_24H + 1))
       scan_ikev1(trans, args.target, args.port, args.source_port, aggressive=True)
 
   # this delay seems to be necessary, as otherwise the last scan would not succeed
@@ -173,21 +189,21 @@ def main():
   
   parser.add_argument(
     'target',
-    help = "the hostname or IP address of the IKE server to be scanned"
+    help = "the hostname or IP address of the IKE server to be scanned",
   )
 
   parser.add_argument(
     '--port',
     help = f"the destination port (default: {PORT})",
     type = int,
-    default = PORT
+    default = PORT,
   )
 
   parser.add_argument(
-    '--source_port',
+    '--source-port',
     help = f"the source port (default: {SOURCE_PORT}); set to '0' to use a random ephemeral port (i.e. 49152–65535)",
     type = int,
-    default = SOURCE_PORT
+    default = SOURCE_PORT,
   )
 
   process(parser.parse_args())

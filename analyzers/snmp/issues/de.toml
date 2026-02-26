@@ -1,0 +1,30 @@
+["public server"]
+description = "öffentlich erreichbar"
+
+["version supported"]
+description = "unterstützt `{version}`"
+references = [
+  '[Security Considerations (RFC 3418)](https://www.rfc-editor.org/rfc/rfc3418#section-5)',
+  '[configure net-snmp](https://netsnmp.org/man/snmpd.conf.html)',
+  '[CISCO: Disable SNMPv1 or SNMPv2c](https://www.cisco.com/c/en/us/support/docs/ip/simple-network-management-protocol-snmp/113469-disable-snmp.html)',
+  '[F5: block SNMPv1 and v2c](https://my.f5.com/manage/s/article/K30539731)',
+]
+
+["version not supported"]
+description = "fehlende Unterstützung für `{version}`"
+references = [
+  '[Security Considerations (RFC 3418)](https://www.rfc-editor.org/rfc/rfc3418#section-5)',
+  '[configure net-snmp](https://netsnmp.org/man/snmpd.conf.html)',
+]
+
+["insecure community string"]
+description = "akzeptiert folgenden unsicheren 'community string': `{community_string}`"
+references = [
+  '[configure net-snmp](https://netsnmp.org/man/snmpd.conf.html)',
+]
+
+["information disclosure"]
+description = "Veröffentlichung potenziell sensibler Informationen: {info}"
+references = [
+  '[configure net-snmp](https://netsnmp.org/man/snmpd.conf.html)',
+]

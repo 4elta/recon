@@ -1,0 +1,5 @@
+# flag services that are publicly accessible (i.e. estimated primarily via the IP address)
+public = false
+
+# flag services that are supporting versions not listed below
+versions = [ 'super-duper-brand-new', 'slightly-outdated-but-still-supported' ]

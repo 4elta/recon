@@ -32,8 +32,8 @@ TITLE = "recon scanner"
 
 PROGRESS_BAR_LENGTH = 10
 PROGRESS_BAR_STYLES = {
-  'pipe': ['|', '⋅'],
-  'pipe2': ['┃', '⋅'],
+  'pipe': ['|', ':'],
+  'hash': ['#', ':'],
   'dot': ['●', '⋅'],
 }
 PROGRESS_BAR_STYLE = 'pipe'
@@ -47,14 +47,11 @@ MAIN_PROGRESS_BAR_LENGTH = len("estimated time of completion: yyyy-mm-dd HH:MM")
 
 FOOTER_MESSAGES = [
   "[q] quit: kill all running scans",
-  "[s] stop gracefully: wait for the currently running scans to finish"
+  "[s] stop gracefully: wait for the currently running scans to finish",
 ]
 
 # error/debug log
 LOG_FILE = None
-
-# <host> <protocol> <port> <service>
-SCAN_FILTER_PATTERN = re.compile(r'(?P<host>[^ ]+) (?P<protocol>(tcp|udp|\*)) (?P<port>(\d+)|\*) (?P<service>.+)')
 
 # default timeout (in seconds) after which a command will be cancelled
 MAX_TIME = 60*60
@@ -62,6 +59,12 @@ MAX_TIME = 60*60
 PATH_TO_SCANNERS = pathlib.Path(
   pathlib.Path(__file__).resolve().parent,
   "scanners"
+)
+
+PATH_TO_DEFAULT_CONFIG_FILE = pathlib.Path(
+  pathlib.Path(__file__).resolve().parent,
+  "config",
+  "scanner.toml"
 )
 
 class UserInterface:
@@ -74,6 +77,7 @@ class UserInterface:
     self.window.nodelay(True)
 
     self.screen_height = screen_height
+    self.header = curses.newpad(4, screen_width)
     self.main = curses.newpad(screen_height + 1, screen_width + 1)
     self.footer = curses.newpad(len(FOOTER_MESSAGES), screen_width)
 
@@ -142,11 +146,11 @@ class UserInterface:
     self.window.clear()
     self.window.refresh()
 
-    self.main.clear()
-
     screen_height, screen_width = self.window.getmaxyx()
 
-    line = 2
+    self.main.clear()
+
+    line = 0
     number_of_targets_completed = 0
     number_of_scans_total = 0
     number_of_scans_completed_total = 0
@@ -174,8 +178,6 @@ class UserInterface:
       if not target_is_active:
         continue
 
-      line += 1
-
       if line < self.screen_height:
         self.main.addstr(line, 0, f"{target.address}")
         if not STOPPING:
@@ -191,30 +193,40 @@ class UserInterface:
           continue
 
         scan_description = ': '.join(scan.description[1:])
-        self.main.addstr(line, 0, scan_description, curses.A_DIM)
+        self.main.addstr(line, 0, scan_description)
         line += 1
+
+      line += 1
+
+    self.main.refresh(
+      0, 0,
+      4, 0,
+      screen_height - 1, screen_width - 1
+    )
 
     self.progress = number_of_scans_completed_total / number_of_scans_total
 
-    line = 0
-    self.main.addstr(line, 0, TITLE, curses.A_BOLD)
+    self.header.clear()
+
+    self.header.addstr(0, 0, TITLE, curses.A_BOLD)
+    self.header.addstr(1, 0, f"running {number_of_scans_total} scans, targeting {len(TARGETS)} hosts")
     if STOPPING:
-      self.main.addstr(line, len(TITLE) + 1, "... stopping ...", curses.A_BOLD)
-      self.main.addstr(line + 1, 0, "waiting for the running scans to finish ...")
+      self.header.addstr(0, len(TITLE) + 1, "... stopping ...", curses.A_BOLD)
+      self.header.addstr(2, 0, "waiting for the running scans to finish ...")
     else:
-      self.main.addstr(
-        line, len(TITLE) + 1,
+      self.header.addstr(
+        0, len(TITLE) + 1,
         self.render_progress(
           number_of_scans_completed_total,
           number_of_scans_total,
           length = MAIN_PROGRESS_BAR_LENGTH,
-          style = 'pipe2'
+          style = 'hash',
         ),
-        curses.A_BOLD
+        curses.A_BOLD,
       )
-      self.main.addstr(1, 0, self.estimate_time_of_completion())
+      self.header.addstr(2, 0, self.estimate_time_of_completion())
 
-    self.main.refresh(
+    self.header.refresh(
       0, 0,
       0, 0,
       screen_height - 1, screen_width - 1
@@ -234,16 +246,16 @@ class UserInterface:
 
 class Service:
   def __init__(self, transport_protocol, port, application_protocol, description):
-    self.transport_protocol = transport_protocol
+    self.transport_protocol = transport_protocol.strip()
     self.port = int(port)
-    self.application_protocol = application_protocol
+    self.application_protocol = application_protocol.strip()
     self.description = description
     self.scanned = False
 
 class Target:
   def __init__(self, address, directory):
     self.semaphore = None # limiting the number of concurrently running scans
-    self.address = address
+    self.address = address.strip()
     self.hostnames = []
     self.directory = directory
     self.services = []
@@ -253,21 +265,19 @@ class Target:
 
 class ScanDefinition:
   # as parsed from the scanner config (`scanner.toml`)
-  def __init__(self, service, name, command, patterns, run_once):
+  def __init__(self, service, name, command, run_once):
     self.service = service
-    self.name = name
-    self.command = command
-    self.patterns = patterns
+    self.name = name.strip()
+    self.command = command.strip()
     self.run_once = run_once
 
 class Scan:
-  def __init__(self, target, host, port, description, command, patterns):
+  def __init__(self, target, host, port, description, command):
     self.target = target
-    self.host = host # address or hostname
+    self.host = host.strip() # address or hostname
     self.port = port
     self.description = description # [<host>, <transport protocol>/<port>, <service>, <hostname>, <name>]
-    self.command = command # the command string
-    self.patterns = patterns
+    self.command = command.strip() # the command string
     self.active = False
     self.completed = False
     self.return_code = None
@@ -292,13 +302,13 @@ class CommandLog:
 
     if not path.exists(): # do not overwrite the log
       with open(cls.path, 'w') as f:
-        csv.writer(f, delimiter=delimiter, quoting=csv.QUOTE_MINIMAL).writerow(header)
+        csv.writer(f, delimiter=delimiter, quoting=csv.QUOTE_MINIMAL, dialect='unix').writerow(header)
 
   @classmethod
   async def add_entry(cls, entry):
     async with cls.lock:
       with open(cls.path, 'a') as f:
-        csv.writer(f, delimiter=cls.delimiter, quoting=csv.QUOTE_MINIMAL).writerow(entry)
+        csv.writer(f, delimiter=cls.delimiter, quoting=csv.QUOTE_MINIMAL, dialect='unix').writerow(entry)
 
 def log(msg):
   if not LOG_FILE:
@@ -315,7 +325,7 @@ def log(msg):
     method_name = inspect.stack()[1].function
     f.write(f"[{task_name}]\t[{method_name}]\t{msg}\n")
 
-def format(*args, frame_index=1, **kvargs):
+def freeze_variables(*args, frame_index=1, **kvargs):
   '''
   this function's purpose is to correctly format f-strings [1] (e.g. commands),
   defined in different frames (i.e. coroutines).
@@ -348,22 +358,6 @@ def create_summary(target: Target):
 
       f.write(f"* {service.port} ({service.transport_protocol}): `{description}`\n")
 
-async def read_command_results(process, scan):
-  # parse STDOUT
-
-  while True:
-    line = await process.stdout.readline()
-    if line:
-      line = str(line.rstrip(), 'utf8', 'ignore')
-
-      for pattern in scan.patterns:
-        match = re.search(pattern, line)
-        if match:
-          info = match.group(0)
-          #TODO: do something with the info
-    else:
-      return
-
 async def run_command(scan: Scan):
 
   # make sure that only a specific number of scans are running per target
@@ -389,13 +383,13 @@ async def run_command(scan: Scan):
         scan.command,
         stdout = asyncio.subprocess.PIPE,
         stderr = asyncio.subprocess.PIPE,
-        executable = '/bin/bash'
+        executable = '/bin/bash',
       )
 
       try:
-        # wait for the task (i.e. read command results) to finish within the specified timeout (in seconds)
+        # wait for the process to finish within the specified timeout (in seconds)
         # https://docs.python.org/3/library/asyncio-task.html#asyncio.wait_for
-        await asyncio.wait_for(read_command_results(process, scan), timeout=MAX_TIME)
+        await asyncio.wait_for(process.wait(), timeout=MAX_TIME)
 
         return_code = process.returncode
 
@@ -408,6 +402,7 @@ async def run_command(scan: Scan):
           log(f"[{scan_description}]\t{error_msg}")
       except asyncio.exceptions.TimeoutError:
         log(f"[{scan_description}]\ttimeout")
+        process.terminate()
         return_code = "timeout"
       except asyncio.exceptions.CancelledError:
         log(f"[{scan_description}]\tcancelled")
@@ -423,31 +418,44 @@ async def run_command(scan: Scan):
     if return_code not in ('timeout', 'cancelled'):
       log(f"[{scan_description}]\tdone")
 
-def find_suitable_scans(application_protocol):
+def find_suitable_scans(transport_protocol, application_protocol):
 
   scan_definitions = []
   
-  # iterate over each service scan configuration
-  for service_name, service_config in CONFIG['services'].items():
-    service_patterns = service_config['patterns'] if 'patterns' in service_config else ['.+']
+  # iterate over each service config
+  for service_config in CONFIG['services']:
+    service_name = service_config['name']
+
+    if 'transport_protocol' in service_config:
+      if not re.search(service_config['transport_protocol'], transport_protocol):
+        continue
+
+    if 'application_protocol' in service_config:
+      if not re.search(service_config['application_protocol'], application_protocol):
+        continue
 
     # iterate over each scan of a specific service config
-    for scan_name, scan in service_config['scans'].items():
-      scan_command = scan['command']
-      scan_patterns = scan['patterns'] if 'patterns' in scan else []
+    for scan_config in service_config['scans']:
+      scan_name = scan_config['name']
 
-      for service_pattern in service_patterns:
-        if re.search(service_pattern, application_protocol):
-          #log(f"application protocol '{application_protocol}' matched '{service_name}' pattern '{service_pattern}'; command '{scan_name}'")
-          scan_definitions.append(
-            ScanDefinition(
-              service_name,
-              scan_name,
-              scan_command,
-              scan_patterns,
-              True if 'run_once' in scan else False
-            )
-          )
+      if 'transport_protocol' in scan_config:
+        if not re.search(scan_config['transport_protocol'], transport_protocol):
+          continue
+
+      if 'application_protocol' in scan_config:
+        if not re.search(scan_config['application_protocol'], application_protocol):
+          continue
+
+      log(f"suitable scan for '{transport_protocol}/{application_protocol}' found: '{service_name}:{scan_name}'")
+
+      scan_definitions.append(
+        ScanDefinition(
+          service_name,
+          scan_name,
+          scan_config['command'],
+          scan_config['run_once'] if 'run_once' in scan_config else False,
+        )
+      )
 
   return scan_definitions
 
@@ -481,6 +489,7 @@ def queue_service_scan_hostname(target: Target, service: Service, scan_definitio
 
   results_directory = target.directory
 
+  # these variables are required for the scan command (i.e. `freeze_variables`)
   transport_protocol = service.transport_protocol
   port = service.port
   application_protocol = service.application_protocol
@@ -515,7 +524,7 @@ def queue_service_scan_hostname(target: Target, service: Service, scan_definitio
       f"{transport_protocol}/{port}",
       scan_definition.service,
       hostname,
-      scan_definition.name
+      scan_definition.name,
     ]
 
     log(f"[{': '.join(description)}]")
@@ -527,8 +536,7 @@ def queue_service_scan_hostname(target: Target, service: Service, scan_definitio
       hostname,
       port,
       description,
-      format(scan_definition.command),
-      scan_definition.patterns
+      freeze_variables(scan_definition.command),
     )
 
 def queue_service_scan_address(target: Target, service: Service, scan_definition: ScanDefinition):
@@ -538,6 +546,7 @@ def queue_service_scan_address(target: Target, service: Service, scan_definition
 
   results_directory = target.directory
 
+  # these variables are required for the scan command (i.e. `freeze_variables`)
   transport_protocol = service.transport_protocol
   port = service.port
   application_protocol = service.application_protocol
@@ -559,7 +568,7 @@ def queue_service_scan_address(target: Target, service: Service, scan_definition
     description = [
       address,
       scan_definition.service,
-      scan_definition.name
+      scan_definition.name,
     ]
 
     scan_ID = (scan_definition.service, scan_definition.name)
@@ -579,7 +588,7 @@ def queue_service_scan_address(target: Target, service: Service, scan_definition
       address,
       f"{transport_protocol}/{port}",
       scan_definition.service,
-      scan_definition.name
+      scan_definition.name,
     ]
 
     scan_ID = (transport_protocol, port, application_protocol, scan_definition.service, scan_definition.name)
@@ -596,36 +605,14 @@ def queue_service_scan_address(target: Target, service: Service, scan_definition
     address,
     port,
     description,
-    format(scan_definition.command),
-    scan_definition.patterns
+    freeze_variables(scan_definition.command),
   )
   
 async def scan_services(target: Target):
 
-  # extract the target's address from the object.
-  # it's referenced like this (i.e. `{address}`) in the scan configs.
   address = target.address
 
   log(f"[{address}]\tstarted")
-
-  # iterate over the services found to be running on the target
-  for service in target.services:
-    transport_protocol = service.transport_protocol
-    port = service.port
-    application_protocol = service.application_protocol
-
-    # find suitable scans based on the service's application protocol
-    suitable_scans = find_suitable_scans(application_protocol)
-
-    # mark the service as "scanned" if at least 1 suitable scan was found; even though there is not even a scan scheduled yet
-    service.scanned = (len(suitable_scans) > 0)
-
-    # iterate over each suitable scan
-    for scan_definition in suitable_scans:
-      if scan_definition.service in ('http', 'tls'):
-        queue_service_scan_hostname(target, service, scan_definition)
-      else:
-        queue_service_scan_address(target, service, scan_definition)
 
   tasks = set()
   for scan in target.scans.values():
@@ -694,7 +681,7 @@ def parse_result_file(base_directory, result_file, targets, unique_services, sca
     except:
       pass
 
-    log(f"{address} ({','.join(target.hostnames)})")
+    log(f"host: {address} ({','.join(target.hostnames)})")
 
     for port in host.findall('./ports/port/state[@state="open"]/..'):
       transport_protocol = port.get('protocol')
@@ -705,7 +692,7 @@ def parse_result_file(base_directory, result_file, targets, unique_services, sca
       if service_tuple in unique_services:
         continue
 
-      log(f"service {service_tuple}")
+      log(f"service: {service_tuple}")
       unique_services.append(service_tuple)
 
       service = port.find('service')
@@ -719,7 +706,7 @@ def parse_result_file(base_directory, result_file, targets, unique_services, sca
         # we prepend the tunnel info to the application protocol:
         # '<tunnel>|<application protocol>'
         if service.get('tunnel'):
-          log(f"application protocol '{application_protocol}' is tunneled through '{service.get('tunnel')}'")
+          log(f"'{application_protocol}' is tunneled through '{service.get('tunnel')}'")
           application_protocol = service.get('tunnel') + '|' + application_protocol
 
         descriptions = []
@@ -732,35 +719,39 @@ def parse_result_file(base_directory, result_file, targets, unique_services, sca
 
         description = " ".join(descriptions)
 
-      add_target = (len(scan_filters) == 0)
-      for scan_filter in scan_filters:
-        if not (scan_filter['host'] == '*' or scan_filter['host'] == address):
+      match_count = 0
+      for filter_key, filter_pattern in scan_filters:
+        if filter_key == 'host' and re.fullmatch(filter_pattern, address):
+          log(f"{filter_key} '{address}' matches '{filter_pattern}'")
+          match_count += 1
           continue
 
-        if not (scan_filter['protocol'] == '*' or scan_filter['protocol'] == transport_protocol):
+        if filter_key == 'protocol' and re.fullmatch(filter_pattern, transport_protocol):
+          log(f"{filter_key} '{transport_protocol}' matches '{filter_pattern}'")
+          match_count += 1
           continue
 
-        if not (scan_filter['port'] == '*' or scan_filter['port'] == port_ID):
+        if filter_key == 'port' and re.fullmatch(filter_pattern, port_ID):
+          log(f"{filter_key} '{port_ID}' matches '{filter_pattern}'")
+          match_count += 1
           continue
 
-        if not (scan_filter['service'] == '*' or scan_filter['service'] == application_protocol):
+        if filter_key == 'service' and re.fullmatch(filter_pattern, application_protocol):
+          log(f"{filter_key} '{application_protocol}' matches '{filter_pattern}'")
+          match_count += 1
           continue
 
-        log(f"scan filter '{json.dumps(scan_filter)}' matches!")
-        add_target = True
-        break
+      if match_count == len(scan_filters):
+        log("targeting service")
 
-      if add_target:
         target.services.append(
           Service(
             transport_protocol,
             port_ID,
             application_protocol,
-            description
+            description,
           )
         )
-
-        log(f"{transport_protocol}/{port_ID}: {application_protocol}: {description}")
 
 def parse_result_files(base_directory, result_files, scan_filters):
   targets = {}
@@ -773,28 +764,101 @@ def parse_result_files(base_directory, result_files, scan_filters):
     log(f"parsing '{result_file}' ...")
     parse_result_file(base_directory, result_file, targets, unique_services, scan_filters)
 
-  return targets
+  # filter targets with at least 1 service
+  return {key: target for key, target in targets.items() if len(target.services) > 0}
+
+def update_scan_config(scan_config, new_scan_config):
+  log(f"updating scan '{scan_config['name']}' ...")
+
+  if 'transport_protocol' in new_scan_config:
+    log(f"updating transport protocol regex: '{new_scan_config['transport_protocol']}'")
+    scan_config['transport_protocol'] = new_scan_config['transport_protocol']
+
+  if 'application_protocol' in new_scan_config:
+    log(f"updating application protocol regex: '{new_scan_config['application_protocol']}'")
+    scan_config['application_protocol'] = new_scan_config['application_protocol']
+
+  if 'command' in new_scan_config:
+    log(f"updating command: '{new_scan_config['command']}'")
+    scan_config['command'] = new_scan_config['command']
+
+  if 'run_once' in scan_config:
+    log(f"updating run-once flag: '{new_scan_config['run_once']}'")
+    scan_config['run_once'] = new_scan_config['run_once']
+
+def update_service_config(service_config, new_service_config):
+  log(f"updating service '{service_config['name']}' ...")
+
+  if 'transport_protocol' in new_service_config:
+    log(f"updating transport protocol regex: '{new_service_config['transport_protocol']}'")
+    service_config['transport_protocol'] = new_service_config['transport_protocol']
+
+  if 'application_protocol' in new_service_config:
+    log(f"updating application protocol regex: '{new_service_config['application_protocol']}'")
+    service_config['application_protocol'] = new_service_config['application_protocol']
+
+  if 'scans' not in new_service_config:
+    return
+
+  if 'scans' not in service_config:
+    log("setting scans")
+    service_config['scans'] = new_service_config['scans']
+    return
+
+  for scan_config in new_service_config['scans']:
+    scan_name = scan_config['name']
+    log(f"scan name: '{scan_name}'")
+
+    append_config = True
+    for sc in service_config['scans']:
+      if sc['name'] == scan_name:
+        update_scan_config(sc, scan_config)
+        append_config = False
+        break
+
+    if append_config:
+      log("appending scan")
+      service_config['scans'].append(scan_config)
+
+def update_config(config, new_config):
+  if 'globals' in new_config:
+    # https://peps.python.org/pep-0584/
+    config['globals'] |= new_config['globals']
+
+  if 'services' not in new_config:
+    return
+
+  if 'services' not in config:
+    config['services'] = new_config['services']
+    return
+
+  for service_config in new_config['services']:
+    service_name = service_config['name']
+
+    append_config = True
+    for sc in config['services']:
+      if sc['name'] == service_name:
+        update_service_config(sc, service_config)
+        append_config = False
+        break
+
+    if append_config:
+      log(f"appending service '{service_name}'")
+      config['services'].append(service_config)
 
 def load_config(config_files):
   config = None
 
-  # default configuration file
-  config_file_path = pathlib.Path(
-    pathlib.Path(__file__).resolve().parent,
-    "config",
-    "scanner.toml"
-  )
-
-  log(f"loading default configuration file '{config_file_path}' ...")
-
-  if not config_file_path.exists():
-    log("the file does not exist")
-    sys.exit("the default configuration file does not exist!")
-
-  with open(config_file_path, 'rb') as f:
-    config = toml.load(f)
-
   if not config_files:
+    log(f"loading default configuration file '{PATH_TO_DEFAULT_CONFIG_FILE}' ...")
+
+    if not PATH_TO_DEFAULT_CONFIG_FILE.exists():
+      log("the file does not exist")
+      sys.exit("the default configuration file does not exist!")
+
+    with open(PATH_TO_DEFAULT_CONFIG_FILE, 'rb') as f:
+      config = toml.load(f)
+
     return config
 
   # user-specified configuration files
@@ -802,48 +866,24 @@ def load_config(config_files):
     log(f"loading config '{config_file_path}'")
 
     if not config_file_path.exists():
-      log(f"the specified configuration file does not exist")
+      log("the specified configuration file does not exist")
       continue
 
     with open(config_file_path, 'rb') as f:
-      new_config = toml.load(f)
+      match config_file_path.suffix.strip('.'):
+        case 'toml':
+          new_config = toml.load(f)
+        case 'json':
+          new_config = json.load(f)
+        case _:
+          log(f"unsupported file type: {config_file_path.suffix}")
+          continue
 
-    if 'merge_strategy' in new_config and new_config['merge_strategy'] == 'overwrite':
-      # overwrite config
-      log("overriding config ...")
+    if config is None:
       config = new_config
     else:
-      log("merging config ...")
-      # https://peps.python.org/pep-0584/
-
-      if 'globals' in new_config:
-        config['globals'] |= new_config['globals']
-
-      if 'services' in new_config:
-        for service_name, service_config in new_config['services'].items():
-          if service_name not in config['services']:
-            config['services'][service_name] = service_config
-            continue
-
-          if 'patterns' in service_config:
-            config['services'][service_name]['patterns']= service_config['patterns']
-
-          if 'scans' not in service_config:
-            continue
-
-          for scan_name, scan_config in service_config['scans'].items():
-            if scan_name not in config['services'][service_name]['scans']:
-              config['services'][service_name]['scans'][scan_name] = scan_config
-              continue
-
-            if 'patterns' in scan_config:
-              config['services'][service_name]['scans'][scan_name]['patterns'] = scan_config['patterns']
-
-            if 'command' in scan_config:
-              config['services'][service_name]['scans'][scan_name]['command'] = scan_config['command']
-
-            if 'run_once' in scan_config:
-              config['services'][service_name]['scans'][scan_name]['run_once'] = scan_config['run_once']
+      log("updating config ...")
+      update_config(config, new_config)
 
   return config
 
@@ -898,8 +938,9 @@ async def process(stdscr, args):
     f'config_{timestamp}.json'
   )
 
+  log(f"writing configuration to '{config_file}' ...")
   with open(config_file, 'w') as f:
-    json.dump(CONFIG, f, indent=4)
+    json.dump(CONFIG, f)
 
   CommandLog.init(
     pathlib.Path(base_directory, 'commands.csv'),
@@ -913,32 +954,37 @@ async def process(stdscr, args):
     if not input_file.exists():
       sys.exit(f"input file '{input_file}' does not exist!")
 
-  scan_filters = []
-  for scan_filter in args.filter:
-    m = SCAN_FILTER_PATTERN.fullmatch(scan_filter)
-    if not m:
-      sys.exit(f"scan filter '{scan_filter}' does not match '{SCAN_FILTER_PATTERN.pattern}'")
-
-    scan_filter = {
-      'host': m.group('host'),
-      'protocol': m.group('protocol'),
-      'port': m.group('port'),
-      'service': m.group('service')
-    }
-
-    log(f"parsed scan filter: {json.dumps(scan_filter)}")
-    scan_filters.append(scan_filter)
-
-  if len(scan_filters):
+  if len(args.filter):
     OVERWRITE = True
 
   global TARGETS
-  TARGETS = parse_result_files(base_directory, args.input, scan_filters)
+  TARGETS = parse_result_files(base_directory, args.input, args.filter)
   log(f"parsed {len(TARGETS)} targets")
+
+  # find suitable scans for each target and queue them for later.
+  # this has to be done outside any subthread/task,
+  # so that the total number of scans is know from the start.
+  for target in TARGETS.values():
+    # iterate over the services found to be running on the target
+    for service in target.services:
+      transport_protocol = service.transport_protocol
+      application_protocol = service.application_protocol
+
+      suitable_scans = find_suitable_scans(transport_protocol, application_protocol)
+
+      # mark the service as "scanned" if at least 1 suitable scan was found; even though there is not even a scan scheduled yet
+      service.scanned = (len(suitable_scans) > 0)
+
+      # iterate over each suitable scan and queue it for later
+      for scan_definition in suitable_scans:
+        if scan_definition.service in ('http', 'tls'):
+          queue_service_scan_hostname(target, service, scan_definition)
+        else:
+          queue_service_scan_address(target, service, scan_definition)
 
   # create services.csv file and initialize its header
   with open(pathlib.Path(base_directory, 'services.csv'), 'w') as f:
-    csv.writer(f, delimiter=args.delimiter, quoting=csv.QUOTE_MINIMAL).writerow(['host', 'transport_protocol', 'port', 'service', 'scanned'])
+    csv.writer(f, delimiter=args.delimiter, quoting=csv.QUOTE_MINIMAL, dialect='unix').writerow(['host', 'transport_protocol', 'port', 'service', 'scanned'])
 
   global UI
   UI = UserInterface(stdscr, 80, args.concurrent_targets * (args.concurrent_scans + 2) + 4)
@@ -953,7 +999,7 @@ async def process(stdscr, args):
       asyncio.create_task(
         scan_target(
           concurrent_targets,
-          target
+          target,
         )
       )
     )
@@ -975,18 +1021,37 @@ def cancel_tasks():
 
   asyncio.get_running_loop().stop()
 
+def scan_filter(arg):
+  key_value_pattern = re.compile(r'(host|protocol|port|service)=(.+)')
+
+  m = key_value_pattern.fullmatch(arg)
+  if not m:
+    raise argparse.ArgumentTypeError(f"scan filter '{arg}' does not match '{key_value_pattern.pattern}'")
+
+  return (m.group(1), m.group(2))
+
+def int_greater_than_0(arg):
+  try:
+    i = int(arg)
+  except ValueError:
+    raise argparse.ArgumentTypeError("must be an integer number")
+
+  if i < 1:
+    raise argparse.ArgumentTypeError("must be greater than 0")
+
+  return i
+
 def main():
   parser = argparse.ArgumentParser(
     description = "Schedule and execute various tools based on the findings of an Nmap service scan."
   )
 
   parser.add_argument(
-    '-i', '--input',
+    'input',
     metavar = 'path',
-    help = "path to the result file(s) of the Nmap service scan (default: 'services.xml')",
+    help = "path to the Nmap scan result file (e.g. 'nmap/services.xml')",
     type = pathlib.Path,
     nargs = '+',
-    default = 'services.xml'
   )
 
   parser.add_argument(
@@ -994,72 +1059,73 @@ def main():
     metavar = 'path',
     help = "path to where the results are stored (default: './recon')",
     type = pathlib.Path,
-    default = './recon'
+    default = './recon',
   )
 
   parser.add_argument(
     '-c', '--config',
     metavar = 'path',
-    help = "path to the scanner configuration file(s); see '/path/to/recon/config/scanner.toml'",
+    help = f"path to the scanner configuration files (default: '{PATH_TO_DEFAULT_CONFIG_FILE}')",
     type = pathlib.Path,
-    nargs = '+'
+    nargs = '+',
   )
 
   parser.add_argument(
     '-t', '--concurrent-targets',
     metavar = 'number',
     help = "number of targets that should be scanned concurrently (default: 3)",
-    type = int,
-    default = 3
+    type = int_greater_than_0,
+    default = 3,
   )
 
   parser.add_argument(
     '-s', '--concurrent-scans',
     metavar = 'number',
     help = "number of scans that should be running concurrently on a single target (default: 2)",
-    type = int,
-    default = 2
+    type = int_greater_than_0,
+    default = 2,
   )
 
   parser.add_argument(
     '-m', '--max-time',
     metavar = 'seconds',
     help = f"maximum time in seconds each scan is allowed to take (default: {MAX_TIME})",
-    type = int,
-    default = MAX_TIME
+    type = int_greater_than_0,
+    default = MAX_TIME,
   )
 
   parser.add_argument(
     '-n', '--dry-run',
     help = "do not run any command; just create/update the 'commands.csv' file",
-    action = 'store_true'
+    action = 'store_true',
   )
 
   parser.add_argument(
     '-f', '--filter',
-    metavar = '<host> <protocol> <port> <service>',
-    help = "specify hosts/protocols/ports/services you want to (re)scan and overwrite their result files if they exist; use '*' if you cannot or don't want to specify a host/protocol/port/service part",
+    metavar = 'key=regex',
+    help = "only scan specific services that match all provided filters ('key' can be 'host', 'protocol', 'port' or 'service'); existing result files will be overwritten",
+    type = scan_filter,
     nargs = '+',
-    default = []
+    default = [],
   )
 
   parser.add_argument(
     '-y', '--overwrite-results',
     help = "overwrite existing result files",
-    action = 'store_true'
+    action = 'store_true',
   )
 
   parser.add_argument(
     '-d', '--delimiter',
     metavar = 'character',
     help = "character used to delimit columns in the 'commands.csv' and 'services.csv' files (default: ',')",
-    default = ','
+    default = ',',
   )
 
   parser.add_argument(
     '--ignore-uid',
     help = "ignore the warning about potentially lacking permissions",
-    action = 'store_true'
+    action = 'store_true',
   )
 
   args = parser.parse_args()

@@ -1,0 +1,233 @@
+# https://github.com/koenbuyens/securityheaders#security-headers
+
+mandatory_headers = [
+  "strict-transport-security",
+  "content-security-policy",
+  "referrer-policy",
+  "x-content-type-options",
+]
+
+[header.strict-transport-security]
+# https://www.rfc-editor.org/rfc/rfc6797#section-6.1
+regex = '''
+(?x)
+^
+max-age=(?P<expire_time>[0-9]+)
+(?:
+  [ ]*
+  ;
+  [ ]+
+  includeSubDomains
+  (?:
+    [ ]*
+    ;
+    [ ]+
+    preload
+  )?
+)?
+$
+'''
+on_match = { next = [ "expire_time" ] }
+on_mismatch = { issue.id = "incorrect syntax", issue.header = "strict-transport-security" }
+
+[header.strict-transport-security.expire_time]
+lower_bound = 31536000
+#upper_bound = ###
+on_mismatch = { issue.id = "STS expire time too short" }
+
+[header.content-security-policy]
+# https://w3c.github.io/webappsec-csp/#csp-header
+regex = '''
+(?x)
+^
+(
+  \s*
+  (?:
+    child-src
+    |connect-src
+    |default-src
+    |font-src
+    |frame-src
+    |img-src
+    |manifest-src
+    |media-src
+    |object-src
+    |prefetch-src
+    |script-src
+    |script-src-elem
+    |script-src-attr
+    |style-src
+    |style-src-elem
+    |style-src-attr
+    |worker-src
+    |webrtc
+    |base-uri
+    |sandbox
+    |form-action
+    |frame-ancestors
+    |navigate-to
+    |report-uri
+    |report-to
+    |require-trusted-types-for
+    |trusted-types
+    |upgrade-insecure-requests
+  )
+  \s+
+  [^;]+
+  ;? # this "optional" semicolon here is a workaround for the limited regex capabilities of Python: unfortunately we can not use `(?1)` in Python
+)+
+\s*
+$
+'''
+on_mismatch = { issue.id = "incorrect syntax", issue.header = "content-security-policy" }
+on_match = { next = [ "default-src", "src_http", "src_localhost", "report-uri", "script-src", "object-src", "base-uri" ] }
+
+[header.content-security-policy.default-src]
+regex = "default-src"
+on_mismatch = { issue.id = "CSP default-src missing" }
+
+[header.content-security-policy.src_http]
+regex = "[a-z]+-src[^;]+http:[^;]*"
+on_match = { issue.id = "CSP allows loading sources over HTTP" }
+
+[header.content-security-policy.src_localhost]
+regex = "[a-z]+-src[^;]+(?:https?://)?(?:127.0.0.1|localhost)[^;]*"
+on_match = { issue.id = "CSP allows loading sources from local host" }
+
+[header.content-security-policy.report-uri]
+# https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/report-uri
+# browsers that support `report-to` will ignore the `report-uri` directive.
+# for adding forward compatibility when browsers get `report-to` support, you can specify both `report-uri` and `report-to`.
+regex = "report-uri.+(?!report-to)"
+on_match = { issue.id = "CSP report-uri deprecated" }
+
+[header.content-security-policy.script-src]
+regex = "script-src"
+on_mismatch = { issue.id = "CSP script-src missing" }
+on_match = { next = [ "unsafe-inline", "unsafe-eval" ] }
+
+[header.content-security-policy.script-src.unsafe-inline]
+# "Specifying nonce makes a modern browser ignore 'unsafe-inline' which could still be set for older browsers without nonce support."
+# https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/Sources#nonce-base64-value
+# therefore, even if the directive includes `'nonce-...'` along with `'unsafe-inline'`, we will flag it.
+regex = "script-src[^;]+'unsafe-inline'[^;]*"
+on_match = { issue.id = "CSP script-src unsafe-inline" }
+
+[header.content-security-policy.script-src.unsafe-eval]
+regex = "script-src[^;]+'unsafe-eval'[^;]*"
+on_match = { issue.id = "CSP script-src unsafe-eval" }
+
+[header.content-security-policy.object-src]
+regex = "object-src"
+on_mismatch = { issue.id = "CSP object-src missing" }
+on_match = { next = [ "wildcard", "unsafe-inline", "unsafe-eval" ] }
+
+[header.content-security-policy.object-src.wildcard]
+regex = "object-src[^;]+[*][^;]*"
+on_match = { issue.id = "CSP object-src wildcard" }
+
+[header.content-security-policy.object-src.unsafe-inline]
+regex = "object-src[^;]+'unsafe-inline'[^;]*"
+on_match = { issue.id = "CSP object-src unsafe-inline" }
+
+[header.content-security-policy.object-src.unsafe-eval]
+regex = "object-src[^;]+'unsafe-eval'[^;]*"
+on_match = { issue.id = "CSP object-src unsafe-eval" }
+
+[header.content-security-policy.base-uri]
+regex = "base-uri"
+on_mismatch = { issue.id = "CSP base-uri missing" }
+
+[header.x-content-type-options]
+# https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Content-Type-Options
+regex = "nosniff"
+on_mismatch = { issue.id = "incorrect syntax", issue.header = "x-content-type-options" }
+
+[header.x-frame-options]
+# https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Frame-Options
+regex = "DENY|SAMEORIGIN"
+on_mismatch = { issue.id = "incorrect syntax", issue.header = "x-frame-options" }
+
+[header.x-xss-protection]
+# https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-XSS-Protection
+regex = "0"
+on_mismatch = { issue.id = "x-xss-protection" }
+
+[header.referrer-policy]
+# https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referrer-Policy
+regex = "unsafe-url"
+on_match = { issue.id = "referrer-policy" }
+
+[header.access-control-allow-origin]
+# https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Origin
+name = "`access-control-allow-origin` header:"
+regex = ".+"
+on_match = { next = ["wildcard", "null", "http"] }
+
+[header.access-control-allow-origin.wildcard]
+# https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS/Errors/CORSNotSupportingCredentials
+regex = "[*]"
+on_match = { issue.id = "CORS wildcard origin" }
+
+[header.access-control-allow-origin.null]
+# https://w3c.github.io/webappsec-cors-for-developers/#avoid-returning-access-control-allow-origin-null
+regex = "null"
+on_match = { issue.id = "CORS null origin" }
+
+[header.access-control-allow-origin.http]
+# https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Origin
+regex = "http:"
+on_match = { issue.id = "CORS http origin" }
+
+[header.access-control-allow-credentials]
+# https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Credentials
+name = "`access-control-allow-credentials` header:"
+regex = "true"
+on_match = { issue.id = "CORS allow credentials" }
+
+[header.server]
+regex = "(.+)"
+on_match = { issue.id = "server" }
+
+[header.x-powered-by]
+regex = "(.+)"
+on_match = { issue.id = "x-powered-by" }
+
+[header.x-host]
+regex = "(.+)"
+on_match = { issue.id = "x-host" }
+
+[header.public-key-pins]
+# https://www.rfc-editor.org/rfc/rfc7469.html
+regex = "."
+on_match = { issue.id = "HPKP" }
+
+[header.public-key-pins-report-only]
+# https://www.rfc-editor.org/rfc/rfc7469.html
+regex = "."
+on_match = { issue.id = "HPKP report-only" }
+
+[header.www-authenticate]
+# https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/WWW-Authenticate
+# https://www.rfc-editor.org/rfc/rfc7617.html
+regex = "Basic"
+on_match = { issue.id = "Basic authentication" }
+
+[body.content-security-policy]
+# https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP
+regex = '''
+(?mx)
+(?P<policy>
+  <meta
+  (?:\s+.*?)?
+  (?:\s+http-equiv=(['"])content-security-policy\2)
+  (?:\s+[^>]+)?
+  >
+)
+'''
+on_match = { next = ["policy"] }
+
+[body.content-security-policy.policy]
+regex = 'content="(?P<value>[^"]+)"'
+on_match = { issue.id = "CSP via meta element", next = ["header.content-security-policy"] }
+

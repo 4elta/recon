@@ -1,0 +1,20 @@
+# flag RDP servers that are publicly accessible
+public = false
+
+# flag protocols not listed here
+protocols = [
+  'PROTOCOL_HYBRID', # Enhanced RDP Security + CredSSP
+  'PROTOCOL_HYBRID_EX', # Enhanced RDP Security + CredSSP with Early User Authorization
+  'PROTOCOL_RDSTLS' # Enhanced RDP Security + RDSTLS; this protocol cannot be disabled; we have to accept it when NLA is enabled; see https://github.com/4elta/recon/issues/124
+]
+# Enhanced RDP Security + CredSSP enables the use of Network Level Authentication (NLA).
+# -- https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-rdpbcgr/592a0337-dc91-4de3-a901-e1829665291d
+# Network Level Authentication (NLA): authenticate the identity of a user at the network layer **before** the initiation of the RDP handshake. The use of NLA ensures that server resources are only committed to authenticated users.
+# -- https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-rdpbcgr/ab35aee7-1cf7-42dc-ac74-d0d7f4ca64f7#gt_73ff321b-cda8-468a-a5dd-69f4059543fc
+
+# flag RDP servers that do not support the following encryption level
+encryption_level = 'ENCRYPTION_LEVEL_NONE'
+# when using "Enhanced RDP Security", the encryption level is "none"
+
+# flag RDP servers that do not support NLA
+NLA = true

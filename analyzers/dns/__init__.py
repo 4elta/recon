@@ -65,7 +65,7 @@ class Analyzer(AbstractAnalyzer):
         issues.append(
           Issue(
             "additional info",
-            info = f"`{key}={value}`"
+            info = f"`{key}={value}`",
           )
         )
 

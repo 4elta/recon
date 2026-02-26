@@ -26,12 +26,6 @@ for path in ANALYZERS_DIR.iterdir():
   if path.is_dir() and not path.name.startswith('__'):
     SUPPORTED_SERVICES.append(path.name)
 
-DEFAULT_CONFIG = pathlib.Path(
-  pathlib.Path(__file__).resolve().parent,
-  "config",
-  "analyzer.toml"
-)
-
 LANGUAGE = 'en'
 SUPPORTED_FORMATS = ['md', 'json', 'csv']
 
@@ -48,10 +42,10 @@ def analyze_service(service, files, recommendations_file, tool):
 
   issues_file = pathlib.Path(
     pathlib.Path(__file__).resolve().parent,
-    "config",
-    "issues",
+    "analyzers",
     service,
-    f"{LANGUAGE}.toml"
+    "issues",
+    f"{LANGUAGE}.toml",
   )
 
   LOGGER.debug(f"loading issues file '{issues_file}'")
@@ -135,12 +129,13 @@ def render_CSV(services):
 
   output = io.StringIO()
 
-  csv.writer(output, delimiter=delimiter, quoting=csv.QUOTE_MINIMAL).writerow(header)
+  csv_writer = csv.writer(output, delimiter=delimiter, quoting=csv.QUOTE_MINIMAL, dialect='unix')
+  csv_writer.writerow(header)
 
   for identifier, service in services.items():
     for issue in service['issues']:
       row = [identifier, issue.description]
-      csv.writer(output, delimiter=delimiter, quoting=csv.QUOTE_MINIMAL).writerow(row)
+      csv_writer.writerow(row)
 
   rendered_analysis = output.getvalue()
 
@@ -164,18 +159,6 @@ def process(args):
   if args.service and args.service not in services.keys():
     sys.exit("nothing to analyze")
 
-  if args.config:
-    config_file_path = args.config
-    if not config_file_path.exists():
-      sys.exit(f"the specified configuration file '{config_file_path}' does not exist!")
-  else:
-    config_file_path = DEFAULT_CONFIG
-    if not config_file_path.exists():
-      sys.exit(f"the default configuration file '{config_file_path}' does not exist!")
-
-  with open(config_file_path, 'rb') as f:
-    config = toml.load(f)
-
   selected_tags = []
   if args.scan:
     args.scan, selected_tags = analyzers.parse_scan_name(args.scan)
@@ -186,15 +169,10 @@ def process(args):
     if args.service and service != args.service:
       continue
 
-    default_parser = config['default_parser'][service]
-
     for scan_name in scan_names:
       cleaned_scan_name, tags = analyzers.parse_scan_name(scan_name)
 
       if args.scan and args.scan != cleaned_scan_name:
-        continue
-
-      if args.service and not args.scan and default_parser != cleaned_scan_name:
         continue
 
       if args.scan and not selected_tags and tags:
@@ -216,7 +194,7 @@ def process(args):
     sys.exit("nothing to analyze")
 
   if number_of_potential_analyses > 1 and not args.output:
-    print("scan results relating to the following services (along with the name of the tool/scan) are available for analysis:\n")
+    print("scan results relating to the following services (along with the name of the scan) are available for analysis:\n")
 
     for service, scan_names in dict(sorted(potential_analyses.items())).items():
       print(f"* {service}: {', '.join(sorted(scan_names))}")
@@ -231,7 +209,7 @@ def process(args):
     filename = f'analyzer_{timestamp}.log',
     filemode = 'w',
     encoding = 'utf-8',
-    level = logging.DEBUG
+    level = logging.DEBUG,
   )
 
   output_directory = None
@@ -280,7 +258,7 @@ def process(args):
         pathlib.Path(__file__).resolve().parent,
         "config",
         "templates",
-        f"default.{LANGUAGE}.md"
+        f"default.{LANGUAGE}.md",
       )
       LOGGER.info(f"using default template file: '{template_file}'")
       if not template_file.exists():
@@ -291,7 +269,7 @@ def process(args):
     env = jinja2.Environment(
       loader = jinja2.FileSystemLoader(template_file.parent),
       trim_blocks = True,
-      autoescape = False
+      autoescape = False,
     )
 
     template = env.get_template(template_file.name)
@@ -302,10 +280,10 @@ def process(args):
     if not args.recommendations:
       recommendations_file = pathlib.Path(
         pathlib.Path(__file__).resolve().parent,
-        "config",
-        "recommendations",
+        "analyzers",
         service,
-        "default.toml"
+        "recommendations",
+        "default.toml",
       )
 
       LOGGER.info(f"using default recommendations file: '{recommendations_file}'")
@@ -328,7 +306,7 @@ def process(args):
           service,
           files,
           recommendations_file,
-          scan_name
+          scan_name,
         )
       except RuntimeError as error:
         LOGGER.error(error)
@@ -362,7 +340,7 @@ def process(args):
       if analysis_file:
         LOGGER.info(f"writing analysis to '{analysis_file}' ...")
         with open(analysis_file, 'w') as f:
-          f.write(rendered_analysis)
+          f.write(rendered_analysis + '\n')
       else:
         print(rendered_analysis)
 
@@ -373,30 +351,23 @@ def main():
   )
 
   parser.add_argument(
-    '-c', '--config',
-    metavar = 'path',
-    type = pathlib.Path,
-    help = "path to the analyzer configuration file (default: '/path/to/recon/config/analyzer.toml')"
-  )
-
-  parser.add_argument(
     '-s', '--service',
     metavar = 'code',
     choices = sorted(SUPPORTED_SERVICES),
-    help = f"service that should be analyzed (choices: {sorted(SUPPORTED_SERVICES)})"
+    help = f"service that should be analyzed (choices: {sorted(SUPPORTED_SERVICES)})",
   )
 
   parser.add_argument(
     '-S', '--scan',
     metavar = 'name',
-    help = "name of the tool/scan whose results should be parsed"
+    help = "name of the tool/scan whose results should be parsed",
   )
 
   parser.add_argument(
     '-r', '--recommendations',
     metavar = 'path',
     type = pathlib.Path,
-    help = "path to the recommendations document (default: '/path/to/recon/config/recommendations/<service>/default.toml')"
+    help = "path to the recommendations document (default: '/path/to/recon/analyzers/<service>/recommendations/default.toml')",
   )
 
   parser.add_argument(
@@ -404,14 +375,14 @@ def main():
     metavar = 'path',
     type = pathlib.Path,
     default = './recon',
-    help = "path to the root directory that holds the results to be analysed (default: './recon')"
+    help = "path to the root directory that holds the results to be analysed (default: './recon')",
   )
 
   parser.add_argument(
     '-l', '--language',
     metavar = 'code',
     default = LANGUAGE,
-    help = f"language of the analysis (default: '{LANGUAGE}')"
+    help = f"language of the analysis (default: '{LANGUAGE}')",
   )
 
   parser.add_argument(
@@ -420,21 +391,21 @@ def main():
     metavar = 'code',
     choices = SUPPORTED_FORMATS,
     default = SUPPORTED_FORMATS[0],
-    help = f"format of the analysis (choices: {sorted(SUPPORTED_FORMATS)}; default: '{SUPPORTED_FORMATS[0]}')"
+    help = f"format of the analysis (choices: {sorted(SUPPORTED_FORMATS)}; default: '{SUPPORTED_FORMATS[0]}')",
   )
 
   parser.add_argument(
-    '--template',
+    '-t', '--template',
     metavar = 'path',
     type = pathlib.Path,
-    help = "path to the Jinja2 template for the analysis; this option overrides '-f/--format'"
+    help = "path to the Jinja2 template for the analysis; this option overrides '-f/--format'",
   )
 
   parser.add_argument(
     '-o', '--output',
     metavar = 'path',
     type = pathlib.Path,
-    help = "path to the directory where the analysis result(s) will be saved"
+    help = "path to the directory where the analysis result(s) will be saved",
   )
 
   process(parser.parse_args())

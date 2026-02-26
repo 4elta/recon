@@ -155,7 +155,8 @@ class AbstractAnalyzer:
     module_path = pathlib.Path(
       pathlib.Path(__file__).resolve().parent,
       self.name,
-      f'{parser_name}.py'
+      "parsers",
+      f'{parser_name}.py',
     )
 
     if not module_path.exists():
@@ -164,7 +165,7 @@ class AbstractAnalyzer:
     self.__class__.logger.debug(f"parser module '{module_path}'")
     self.parser_name = parser_name
 
-    module_name = f'{__name__}.{self.name}.{parser_name}'
+    module_name = f'{__name__}.{self.name}.parsers.{parser_name}'
     self.__class__.logger.debug(f"importing parser '{module_name}'")
     module = importlib.import_module(module_name)
     self.parser = module.Parser()

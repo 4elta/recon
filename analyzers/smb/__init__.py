@@ -53,42 +53,42 @@ class Analyzer(AbstractAnalyzer):
         self._analyze_dialects(
           service['dialects'],
           self.recommendations,
-          issues
+          issues,
         )
    
       if service['signing']:
         self._analyze_signing(
           service['signing'],
           self.recommendations,
-          issues
+          issues,
         )
 
       if service['authentication_methods']:
         self._analyze_authentication_methods(
           service['authentication_methods'],
           self.recommendations,
-          issues
+          issues,
         )
 
       if service['AD']['users']:
         self._analyze_domain_users(
           service['AD']['users'],
           self.recommendations,
-          issues
+          issues,
         )
 
       if service['AD']['domain']:
         self._analyze_domain_info(
           service['AD']['domain'],
           self.recommendations,
-          issues
+          issues,
         )
 
       for info in service['misc']:
         issues.append(
           Issue(
             "additional info",
-            info = info
+            info = info,
           )
         )
 
@@ -104,7 +104,7 @@ class Analyzer(AbstractAnalyzer):
         issues.append(
           Issue(
             "protocol not supported",
-            protocol = PROTOCOL_NICE[protocol]
+            protocol = PROTOCOL_NICE[protocol],
           )
         )
         continue
@@ -115,7 +115,7 @@ class Analyzer(AbstractAnalyzer):
           Issue(
             "dialect not supported",
             protocol = PROTOCOL_NICE[protocol],
-            dialect = dialect
+            dialect = dialect,
           )
         )
 
@@ -126,7 +126,7 @@ class Analyzer(AbstractAnalyzer):
         issues.append(
           Issue(
             "protocol supported",
-            protocol = PROTOCOL_NICE[protocol]
+            protocol = PROTOCOL_NICE[protocol],
           )
         )
 
@@ -140,7 +140,7 @@ class Analyzer(AbstractAnalyzer):
             Issue(
               "dialect supported",
               protocol = PROTOCOL_NICE[protocol],
-              dialect = dialect
+              dialect = dialect,
             )
           )
 
@@ -158,7 +158,7 @@ class Analyzer(AbstractAnalyzer):
         issues.append(
           Issue(
             f"signing r:{signing_info['required']}",
-            protocol = PROTOCOL_NICE[protocol]
+            protocol = PROTOCOL_NICE[protocol],
           )
         )
 
@@ -175,7 +175,7 @@ class Analyzer(AbstractAnalyzer):
           issues.append(
             Issue(
               'authentication',
-              method = method
+              method = method,
             )
           )
 
@@ -282,6 +282,8 @@ class Analyzer(AbstractAnalyzer):
     for field_name, field_value in domain_info.items():
       if field_name not in recommendations['AD']['domain']:
         continue
+ 
+      field_value = 0 if field_value == 'None' else field_value
 
       recommendation = recommendations['AD']['domain'][field_name]
 
@@ -298,7 +300,7 @@ class Analyzer(AbstractAnalyzer):
             issues.append(
               Issue(
                 f'{issue_group}: {field_name}',
-                value = duration
+                value = duration,
               )
             )
 
@@ -310,7 +312,7 @@ class Analyzer(AbstractAnalyzer):
             issues.append(
               Issue(
                 f'{issue_group}: {field_name}',
-                value = duration
+                value = duration,
               )
             )
 
@@ -325,7 +327,7 @@ class Analyzer(AbstractAnalyzer):
             issues.append(
               Issue(
                 f'{issue_group}: {field_name}',
-                value = duration
+                value = duration,
               )
             )
 
@@ -339,7 +341,7 @@ class Analyzer(AbstractAnalyzer):
             issues.append(
               Issue(
                 f'{issue_group}: {field_name}',
-                value = field_value
+                value = field_value,
               )
             )
 
@@ -350,7 +352,7 @@ class Analyzer(AbstractAnalyzer):
             issues.append(
               Issue(
                 f'{issue_group}: {field_name}',
-                value = field_value
+                value = field_value,
               )
             )
 
@@ -364,7 +366,7 @@ class Analyzer(AbstractAnalyzer):
               self.__class__.logger.info(f"{issue_group}: {field_name}: {password_property_name}: {password_property}")
               issues.append(
                 Issue(
-                  f'{issue_group}: {field_name}: {password_property_name}: {password_property}'
+                  f'{issue_group}: {field_name}: {password_property_name}: {password_property}',
                 )
               )
 
@@ -374,7 +376,7 @@ class Analyzer(AbstractAnalyzer):
             issues.append(
               Issue(
                 f'{issue_group}: {field_name}',
-                value = field_value
+                value = field_value,
               )
             )
 

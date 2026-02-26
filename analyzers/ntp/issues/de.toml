@@ -1,0 +1,41 @@
+["public NTP server"]
+description = "öffentlicher NTP-Server"
+
+["protocol version"]
+description = "verwendete Version: `{used_version}`"
+recommendations = [
+  "aktualisieren Sie auf Version `{recommended_version}`",
+]
+
+["mode 6"]
+description = "antwortet auf Mode-6-Anfragen (NTPv{version}, opcode {opcode})"
+recommendations = [
+  "deaktivieren Sie Mode-6",
+]
+
+["mode 6 + amplification"]
+description = "antwortet auf Mode-6-Anfragen (NTPv{version}, opcode {opcode}); Verstärkungsfaktor: {amplification_factor}"
+recommendations = [
+  "deaktivieren Sie Mode-6",
+]
+
+["mode 7"]
+description = "antwortet auf Mode-7-Anfragen (NTPv{version}, implementation {implementation}, req code {req_code}); Verstärkungsfaktor: {amplification_factor}"
+references = [
+  "[CVE-2013-5211](https://nvd.nist.gov/vuln/detail/CVE-2013-5211)",
+]
+recommendations = [
+  "deaktivieren sie Mode-7",
+]
+
+["mode 7 + amplification"]
+description = "antwortet auf Mode-7-Anfragen (NTPv{version}, implementation {implementation}, req code {req_code})"
+references = [
+  "[CVE-2013-5211](https://nvd.nist.gov/vuln/detail/CVE-2013-5211)",
+]
+recommendations = [
+  "deaktivieren sie Mode-7",
+]
+
+["additional info"]
+description = "zusätzliche Informationen: {info}"
