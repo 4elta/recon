@@ -1,4 +1,4 @@
-the report generator is now hosted on [Codeberg](https://codeberg.org/4elta/recon)
+recon is now hosted on [Codeberg](https://codeberg.org/4elta/recon)
 
 <a href="https://codeberg.org/4elta/recon">
     <img alt="Get it on Codeberg" src="https://get-it-on.codeberg.org/get-it-on-blue-on-white.png" height="60">
